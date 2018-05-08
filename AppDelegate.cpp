@@ -1,6 +1,8 @@
 #include "AppDelegate.h"
 #include "TitleScene.h"
 
+#include "FightScene.h"
+
 // #define USE_AUDIO_ENGINE 1
 // #define USE_SIMPLE_AUDIO_ENGINE 1
 
@@ -18,7 +20,7 @@ using namespace CocosDenshion;
 
 USING_NS_CC;
 
-static cocos2d::Size designResolutionSize = cocos2d::Size(640, 480);
+static cocos2d::Size designResolutionSize = cocos2d::Size(800, 1280);
 static cocos2d::Size smallResolutionSize  = cocos2d::Size(480, 320);
 static cocos2d::Size mediumResolutionSize = cocos2d::Size(1024, 768);
 static cocos2d::Size largeResolutionSize  = cocos2d::Size(2048, 1536);
@@ -65,36 +67,33 @@ bool AppDelegate::applicationDidFinishLaunching() {
 #endif
         director->setOpenGLView(glview);
     }
-    // turn on display FPS
-    director->setDisplayStats(true);
+    //// FPS表示
+    //director->setDisplayStats(true);
 
-    // set FPS. the default value is 1.0/60 if you don't call this
-    director->setAnimationInterval(1.0f / 60);
+    //// FPSを設定します。これを呼び出さないとデフォルト値は1.0 / 60です
+    //director->setAnimationInterval(1.0f / 60);
 
-    // Set the design resolution
-    glview->setDesignResolutionSize(designResolutionSize.width, designResolutionSize.height, ResolutionPolicy::NO_BORDER);
-    auto frameSize = glview->getFrameSize();
-    // if the frame's height is larger than the height of medium size.
-    if (frameSize.height > mediumResolutionSize.height)
-    {        
-        director->setContentScaleFactor(MIN(largeResolutionSize.height/designResolutionSize.height, largeResolutionSize.width/designResolutionSize.width));
-    }
-    // if the frame's height is larger than the height of small size.
-    else if (frameSize.height > smallResolutionSize.height)
-    {        
-        director->setContentScaleFactor(MIN(mediumResolutionSize.height/designResolutionSize.height, mediumResolutionSize.width/designResolutionSize.width));
-    }
-    // if the frame's height is smaller than the height of medium size.
-    else
-    {        
-        director->setContentScaleFactor(MIN(smallResolutionSize.height/designResolutionSize.height, smallResolutionSize.width/designResolutionSize.width));
-    }
+    // デザインの解像度を設定する
+    glview->setDesignResolutionSize(designResolutionSize.width, designResolutionSize.height, ResolutionPolicy::SHOW_ALL);
+    //auto frameSize = glview->getFrameSize();
+    //// フレームの高さが中程度の高さよりも大きい場合
+    //if (frameSize.height > mediumResolutionSize.height){        
+    //    director->setContentScaleFactor(MIN(largeResolutionSize.height/designResolutionSize.height, largeResolutionSize.width/designResolutionSize.width));
+    //}
+    //// もしフレームの高さが小さいサイズの高さよりも大きい場合
+    //else if (frameSize.height > smallResolutionSize.height){        
+    //    director->setContentScaleFactor(MIN(mediumResolutionSize.height/designResolutionSize.height, mediumResolutionSize.width/designResolutionSize.width));
+    //}
+    ////フレームの高さが中程度の高さよりも小さい場合
+    //else{        
+    //    director->setContentScaleFactor(MIN(smallResolutionSize.height/designResolutionSize.height, smallResolutionSize.width/designResolutionSize.width));
+    //}
 
     register_all_packages();
 
     // create a scene. it's an autorelease object
 	///
-    auto scene = TitleScene::createScene();
+    auto scene = FightScene::createScene();
 
     // run
     director->runWithScene(scene);
