@@ -21,7 +21,7 @@ public:
 	virtual bool init();
 	CREATE_FUNC(CharaSelectScene);
 	std::vector<cocos2d::Node *> items;
-	void arrange();	// アレンジ
+
 	// 背景
 	void CharaSelectBackGroudn();
 	// スタートボタン押下時の処理宣言 戻る Object →　Ref に変更
@@ -29,16 +29,26 @@ public:
 	// 選択されたキャラ情報格納
 	static const std::vector<CharaName>& GetCharaData();
 
+
 private:
 	Node* Top;
-	Sprite* PL_Attacker;
-	Sprite *PL_Shield;
-	Sprite *PL_Magic;
-	Sprite *PL_Healer;
-	void CharaClick();
+	// キャラ情報
+	Sprite* PL_Attacker;	 // ｱﾀｯｶｰ(小男)
+	Sprite *PL_Shield;		 // 守備(大男)
+	Sprite *PL_Magic;		 // 魔法使い(ツイン)
+	Sprite *PL_Healer;		 // 回復(ｹﾓﾐﾐ)
+	void update(float delta);// アップデート
+	void charaDraw();		 // キャラ表示
+	void swipeRotation();	 // スワイプに合わせて回転
+	void drawBox();			 // □表示
+	void fontsDraw();		 // 文字描画
+	void arrange();			 // アレンジ						
+	void charaText();		 // きゃら説明文
+	void clickCheck();			 // clickされたら呼ばれる
 	// 保存する用のデータ
 	static std::vector<CharaName> CharaData;
-	//bool onTouchBegan(Touch *touch, Event *unused_event);
+	// click判定
+	EventListenerTouchOneByOne *_listener = EventListenerTouchOneByOne::create();
 };
 
 #endif // Title
