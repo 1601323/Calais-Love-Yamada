@@ -481,7 +481,7 @@ void BossScene::PLturn()
 		else if (pl1 == PL1SKILL) {
 			//エフェクトの表示
 			//エフェクトの流れを指定
-			CCParticleSystemQuad* plparticle = CCParticleSystemQuad::create("plskill1.plist");
+			CCParticleSystemQuad* plparticle = CCParticleSystemQuad::create("Effect/plskill1.plist");
 
 			plparticle->setAutoRemoveOnFinish(true);
 
@@ -552,7 +552,7 @@ void BossScene::PLturn()
 		else if (pl2 == PL2SKILL) {
 			//エフェクトの表示
 			//エフェクトの流れを指定
-			CCParticleSystemQuad* plparticle2 = CCParticleSystemQuad::create("plskill2.plist");
+			CCParticleSystemQuad* plparticle2 = CCParticleSystemQuad::create("Effect/plskill2.plist");
 
 			plparticle2->setAutoRemoveOnFinish(true);
 
@@ -615,7 +615,7 @@ void BossScene::PLturn()
 		else if (pl3 == PL3SKILL) {
 			//エフェクトの表示
 			//エフェクトの流れを指定
-			CCParticleSystemQuad* plparticle3 = CCParticleSystemQuad::create("plskill3.plist");
+			CCParticleSystemQuad* plparticle3 = CCParticleSystemQuad::create("Effect/plskill3.plist");
 			plparticle3->setAutoRemoveOnFinish(true);
 
 			//パーティクル開始
@@ -1019,7 +1019,7 @@ void BossScene::BSturn()
 				//エフェクトの表示
 				CCSize s = CCDirector::sharedDirector()->getWinSize();
 				//エフェクトの流れを指定
-				CCParticleSystemQuad* particle = CCParticleSystemQuad::create("efect.plist");
+				CCParticleSystemQuad* particle = CCParticleSystemQuad::create("Effect/bosseffect.plist");
 				particle->setAutoRemoveOnFinish(true);
 
 				//パーティクル開始
