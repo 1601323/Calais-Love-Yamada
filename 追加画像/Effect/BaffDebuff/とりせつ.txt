@@ -1,0 +1,5 @@
+
+	Skill_Buff01：攻撃アップ等、パワーアップした時に使う
+	Skill_DeBuff01：攻撃ダウン等、パワーダウンした時に使う
+	Skill_DeBuff02：パワーアップ効果を打ち消す時に使う　（Odenの主神の威圧
+	Skill_Recov01：回復した時に使う
