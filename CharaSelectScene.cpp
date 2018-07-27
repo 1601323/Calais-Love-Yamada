@@ -1,4 +1,5 @@
 #include "CharaSelectScene.h"
+#include "Geometry.h"
 #include "FightScene.h"
 #include "GameOver.h"
 #include "TitleScene.h"
@@ -72,7 +73,7 @@ bool CharaSelectScene::init()
 	// バックグランド
 	CharaSelectBackGroudn();
 	// ボタン配置 (通常時,押した時,押した時のｱｸｼｮﾝ)
-	auto _buttunNext = MenuItemImage::create("UI/Command/UI_Button_Next.png", "UI/Command/UI_Button_Next.png", CC_CALLBACK_1(CharaSelectScene::pushStart, this));
+	auto _buttunNext = MenuItemImage::create(UI_BUTTON_NEXT, UI_BUTTON_NEXT_PUSH, CC_CALLBACK_1(CharaSelectScene::pushStart, this));
 	_buttunNext->setPosition(NEXT_BUTTON_X+30, NEXT_BUTTON_Y);		// 座標指定
 	_buttunNext->setScale(0.5);										// 大きさ調整
 
@@ -80,7 +81,7 @@ bool CharaSelectScene::init()
 	menu1->setPosition(Point::ZERO);								// 座標配置
 	this->addChild(menu1, 8);										// 追加
 
-	auto _buttunBack = MenuItemImage::create("UI/Command/UI_Button_Back.png", "UI/Command/UI_Button_Back.png", CC_CALLBACK_1(CharaSelectScene::backStart, this));
+	auto _buttunBack = MenuItemImage::create(UI_BUTTON_BUCK, UI_BUTTON_BUCK, CC_CALLBACK_1(CharaSelectScene::backStart, this));
 	_buttunBack->setPosition(NEXT_BUTTON_X - 550, NEXT_BUTTON_Y);	// 座標指定
 	_buttunBack->setScale(0.5);										// 大きさ調整	
 
@@ -97,10 +98,10 @@ bool CharaSelectScene::init()
 	_eventDispatcher->addEventListenerWithSceneGraphPriority(touchEventGet, this);
 
 	//キャラデータの初期化
-	/*teamData[CharaName::CHARA_ATTACKER]		= Sprite::create("Player/PL_Attacker_face01.png");
-	teamData[CharaName::CHARA_SHIELD]		= Sprite::create("Player/PL_Shield_face01.png");
-	teamData[CharaName::CHARA_MAGIC]		= Sprite::create("Player/PL_Magic_face01.png");
-	teamData[CharaName::CHARA_HEALER]		= Sprite::create("Player/PL_Healer_face01.png");*/
+	/*teamData[CharaName::CHARA_ATTACKER]		= Sprite::create(PL_ATTACKER_FACE);
+	teamData[CharaName::CHARA_SHIELD]		= Sprite::create(PL_SHIELD_FACE);
+	teamData[CharaName::CHARA_MAGIC]		= Sprite::create(PL_MAGIC_FACE);
+	teamData[CharaName::CHARA_HEALER]		= Sprite::create(PL_HEALER_FACE);*/
 
 	//大きさ
 	//teamData[CharaName::CHARA_ATTACKER]->setScale(BOX_SCALE);
@@ -108,6 +109,8 @@ bool CharaSelectScene::init()
 	//teamData[CharaName::CHARA_MAGIC]->setScale(BOX_SCALE);
 	//teamData[CharaName::CHARA_HEALER]->setScale(BOX_SCALE);
 
+	_s_teamAttacker = Sprite::create(PL_ATTACKER_FACE);
+	teamData = _s_teamAttacker;
 	
 	Sound();
 	TeamBoxDraw();						// 表示(キャラ以外)
@@ -188,21 +191,16 @@ void CharaSelectScene::CharaDraw()
 	// マルチれぞーしょん対応か
 	Point origin = Director::getInstance()->getVisibleOrigin();
 
-	_s_Attacker = Sprite::create("Player/PL_Attacker.png");
-	_s_Shield   = Sprite::create("Player/PL_Shield.png");
-	_s_Magic    = Sprite::create("Player/PL_Magic.png");
-	_s_Healer   = Sprite::create("Player/PL_Healer.png");
+	_s_Attacker = Sprite::create(PL_ATTACKER);
+	_s_Shield   = Sprite::create(PL_SHIELD);
+	_s_Magic    = Sprite::create(PL_MAGIC);
+	_s_Healer   = Sprite::create(PL_HEALER);
 
 	this->items.clear();
 	this->items.push_back(_s_Attacker);
 	this->items.push_back(_s_Shield);
 	this->items.push_back(_s_Magic);
 	this->items.push_back(_s_Healer);
-	//this->items.clear();
-	//this->items.push_back(Sprite::create("PL_Attacker.png"));
-	//this->items.push_back(Sprite::create("PL_Shield.png"));
-	//this->items.push_back(Sprite::create("PL_Magic.png"));
-	//this->items.push_back(Sprite::create("PL_Healer.png"));
 
 	// 選択されてないもの半透明に
 	if (!Top)
@@ -235,7 +233,7 @@ void CharaSelectScene::CharaText()
 	// マルチれぞーしょん対応か
 	Point origin = Director::getInstance()->getVisibleOrigin();
 	// フォント指定
-	TTFConfig ttfConfig("fonts/HGRSGU.TTC", FONT_SIZE);
+	TTFConfig ttfConfig(FONT_PL_TEXT, FONT_SIZE);
 	// 色指定
 	auto textColor = Color3B(0,0,50);
 	// テキスト
@@ -342,7 +340,7 @@ void CharaSelectScene::CharaText()
 // 表示 チーム編成の箱
 void CharaSelectScene::TeamBoxDraw()
 {
-	_batchNode = SpriteBatchNode::create("UI/PL_CharFlame01.png");
+	_batchNode = SpriteBatchNode::create(UI_PL_CHRA_FLAME);
 	_batchNode->setPosition(TEAM_BOX_OFFSET_X, 0);
 
 	// チーム編成のBox分表示
@@ -368,12 +366,12 @@ void CharaSelectScene::CharaSelectBackGroudn()
 	Point origin = Director::getInstance()->getVisibleOrigin();
 	
 	// 背景画像追加
-	Sprite* _backImage = Sprite::create("BackImage/ST_CharSerect2.png");
+	Sprite* _backImage = Sprite::create(BACK_GRAND_SPRITE_CHRASELECT);
 	_backImage->setPosition(winSize.width / 2, winSize.height / 2);
 	this->addChild(_backImage,0);
 
 	//説明文の板配置
-	_s_fontBoard = Sprite::create("UI/Status/UI_Status_Inters.png");
+	_s_fontBoard = Sprite::create(UI_FONT_BOARD);
 	_s_fontBoard->setPosition(winSize.width / 2, 1130);
 	this->addChild(_s_fontBoard, 1);
 }
