@@ -118,7 +118,24 @@ const std::string PUSH_YES_BUTTON_PATH			 = "UI/Fight/yes_push.png";
 const std::string NO_BUTTON_PATH				 = "UI/Fight/no.png";
 const std::string PUSH_NO_BUTTON_PATH			 = "UI/Fight/no_push.png";
 // ボス
+const std::string BACK_GRAND_SPRITE_BOSS		 = "BackImage/ST_Boss.png";			
+const std::string BOSS_SCENE_TELOP				 = "UI/UI_Terop.png";				
 
+const std::string BOSS_VALKYRIE					 = "enemy/EM_Valkyrie.png";
+const std::string BOSS_HPBAR					 = "UI/Status/UI_Status_EMLife.png";
+const std::string BOSS_BACK_HPBAR				 = "UI/Status/UI_Status_EMLost.png";
+const std::string PL_ATTACKER_STATUSPLATE		 = "UI/Status/UI_Status_Attacker.png";
+const std::string PL_ATTACKER_HPBAR				 = "UI/Status/UI_Status_Life.png";
+const std::string PL_ATTACKER_MANAHAR			 = "UI/Status/UI_Status_Mana.png";
+const std::string PL_SHIELD_STATUSPLATE			 = "UI/Status/UI_Status_Shield.png";
+const std::string PL_SHIELD_HPBAR				 = "UI/Status/UI_Status_Life.png";
+const std::string PL_SHIELD_MANAHAR				 = "UI/Status/UI_Status_Mana.png";
+const std::string PL_MAGIC_STATUSPLATE			 = "UI/Status/UI_Status_Magic.png";
+const std::string PL_MAGIC_HPBAR				 = "UI/Status/UI_Status_Life.png";
+const std::string PL_MAGIC_MANAHAR				 = "UI/Status/UI_Status_Mana.png";
+const std::string PL_HEALER_STATUSPLATE			 = "UI/Status/UI_Status_Healer.png";
+const std::string PL_HEALER_HPBAR				 = "UI/Status/UI_Status_Life.png";
+const std::string PL_HEALER_MANAHAR				 = "UI/Status/UI_Status_Mana.png";
 // BGM
 const std::string BGM_BOSS_ODEN					 = "BGM/BGM_Oden_Main.mp3";			//オーディンの戦闘で使用するBGM
 const std::string BGM_BOSS_SLEIPNIR				 = "BGM/BGM_Sleipnir_Main.mp3";		//スレイプニルの戦闘で使用するBGM
