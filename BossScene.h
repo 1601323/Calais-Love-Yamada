@@ -62,9 +62,6 @@ public:
 		PL3DEATH,
 	};
 
-	
-
-
 	//どのスキルを使うかを決めるときに使う
 	enum SKILL {
 		SKILL1,
@@ -316,6 +313,7 @@ public:
 	const int fontsizeXL = 50;		//文字の大きさ(XLサイズ)
 	const int flame0 = 0;			//ふれーむが0
 	const int flame15 = 15;			//フレームが15
+	const int flame30 = 30;			//フレームが15
 	const int flame50 = 50;			//フレームが50
 	const int flame70 = 70;			//フレームが70
 	const int flame80 = 80;			//フレームが80
@@ -329,7 +327,10 @@ public:
 	const int flame220 = 220;		//フレームが220
 	const int flame230 = 230;		//フレームが230
 	const int flame250 = 250;		//フレームが250
-	const int flamemax = 350;		//フレームの最大値(350)
+	const int flame280 = 280;		//フレームが280
+	const int flame310 = 310;		//フレームが310
+	const int flame340 = 340;		//フレームが340
+	const int flamemax = 500;		//フレームの最大値(500)
 	const int hpmin = 0;			//HPの最小値
 	const int rndmin = 0;			//ランダムの最小値
 	const int rndmax = 100;			//ランダムの最大値
@@ -381,39 +382,47 @@ public:
 	int decide_rnd = rndmin;	//指定した範囲内の乱数を取得(ボスの動き)
 	int recovery_rnd = rndmin;	//指定した範囲内の乱数を取得(回復する値)
 	float movecnt = 0.05f;		//画像を動かす時間
-	float attackerhpgaugewidth = 0.0f;	//プレイヤー1HPゲージの横のサイズ
-	float attackermngaugewidth = 0.0f;	//プレイヤー1MNゲージの横のサイズ
-	float shieldhpgaugewidth = 0.0f;	//プレイヤー1HPゲージの横のサイズ
-	float shieldmngaugewidth = 0.0f;	//プレイヤー1MNゲージの横のサイズ
-	float healerhpgaugewidth = 0.0f;	//プレイヤー2HPゲージの横のサイズ
-	float healermngaugewidth = 0.0f;	//プレイヤー2MNゲージの横のサイズ
-	float magichpgaugewidth = 0.0f;		//プレイヤー3HPゲージの横のサイズ
-	float magicmngaugewidth = 0.0f;		//プレイヤー3MNゲージの横のサイズ
+	float attackerhpgaugewidth = 0.0f;	//剣士HPゲージの横のサイズ
+	float attackermngaugewidth = 0.0f;	//剣士MNゲージの横のサイズ
+	float shieldhpgaugewidth = 0.0f;	//騎士HPゲージの横のサイズ
+	float shieldmngaugewidth = 0.0f;	//騎士MNゲージの横のサイズ
+	float healerhpgaugewidth = 0.0f;	//魔術師HPゲージの横のサイズ
+	float healermngaugewidth = 0.0f;	//魔術師MNゲージの横のサイズ
+	float magichpgaugewidth = 0.0f;		//聖職者HPゲージの横のサイズ
+	float magicmngaugewidth = 0.0f;		//聖職者MNゲージの横のサイズ
 	float bosshpgaugewidth = 0.0f;		//ボスHPゲージの横のサイズ
-	bool flag = false;			//ボスの状態
-	bool state = false;			//プレイヤーの状態
-	bool insteadflag = false;	//騎士のスキルで身代わり状態かどうか
-	bool allinsteadflag = false;//騎士スキルで全員の身代わり状態かどうか
-	bool counterflag = false;	//騎士のスキルでカウンター状態かどうか
-	bool coverflag1 = false;	//騎士のスキルでタゲ集中状態かどうか
-	bool coverflag2= false;		//騎士のスキルでタゲ集中状態かどうか
-	bool attackendflag = false;	//攻撃が終わったかどうか
-	bool skillendflag = false;	//スキルが終わったかどうか
-	bool choiceendflag = false;	//選択し終わったかどうか
-	bool fntflag = false;		//フォントの消える時間
-	bool allworkendflag = false;//すべての作業が終了したかどうか
-	long gameflame = 0;			//それぞれのターンの時間
-	long skillflame = 0;		//それぞれのスキルの時間
-	long choicetime = 0;		//ボタンを連続して押さないようにする処理
+	bool flag = false;						//ボスの状態
+	bool state = false;						//プレイヤーの状態
+	bool insteadflag = false;				//騎士のスキルで身代わり状態かどうか
+	bool allinsteadflag = false;			//騎士スキルで全員の身代わり状態かどうか
+	bool counterflag = false;				//騎士のスキルでカウンター状態かどうか
+	bool coverflag1 = false;				//騎士のスキルでタゲ集中状態かどうか
+	bool coverflag2= false;					//騎士のスキルでタゲ集中状態かどうか
+	bool resurrectionflag = false;			//騎士復活フラグ
+	bool counter_attackflag = false;		//騎士カウンターフラグ
+	bool attackendflag = false;				//攻撃が終わったかどうか
+	bool skillendflag = false;				//スキルが終わったかどうか
+	bool choiceendflag = false;				//選択し終わったかどうか
+	bool fntflag = false;					//フォントの消える時間
+	bool allworkendflag = false;			//すべての作業が終了したかどうか
+	bool boss_allwork_endflag = false;		//ボスのすべちぇの作業が終了したら
+	bool shield_choice_skillflag = false;	//選択系スキルの時ほかの職業の選択スキルと交わらない様にすためのもの(騎士)
+	bool magic_choice_skillflag = false;	//選択系スキルの時ほかの職業の選択スキルと交わらない様にすためのもの(魔術師)
+	bool healer_choice_skillflag = false;	//選択系スキルの時ほかの職業の選択スキルと交わらない様にすためのもの(聖職者)
+	long gameflame = 0;						//それぞれのターンの時間
+	long skillflame = 0;					//それぞれのスキルの時間
+	long choicetime = 0;					//ボタンを連続して押さないようにする処理
 
 	//スキル関連
 	bool askill2allworkendflag = false;//剣士のスキル2の処理が全部終わったか調べる処理
 	bool askill4allworkendflag = false;//剣士のスキル4の処理が全部終わったか調べる処理
 	bool askill7allworkendflag = false;//剣士のスキル7の処理が全部終わったか調べる処理
 	bool askill8allworkendflag = false;//剣士のスキル8の処理が全部終わったか調べる処理
+	bool sskill2allworkendflag = false;//騎士のスキル2の処理が全部終わったか調べる処理
 	bool sskill3allworkendflag = false;//騎士のスキル3の処理が全部終わったか調べる処理
 	bool sskill4allworkendflag = false;//騎士のスキル4の処理が全部終わったか調べる処理
 	bool sskill5allworkendflag = false;//騎士のスキル5の処理が全部終わったか調べる処理
+	bool sskill6allworkendflag = false;//騎士のスキル7の処理が全部終わったか調べる処理
 	bool sskill7allworkendflag = false;//騎士のスキル7の処理が全部終わったか調べる処理
 	bool sskill8allworkendflag = false;//騎士のスキル8の処理が全部終わったか調べる処理
 	bool mskill2allworkendflag = false;//魔術師のスキル2の処理が全部終わったか調べる処理
@@ -422,7 +431,7 @@ public:
 	bool mskill6allworkendflag = false;//魔術師のスキル6の処理が全部終わったか調べる処理
 	bool hskill2allworkendflag = false;//聖職者のスキル2の処理が全部終わったか調べる処理
 	bool hskill3allworkendflag = false;//聖職者のスキル3の処理が全部終わったか調べる処理
-	bool bvskill3allworkendflag = false;//ヴァルキュリ－のスキル3の処理が全部終わったか調べる処理
+	bool vskill3allworkendflag = false;//ヴァルキュリ－のスキル3の処理が全部終わったか調べる処理
 
 	//enum
 	TURN turn;				//ターン
@@ -458,9 +467,11 @@ public:
 	BUFFTURN askill4;		//剣士のスキル4(インパクトスラッシュ)
 	BUFFTURN askill7;		//剣士のスキル7(コンディクション)
 	BUFFTURN askill8;		//剣士のスキル8(ウォリアーウォークライ)
+	BUFFTURN sskill2;		//騎士のスキル2(カウンター)
 	BUFFTURN sskill3;		//騎士のスキル3(最前線)
 	BUFFTURN sskill4;		//騎士のスキル4(身代わりの氷像)
 	BUFFTURN sskill5;		//騎士のスキル5(群れる氷像)
+	BUFFTURN sskill6;		//騎士のスキル6(鼓舞する雄叫び)
 	BUFFTURN sskill7;		//騎士のスキル7(氷の御衣)
 	BUFFTURN sskill8;		//騎士のスキル8(騎士の矜持)
 	BUFFTURN mskill2;		//魔術師のスキル2(アーマーショット)
@@ -469,12 +480,13 @@ public:
 	BUFFTURN mskill6;		//魔術師のスキル6(神の御剣)
 	BUFFTURN hskill2;		//聖職者のスキル2(死者の経典)
 	BUFFTURN hskill3;		//聖職者のスキル3(聖者の経典)
-	BUFFTURN bvskill3;		//ヴァルキュリ－のスキル3(六帝の陣)
+	BUFFTURN vskill3;		//ヴァルキュリ－のスキル3(六帝の陣)
 	//cocos2d-x
 	cocos2d::Vec2 HPbar;	//HPばーの長さ
 	cocos2d::Vec2 MNbar;	//MANAばーの長さ
 	CCSize rightSize;		//オブジェクトを配置するときに必要
-	CCSprite *back;			//背景
+	CCSprite * BACK_GRAND_SPRITE_BOSS;			//背景
+	CCSprite *BOSS_SCENE_TELOP;					//テロップ
 	CCSprite *plturn;		//PLTURN文字(抹消予定)
 	CCSprite *emturn;		//BSTURN文字(抹消予定)
 	CCSprite *AttackButton1;//攻撃コマンド
@@ -487,9 +499,9 @@ public:
 	LabelTTF *ll;			//聖職者はどうする
 	LabelTTF *cho;			//選択中の文章
 	//剣士のUI
-	CCSprite *PLattacker;		//剣士の大まかなステータスプレート
-	CCSprite *attackerHP;		//剣士のHP
-	CCSprite *attackerMN;		//剣士のMN
+	CCSprite *PL_ATTACKER_STATUSPLATE;		//剣士の大まかなステータスプレート
+	CCSprite *PL_ATTACKER_HPBAR;			//剣士のHP
+	CCSprite *PL_ATTACKER_MANAHAR;		//剣士のMN
 	LabelTTF *attackerhpal;		//剣士のHP表記
 	LabelTTF *attackerhpmaxal;	//HPの最大値
 	LabelTTF *attackermnal;		//剣士のMN表記
@@ -498,9 +510,9 @@ public:
 	CCFadeOut *attackerfadeout;	//剣士ダメージ表示フェードアウトの時間
 	CCSequence *attackerfdoutmov;//剣士ダメージ表示フェードアウト時の動き
 	 //騎士のUI
-	CCSprite *PLshield;		//騎士の大まかなステータスプレート
-	CCSprite *shieldHP;		//騎士のHP
-	CCSprite *shieldMN;		//騎士のMN
+	CCSprite *PL_SHIELD_STATUSPLATE;		//騎士の大まかなステータスプレート
+	CCSprite *PL_SHIELD_HPBAR;		//騎士のHP
+	CCSprite *PL_SHIELD_MANAHAR;		//騎士のMN
 	LabelTTF *shieldhpal;	//騎士のHP表記
 	LabelTTF *shieldhpmaxal;//HPの最大値
 	LabelTTF *shieldmnal;	//騎士のMN表記
@@ -509,9 +521,9 @@ public:
 	CCFadeOut *shieldfadeout;//騎士ダメージ表示フェードアウトの時間
 	CCSequence *shieldfdoutmov;//騎士ダメージ表示フェードアウト時の動き
 	//魔術師のUI
-	CCSprite *PLmagic;		//魔術師の大まかなステータスプレート
-	CCSprite *magicHP;		//魔術師のHP
-	CCSprite *magicMN;		//魔術師のMN
+	CCSprite *PL_MAGIC_STATUSPLATE;		//魔術師の大まかなステータスプレート
+	CCSprite *PL_MAGIC_HPBAR;		//魔術師のHP
+	CCSprite *PL_MAGIC_MANAHAR;		//魔術師のMN
 	LabelTTF *magichpal;	//魔術師のHP表記
 	LabelTTF *magichpmaxal;	//HPの最大値
 	LabelTTF *magicmnal;	//魔術師のMN表記
@@ -520,9 +532,9 @@ public:
 	CCFadeOut *magicfadeout;//魔術師ダメージ表示フェードアウトの時間
 	CCSequence *magicfdoutmov;	//魔術師ダメージ表示フェードアウト時の動き
 	//聖職者のUI
-	CCSprite *PLhealer;		//聖職者の大まかなステータスプレート
-	CCSprite *healerHP;		//聖職者のHP
-	CCSprite *healerMN;		//聖職者のMN
+	CCSprite *PL_HEALER_STATUSPLATE;		//聖職者の大まかなステータスプレート
+	CCSprite *PL_HEALER_HPBAR;		//聖職者のHP
+	CCSprite *PL_HEALER_MANAHAR;		//聖職者のMN
 	LabelTTF *healerhpal;	//聖職者のHP表記
 	LabelTTF *healerhpmaxal;//HPの最大値
 	LabelTTF *healermnal;	//聖職者のMN表記
@@ -531,27 +543,20 @@ public:
 	CCFadeOut *healerfadeout;//聖職者ダメージ表示フェードアウトの時間
 	CCSequence *healerfdoutmov;//聖職者ダメージ表示フェードアウト時の動き
 	//ボスのUI
-	CCSprite *Boss;			//ボス
-	CCSprite *Efect;		//パーティクル
-	CCSprite *HPboss;		//ボスのhp
-	Repeat *bossrepeat;		//ボスがダメージを受けた時に揺らす処理
-	
+	CCSprite *BOSS_VALKYRIE;		//ボス
+	CCSprite *Efect;				//パーティクル
+	CCSprite *BOSS_HPBAR;			//ボスのhp
+	CCSprite *BOSS_BACK_HPBAR;		//ボスのhpの後ろ
+	Repeat *bossrepeat;				//ボスがダメージを受けた時に揺らす処理
+	//敵からダメージを受けた時の揺れの大きさ
 	Repeat* attacker_repeat_bigquake[7];	//剣士のUIを揺らす処理(揺らす幅が大きい)	
-	//剣士のUIを揺らす処理(揺らす幅が小さい)	
-	Repeat* attacker_repeat_smallquake[7];
-	//騎士のUIを揺らす処理(揺らす幅が大きい)	
-	Repeat* shield_repeat_smallquake[7];
-	Repeat *shieldrepeat1a, *shieldrepeat2a, *shieldrepeat3a, *shieldrepeat4a, *shieldrepeat5a, *shieldrepeat6a, *shieldrepeat7a;
-	//騎士のUIを揺らす処理(揺らす幅が小さい)	
-	Repeat *shieldrepeat1b, *shieldrepeat2b, *shieldrepeat3b, *shieldrepeat4b, *shieldrepeat5b, *shieldrepeat6b, *shieldrepeat7b;
-	//魔術師のUIを揺らす処理(揺らす幅が大きい)	
-	Repeat *magicrepeat1a, *magicrepeat2a, *magicrepeat3a, *magicrepeat4a, *magicrepeat5a, *magicrepeat6a, *magicrepeat7a;
-	//魔術師のUIを揺らす処理(揺らす幅が小さい)	
-	Repeat *magicrepeat1b, *magicrepeat2b, *magicrepeat3b, *magicrepeat4b, *magicrepeat5b, *magicrepeat6b, *magicrepeat7b;
-	//聖職者のUIを揺らす処理(揺らす幅が大きい)	
-	Repeat *healerrepeat1a, *healerrepeat2a, *healerrepeat3a, *healerrepeat4a, *healerrepeat5a, *healerrepeat6a, *healerrepeat7a;
-	//聖職者のUIを揺らす処理(揺らす幅が小さい)	
-	Repeat *healerrepeat1b, *healerrepeat2b, *healerrepeat3b, *healerrepeat4b, *healerrepeat5b, *healerrepeat6b, *healerrepeat7b;
+	Repeat* attacker_repeat_smallquake[7];	//剣士のUIを揺らす処理(揺らす幅が小さい)	
+	Repeat* shield_repeat_bigquake[7];		//騎士のUIを揺らす処理(揺らす幅が大きい)	
+	Repeat* shield_repeat_smallquake[7];	//騎士のUIを揺らす処理(揺らす幅が小さい)	
+	Repeat* magic_repeat_bigquake[7];		//魔術師のUIを揺らす処理(揺らす幅が大きい)	
+	Repeat* magic_repeat_smallquake[7];		//魔術師のUIを揺らす処理(揺らす幅が小さい)	
+	Repeat* healaer_repeat_smallquake[7];	//聖職者のUIを揺らす処理(揺らす幅が大きい)	
+	Repeat* healaer_repeat_bigquake[7];		//聖職者のUIを揺らす処理(揺らす幅が小さい)	
 
 
 	static Scene *createScene();
