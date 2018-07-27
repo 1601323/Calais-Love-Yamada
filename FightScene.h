@@ -5,8 +5,6 @@
 
 USING_NS_CC;
 
-class HpBar;
-class Node;
 
 class FightScene :public cocos2d::Layer
 {
@@ -16,6 +14,10 @@ private:
 	Vec2 _touchLocation;			//タッチ座標
 	Rect _enemySpriteRect;			//敵の画像のRect
 	Rect _enemyHpRect;				//敵のHpバーのRect
+	Rect _backHpRect;				//敵のHpバーのRect
+	Sprite* _backGage;
+	Sprite* _blueGage;
+	
 
 	bool _enemyDeathFlg;			//敵が死んだかどうか
 	int _enemyHpNow;				//敵の残りHp
@@ -31,13 +33,8 @@ private:
 	unsigned int _expDispTime;
 	bool ExpDispFlag;
 
+	//敵の画像切り替え
 	void EnemySelector();
-
-	Sprite* _hpGageSprite_green;
-	Sprite* _hpGageSprite_red;
-	HpBar* _bar;
-	Sprite* _blueSquare;
-
 
 	// タッチされた瞬間に呼び出される
 	virtual bool TouchBegan(Touch* touch, Event* event);
@@ -45,7 +42,6 @@ private:
 	virtual void TouchMove(Touch* touch, Event* event);
 	// 画面から指が離された瞬間に呼び出される
 	virtual void TouchEnd(Touch* touch, Event* event);
-	
 
 	//毎フレーム呼び出されるアップデート
 	void update(float delta);
@@ -56,15 +52,42 @@ private:
 	void SpriteTremble(Sprite* sprite);
 	//敵のHpゲージ
 	void EnemyHpGage();
+	//敵のHpゲージのフェードイン処理
+	void EnemyHpGageFadeIn();
+	//敵のHpゲージのフェードアウト処理
+	void EnemyHpGageFadeOut();
+	//敵のフェードイン処理
+	void EnemyFadeIn();
 	//敵のHpゲージ情報を更新
 	void ReloadEnemyHp();
+	//与えたダメージ数値を表示する
+	void GiveDamageDisplay(unsigned int giveDamage);
+	//画像がが上下にゆらゆらと揺れる
+	void SpriteSwayUpDown(Sprite* sprite);
 
-	void GiveDamageDisplay(unsigned int giveDamage);	//与えたダメージ数値を表示する
+	//ボス戦へ行くボタンを表示する
+	void DisplayBossButton();
+	//「はい」と「いいえ」ボタンを表示する
+	void DisplayYesNoButton();
+	//「はい」と「いいえ」ボタンを非表示にする
+	void NonDisplayYesNoButton();
+	//ボス戦へ行く関係のボタンのドロー
+	void DrawChangeBossSceneMenu();
+
+	//ボス戦へ向かうボタン
+	Menu* _bossButton;
+	//「はい」ボタン
+	Menu* _yesButton;
+	//「いいえ」ボタン
+	Menu* _noButton;
 
 
-	Layer* cl;
+	float _yesNoButtonUseTimer = 0.5f;		//はいといいえボタンが使えるようになるまでのタイマー	
+	bool _yesNoButtonUseFlag = false;		//はいといいえボタンが使えるかどうか
+	bool _bossButtonPushFlag = false;		//ボスボタンが押されたかどうか
+
+
 	Label *damageLabel;
-	String *str;
 
 	void BattleAnnounce();		//
 
@@ -75,6 +98,8 @@ private:
 	Sprite* announceBackSprite;
 	void ExpGetAnnounce();
 	Label *expLabel;
+	Label *announceTelop;
+
 
 	// @param label ラベル
 	// @param largeTime 何秒かけて拡大するか
@@ -92,7 +117,10 @@ private:
 	void DrawOutlineLabel(const char *fontFilePath, Vec2 &position, std::string& text, Color3B textCololr, int fontSize, Color4B outlineColor, int outlineSize);
 
 
-
+	//デバッグ用-------------------
+	void Skip();
+	Sprite* _skipButtonSprite;
+	Rect _skipButtonRect;
 
 public:
 	static Scene *createScene();
@@ -108,7 +136,7 @@ public:
 
 	// スタートボタン押下時の処理宣言 戻る Object →　Ref に変更
 	void ChangeBossScene(Ref *pSender);
-	void ChangeWalkScene(Ref *pSender);
+	//void ChangeWalkScene(Ref *pSender);
 
 };
 
@@ -122,5 +150,7 @@ enum class BattleNumber : unsigned int {
 
 
 };
+
+
 
 #endif //Select
