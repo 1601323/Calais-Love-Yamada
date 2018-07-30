@@ -50,10 +50,6 @@ const float SOUND_VOLUME				= 0.5f;				// BGM音量調整
 
 USING_NS_CC;
 
-// 実態作るよ
-std::vector<CharaName> CharaSelectScene::CharaData;
-//std::map<CharaName, Sprite *> CharaSelectScene::teamData;
-
 Scene *CharaSelectScene::createScene()
 {
 	auto scene = Scene::create();
@@ -98,20 +94,11 @@ bool CharaSelectScene::init()
 	_eventDispatcher->addEventListenerWithSceneGraphPriority(touchEventGet, this);
 
 	//キャラデータの初期化
-	/*teamData[CharaName::CHARA_ATTACKER]		= Sprite::create(PL_ATTACKER_FACE);
+	teamData[CharaName::CHARA_ATTACKER]		= Sprite::create(PL_ATTACKER_FACE);
 	teamData[CharaName::CHARA_SHIELD]		= Sprite::create(PL_SHIELD_FACE);
 	teamData[CharaName::CHARA_MAGIC]		= Sprite::create(PL_MAGIC_FACE);
-	teamData[CharaName::CHARA_HEALER]		= Sprite::create(PL_HEALER_FACE);*/
+	teamData[CharaName::CHARA_HEALER]		= Sprite::create(PL_HEALER_FACE);
 
-	//大きさ
-	//teamData[CharaName::CHARA_ATTACKER]->setScale(BOX_SCALE);
-	//teamData[CharaName::CHARA_SHIELD]->setScale(BOX_SCALE);
-	//teamData[CharaName::CHARA_MAGIC]->setScale(BOX_SCALE);
-	//teamData[CharaName::CHARA_HEALER]->setScale(BOX_SCALE);
-
-	_s_teamAttacker = Sprite::create(PL_ATTACKER_FACE);
-	teamData = _s_teamAttacker;
-	
 	Sound();
 	TeamBoxDraw();						// 表示(キャラ以外)
 	CharaDraw();						// キャラ表示
@@ -121,7 +108,6 @@ bool CharaSelectScene::init()
 	_s_fontBoard->setVisible(false);	// 板を非表示
 	CharaData.reserve(TEAM_MEMBER);		// 事前に領域確保[チームの人数分]
 	
-
 	return true;
 }
 
@@ -154,20 +140,21 @@ void CharaSelectScene::TouchEnd(cocos2d::Touch* touch, cocos2d::Event* event)
 	{
 		_clickCnt += 1;
 		
-		if (_clickCnt > FAST_CLICK)
+		if (_clickCnt == FAST_CLICK)
 		{
 			_s_fontBoard->setVisible(true);	// 説明文の板表示
-			CharaText();					// キャラ説明文
 		}
-		if (_clickCnt > SECOND_CLICK)
+		else if (_clickCnt == SECOND_CLICK)
 		{
+			CharaText();					// キャラ説明文
 			AddTeam();						// チーム追加用
-			_clickCnt = FAST_CLICK;
+			_clickCnt = FAST_CLICK;		
 		}
 	}
 	else
 	{
 		_s_fontBoard->setVisible(false);	// 説明文の板非表示
+		
 	}
 }
 
@@ -395,8 +382,6 @@ void CharaSelectScene::ObjHit()
 				    _s_pl_square->getContentSize().width,
 				    _s_pl_square->getContentSize().height);
 
-	// No.1当たり判定をきちんとチーム編成の分きちんと対応させる
-	// なんかうまくいってないからよろしく丸
 	_r_box_rect = Rect(0, 0, _ccp_Box->getContentSize().width * BOX_SCALE, _ccp_Box->getContentSize().height * BOX_SCALE);	// 範囲
 	for (int i = 0; i< 3;i++)
 	{
@@ -487,19 +472,22 @@ void CharaSelectScene::AddTeam()
 		{
 			continue;
 		}
-		CharaData.push_back(static_cast<CharaName> (i));
+	
 		log("追加されました。%d", i);
 		// 例外処理入れてね　おんなじキャラ選べないとか
-		//サイズ超えていないか
+		// サイズ超えていないか
 		if (CharaData.size() == TEAM_MEMBER)
 		{
 			log("メンバーが揃いました", CharaData);
-			//TeamDraw();		
+			//TeamDraw();	
+			CharaData.data();
+			pushStart(this);
 			break;
 		}
+		CharaData.push_back(static_cast<CharaName> (i));
 		//addChildする
-		//teamData[static_cast<CharaName>(i)]->setPosition(TEAM_BOX_OFFSET_X + (TEAM_BOX_X * i), (TEAM_BOX_Y));
-		//this->addChild(teamData[static_cast<CharaName>(i)]);
+		//teamData[static_cast<CharaName> (i)]->setPosition(TEAM_BOX_OFFSET_X + (TEAM_BOX_X * i), (TEAM_BOX_Y));
+		//this->addChild(teamData[static_cast<CharaName> (i)]);
 	}
 }
 
