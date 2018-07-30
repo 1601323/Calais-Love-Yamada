@@ -2,14 +2,16 @@
 #define __Screen__FightScene__
 
 #include "cocos2d.h"
+#include "Global.h"
 
 USING_NS_CC;
 
+class CharaSelectScene;
 
 class FightScene :public cocos2d::Layer
 {
 private:
-
+	Size winSize;
 	Sprite* _enemySprite;			//敵の画像
 	Vec2 _touchLocation;			//タッチ座標
 	Rect _enemySpriteRect;			//敵の画像のRect
@@ -17,7 +19,12 @@ private:
 	Rect _backHpRect;				//敵のHpバーのRect
 	Sprite* _backGage;
 	Sprite* _blueGage;
-	
+	Sprite* changeBossDialogSprite;
+	Sprite* backLightDownSprite;
+
+	CharaSelectScene* _charaSelectScene;
+	void SetCharacterData();
+	int charaData[3];
 
 	bool _enemyDeathFlg;			//敵が死んだかどうか
 	int _enemyHpNow;				//敵の残りHp
@@ -32,6 +39,7 @@ private:
 	unsigned int _exp;				//経験値用
 	unsigned int _expDispTime;
 	bool ExpDispFlag;
+	bool _bossButtonPushFlag;		//ボスボタンが押されたかどうか
 
 	//敵の画像切り替え
 	void EnemySelector();
@@ -81,10 +89,6 @@ private:
 	//「いいえ」ボタン
 	Menu* _noButton;
 
-
-	float _yesNoButtonUseTimer = 0.5f;		//はいといいえボタンが使えるようになるまでのタイマー	
-	bool _yesNoButtonUseFlag = false;		//はいといいえボタンが使えるかどうか
-	bool _bossButtonPushFlag = false;		//ボスボタンが押されたかどうか
 
 
 	Label *damageLabel;

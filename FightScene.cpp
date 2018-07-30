@@ -1,7 +1,7 @@
 #include "FightScene.h"
 #include "BossScene.h"
-//#include "WalkScene.h"
 #include "Geometry.h"
+#include "CharaSelectScene.h"
 
 
 #pragma execution_character_set("utf-8")
@@ -14,7 +14,12 @@ Scene *FightScene::createScene()
 	return scene;
 }
 
-FightScene::FightScene() {}
+FightScene::FightScene()
+{
+	_charaSelectScene = new CharaSelectScene();
+
+}
+
 FightScene::~FightScene() {}
 
 
@@ -26,7 +31,7 @@ bool FightScene::init()
 		return false;
 	}
 	//画像サイズ取得
-	Size winSize = Director::getInstance()->getWinSize();
+	winSize = Director::getInstance()->getWinSize();
 
 	_damageDispTime = DAMAGE_DISPLAY_DURATION;
 	_damageDispFlag = false;
@@ -37,6 +42,7 @@ bool FightScene::init()
 	_hitCount = 0;
 	_battleCounter = 1;
 	_nextBattleTimer = NEXT_BATTLE_TIMER;
+	_bossButtonPushFlag = false;
 
 	// バックグ;ランド
 	FightScene::FightBackGroudn();
@@ -155,11 +161,36 @@ bool FightScene::init()
 
 	FightScene::SpriteSwayUpDown(_enemySprite);
 	FightScene::DrawChangeBossSceneMenu();
+	FightScene::SetCharacterData();
+
 	return true;
 }
 
+void FightScene::SetCharacterData()
+{
+	//auto chara = &_charaSelectScene->GetCharaData();
+	//std::vector<CharaName>::iterator it;
+	//it = _charaSelectScene->GetCharaData().begin;
+	////for (auto& i : _charaSelectScene->GetCharaData().size)
+	////{
+	////	charaData[i] = _charaSelectScene->GetCharaData()[i];
+	//	log("charaData = %i", it);
+	////}
+	//for (auto &i : _charaSelectScene->GetCharaData.size()) {
+		//log("charaDataaaaaaaaa = %i", );
+	//}
+	//for (int i = 0; i < _charaSelectScene->GetCharaData.size(); i++)
+	//{
+	//	log("charaDataaaaaaaaa = %i", i);
+
+	//}
+	//log("charaDataaaaaaaaa = %i", _charaSelectScene->GetCharaData()[0]);
+
+}
+
 //（デバッグ用）スキップボタンの設定
-void FightScene::Skip() {
+void FightScene::Skip() 
+{
 	_enemyHpNow = ENEMY_HP_MAX;
 	_battleCounter = BATTLE_MAX;
 	_enemyDeathFlg = true;
@@ -348,7 +379,7 @@ bool FightScene::TouchBegan(Touch * touch, Event * event)
 	if (_enemyDispFlag) 
 	{
 		//enemySpriteRect内をクリックしていたら
-		if (_enemySpriteRect.containsPoint(_touchLocation))
+		if (_enemySpriteRect.containsPoint(_touchLocation) && !_bossButtonPushFlag)
 		{
 			FightScene::GiveDamageDisplay(_giveDamage);
 			_damageDispFlag = true;
@@ -373,7 +404,7 @@ bool FightScene::TouchBegan(Touch * touch, Event * event)
 		_nextBattleTimer = NEXT_BATTLE_TIMER;
 		FightScene::ExpGetAnnounce();
 		//バトル数をインクリメントしてから敵の画像を切り替える
-		if (++_battleCounter > 5)
+		if (++_battleCounter > CAN_BOSS_CHALLENGE_BATTLE_COUNT)
 		{
 			FightScene::DisplayBossButton();
 		}
@@ -513,22 +544,32 @@ void FightScene::ChangeBossScene(Ref * pSender)
 void FightScene::DrawChangeBossSceneMenu()
 {
 	//ボスへ向かうボタン
-	auto bossButtonImage = MenuItemImage::create(BOSS_BUTTON_PATH, PUSH_BOSS_BUTTON_PATH, CC_CALLBACK_0(FightScene::DisplayYesNoButton, this));
-	bossButtonImage->setPosition(Vec2(600, 1000));
+	auto bossButtonImage = MenuItemImage::create(UI_BOSS_BUTTON_PATH, UI_PUSH_BOSS_BUTTON_PATH, CC_CALLBACK_0(FightScene::DisplayYesNoButton, this));
+	bossButtonImage->setPosition(Vec2(BOSS_BUTTON_POS_X, BOSS_BUTTON_POS_Y));
 	_bossButton = Menu::create(bossButtonImage, nullptr);
 	_bossButton->setPosition(Vec2::ZERO);
 	this->addChild(_bossButton, 1);
 	
+	// 背景を暗くするための矩形
+	auto rect = Rect(0, 0, winSize.width, winSize.height);
+	backLightDownSprite = Sprite::create();
+	backLightDownSprite->setAnchorPoint(Vec2::ANCHOR_TOP_LEFT);	//アンカーポイントを左上へ
+	backLightDownSprite->setTextureRect(rect);
+	backLightDownSprite->setPosition(0, winSize.height);
+	backLightDownSprite->setColor(Color3B::BLACK);
+	backLightDownSprite->setOpacity(0.0f);
+	this->addChild(backLightDownSprite);
+
 	//「はい」ボタン
-	auto yesButtonImage = MenuItemImage::create(YES_BUTTON_PATH, PUSH_YES_BUTTON_PATH, CC_CALLBACK_1(FightScene::ChangeBossScene, this));
-	yesButtonImage->setPosition(Vec2(200, 500));
+	auto yesButtonImage = MenuItemImage::create(UI_YES_BUTTON_PATH, UI_PUSH_YES_BUTTON_PATH, CC_CALLBACK_1(FightScene::ChangeBossScene, this));
+	yesButtonImage->setPosition(Vec2(YES_BUTTON_POS_X, YES_BUTTON_POS_Y));
 	_yesButton = Menu::create(yesButtonImage, nullptr);
 	_yesButton->setPosition(Vec2::ZERO);
 	this->addChild(_yesButton, 1);
 
 	//「いいえ」ボタン
-	auto noButtonImage = MenuItemImage::create(NO_BUTTON_PATH, PUSH_NO_BUTTON_PATH, CC_CALLBACK_0(FightScene::NonDisplayYesNoButton, this));
-	noButtonImage->setPosition(Vec2(500, 500));
+	auto noButtonImage = MenuItemImage::create(UI_NO_BUTTON_PATH, UI_PUSH_NO_BUTTON_PATH, CC_CALLBACK_0(FightScene::NonDisplayYesNoButton, this));
+	noButtonImage->setPosition(Vec2(NO_BUTTON_POS_X, NO_BUTTON_POS_Y));
 	_noButton = Menu::create(noButtonImage, nullptr);
 	_noButton->setPosition(Vec2::ZERO);
 	this->addChild(_noButton, 1);
@@ -548,46 +589,40 @@ void FightScene::DisplayBossButton()
 //「はい」と「いいえ」ボタンを表示する
 void FightScene::DisplayYesNoButton()
 {
+	//ボスボタンが押された！
 	_bossButtonPushFlag = true;
+	//ボスボタンを非表示に
+	_bossButton->setVisible(false);
 
-	if (_yesNoButtonUseFlag)
-	{
-		_yesButton->setVisible(true);
-		_noButton->setVisible(true);
-	}
+	//背景を若干暗くする
+	backLightDownSprite->setOpacity(BACK_LIGHT_DOWN_OPACITY);
 
-
-	// 背景を暗くするための矩形
-	auto rect = Rect(0, 0, 800, 1280);
-	auto square = Sprite::create();
-	square->setAnchorPoint(Vec2::ANCHOR_TOP_LEFT);	//アンカーポイントを左上へ
-	square->setTextureRect(rect);
-	square->setPosition(0, 1280);
-	square->setColor(Color3B::BLACK);
-	square->setOpacity(80.0f);
-	this->addChild(square);
-
-	auto changeBossDialogSprite = Sprite::create("UI/changeBoss_dialog.png");
-	changeBossDialogSprite->setPosition(Vec2(800 / 2, 1280+changeBossDialogSprite->getContentSize().height / 2));
+	//ダイアログ画像のロード
+	changeBossDialogSprite = Sprite::create(UI_CHANGE_BOSS_DIALOG);
+	changeBossDialogSprite->setPosition(Vec2(winSize.width / 2, winSize.height + changeBossDialogSprite->getContentSize().height / 2));
 	this->addChild(changeBossDialogSprite);
 
-	//下へ
-	auto *firstDown = MoveTo::create(0.2f, Vec2(800 / 2, 1280 / 2));
-	auto *up = MoveBy::create(0.07f, Vec2(0, 30.f));
+	//ダイアログを上から登場させ、ちょっとバウンドする
+	auto *firstDown = MoveTo::create(DIALOG_DOWN_SPEED, Vec2(winSize.width / 2, winSize.height / 2));
+	auto *up = MoveBy::create(DIALOG_UP_SPEED, Vec2(0, DIALOG_UP_MOVEMENT_AMOUNT));
 	auto *firstDownToUp = Sequence::create(firstDown, up, nullptr);
-
 	changeBossDialogSprite->runAction(firstDownToUp);
 
+	//「はい」ボタンのフェードイン
+	_yesButton->setVisible(true);	//「はい」ボタンを使えるように
+	_yesButton->setOpacity(0.0f);	//いったん非表示に
+	auto yesButtonDelay = DelayTime::create(YES_NO_BUTTON_DALAY_TIME);
+	auto yesButtonFadein = FadeIn::create(YES_NO_BUTTON_FADE_IN_DURATION);
+	auto yesButtonDelayToFadein = Sequence::create(yesButtonDelay, yesButtonFadein, nullptr);
+	_yesButton->runAction(yesButtonDelayToFadein);
 
-	//_yesButton->setOpacity(0.0f);
-	//_noButton->setOpacity(0.0f);;
-	auto delay = DelayTime::create(0.4f);
-	auto fcadein = FadeIn::create(0.3f);	
-	auto *delayToFadein = Sequence::create(delay, fcadein, nullptr);
-
-	_yesButton->runAction(delayToFadein);
-	_noButton ->runAction(delayToFadein);
-
+	//「いいえ」ボタンのフェードイン
+	_noButton->setVisible(true);		//「いいえ」ボタンを使えるように
+	_noButton->setOpacity(0.0f);		//いったん非表示に
+	auto noButtonDelay = DelayTime::create(YES_NO_BUTTON_DALAY_TIME);
+	auto noButtonFadein = FadeIn::create(YES_NO_BUTTON_FADE_IN_DURATION);
+	auto noButtonDelayToFadein = Sequence::create(noButtonDelay, noButtonFadein, nullptr);
+	_noButton->runAction(noButtonDelayToFadein);
 
 
 }
@@ -595,11 +630,17 @@ void FightScene::DisplayYesNoButton()
 //「はい」と「いいえ」ボタンを非表示にする
 void FightScene::NonDisplayYesNoButton()
 {
+	//ボスへ行くかどうかのダイアログの表示が終わった！
+	_bossButtonPushFlag = false;
+	//ボスボタンを表示に
+	_bossButton->setVisible(true);
+
 	_yesButton->setVisible(false);
 	_noButton->setVisible(false);
+	backLightDownSprite->setOpacity(0.0f);
 
-	//auto *lastDown = MoveTo::create(0.2f, Vec2(800 / 2, -(changeBossDialogSprite->getContentSize().height / 2)));
-
+	auto *lastDown = MoveTo::create(DIALOG_DOWN_SPEED, Vec2(winSize.width / 2, -(changeBossDialogSprite->getContentSize().height / 2)));
+	changeBossDialogSprite->runAction(lastDown);
 }
 
 //経験値獲得アナウンスの表示
@@ -654,29 +695,9 @@ void FightScene::update(float delta)
 		}
 	}
 
-	//はいといいえボタンが使えるようになるまでのタイマー
-	if (_bossButtonPushFlag)
-	{
-		if (_yesNoButtonUseTimer -= 0.1f < 0)
-		{
-			_yesNoButtonUseFlag = true;
-		}
-	}
-
-	//MoveBy *move = MoveBy::create(0.02f, Vec2(0, _vel));
-	//_enemySprite->runAction(move);
-
-
-	//log("dispCnt = %i", _damageDispTime);
-	//log("dispflag = %i", _damageDispFlag);
-	//log("EPointDispTimeCnt = %i", EPointDispTime);
-
 	//log("_enemyDeathFlg = %i", _enemyDeathFlg);
 	//log("_nextBattleTimer = %i", _nextBattleTimer);
 	//log("_enemyDispFlag = %i", _enemyDispFlag);
-	log("_yesNoButtonUseTimer = %f", _yesNoButtonUseTimer);
-	log("_bossButtonPushFlag = %i", _bossButtonPushFlag);
-	log("_yesNoButtonUseFlag = %i", _yesNoButtonUseFlag);
 
 
 }
