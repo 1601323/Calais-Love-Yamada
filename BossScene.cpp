@@ -1,5 +1,6 @@
 #include "BossScene.h"
 #include "GameClear.h"
+#include "Geometry.h"
 #include <ui/CocosGUI.h>
 #pragma execution_character_set("utf-8")
 
@@ -23,6 +24,7 @@ bool BossScene::init()
 	}
 	
 	//キャラ枠１
+	pl1frame.level = 8;					//LAVEL
 	pl1frame.hp = 115;					//HP
 	pl1frame.hpmax = pl1frame.hp;		//HPMAX
 	pl1frame.mana = 38;					//MP
@@ -37,13 +39,14 @@ bool BossScene::init()
 	pl1frame.mdefmax = pl1frame.mdef;	//MDEFMAX
 	pl1frame.choicejob = ATTACKER;		//好きな職業を持ってくる
 	//キャラ枠2
+	pl2frame.level = 8;					//LEVEL
 	pl2frame.hp = 86;					//HP
 	pl2frame.hpmax = pl2frame.hp;		//HPMAX
 	pl2frame.mana = 75;					//MP
 	pl2frame.manamax = pl2frame.mana;	//MPMAX
 	pl2frame.atk = 61;					//ATK
 	pl2frame.atkmax = pl2frame.atk;		//ATKMAX
-	pl2frame.def = 20;					//DEF
+	pl2frame.def = 90;					//DEF
 	pl2frame.defmax = pl2frame.def;		//DEFMAX
 	pl2frame.matk = 57;					//MATK
 	pl2frame.matkmax = pl2frame.matk;	//MATKMAX
@@ -51,6 +54,7 @@ bool BossScene::init()
 	pl2frame.mdefmax = pl2frame.mdef;	//MDEFMAX
 	pl2frame.choicejob = SHIELD;		//好きな職業を持ってくる
 	//キャラ枠3
+	pl3frame.level = 8;					//LEVEL
 	pl3frame.hp = 93;					//HP
 	pl3frame.hpmax = pl3frame.hp;		//HPMAX
 	pl3frame.mana = 69;					//MP
@@ -81,6 +85,7 @@ bool BossScene::init()
 
 	//剣士
 	if (pl1frame.choicejob == ATTACKER) {
+		attacker.level = pl1frame.level;//LEVEL
 		attacker.hp = pl1frame.hp;		//HP
 		attacker.hpmax = attacker.hp;	//HPMAX
 		attacker.mana = pl1frame.mana;	//MP
@@ -95,6 +100,7 @@ bool BossScene::init()
 		attacker.mdefmax = attacker.mdef;//MDEFMAX
 	}
 	if (pl2frame.choicejob == ATTACKER) {
+		attacker.level = pl2frame.level;//LEVEL
 		attacker.hp = pl2frame.hp;		//HP
 		attacker.hpmax = attacker.hp;	//HPMAX
 		attacker.mana = pl2frame.mana;	//MP
@@ -109,6 +115,7 @@ bool BossScene::init()
 		attacker.mdefmax = attacker.mdef;//MDEFMAX
 	}
 	if (pl3frame.choicejob == ATTACKER) {
+		attacker.level = pl3frame.level;//LEVEL
 		attacker.hp = pl3frame.hp;		//HP
 		attacker.hpmax = attacker.hp;	//HPMAX
 		attacker.mana = pl3frame.mana;	//MP
@@ -124,6 +131,7 @@ bool BossScene::init()
 	}
 	//騎士
 	if (pl1frame.choicejob == SHIELD) {
+		shield.level = pl1frame.level;	//LEVEL
 		shield.hp = pl1frame.hp;		//HP
 		shield.hpmax = shield.hp;		//HPMAX
 		shield.mana = pl1frame.mana;	//MP
@@ -138,6 +146,7 @@ bool BossScene::init()
 		shield.mdefmax = shield.mdef;	//MDEFMAX
 	}
 	if (pl2frame.choicejob == SHIELD) {
+		shield.level = pl2frame.level;	//LEVEL
 		shield.hp = pl2frame.hp;		//HP
 		shield.hpmax = shield.hp;		//HPMAX
 		shield.mana = pl2frame.mana;	//MP
@@ -152,6 +161,7 @@ bool BossScene::init()
 		shield.mdefmax = shield.mdef;	//MDEFMAX
 	}
 	if (pl3frame.choicejob == SHIELD) {
+		shield.level = pl3frame.level;	//LEVEL
 		shield.hp = pl3frame.hp;		//HP
 		shield.hpmax = shield.hp;		//HPMAX
 		shield.mana = pl3frame.mana;	//MP
@@ -167,89 +177,95 @@ bool BossScene::init()
 	}
 	//魔術師
 	if (pl1frame.choicejob == MAGIC) {
-		magic.hp = pl1frame.hp;		//HP
-		magic.hpmax = magic.hp;		//HPMAX
-		magic.mana = pl1frame.mana;	//MP
-		magic.manamax = magic.mana;	//MPMAX
-		magic.atk = pl1frame.atk;	//ATK
-		magic.atkmax = magic.atk;	//ATKMAX
-		magic.def = pl1frame.def;	//DEF
-		magic.defmax = magic.def;	//DEFMAX
-		magic.matk = pl1frame.matk;	//MATK
-		magic.matkmax = magic.matk;	//MATKMAX
-		magic.mdef = pl1frame.mdef;	//MDEF
-		magic.mdefmax = magic.mdef;	//MDEFMAX
+		magic.level = pl1frame.level;	//LEVEL
+		magic.hp = pl1frame.hp;			//HP
+		magic.hpmax = magic.hp;			//HPMAX
+		magic.mana = pl1frame.mana;		//MP
+		magic.manamax = magic.mana;		//MPMAX
+		magic.atk = pl1frame.atk;		//ATK
+		magic.atkmax = magic.atk;		//ATKMAX
+		magic.def = pl1frame.def;		//DEF
+		magic.defmax = magic.def;		//DEFMAX
+		magic.matk = pl1frame.matk;		//MATK
+		magic.matkmax = magic.matk;		//MATKMAX
+		magic.mdef = pl1frame.mdef;		//MDEF
+		magic.mdefmax = magic.mdef;		//MDEFMAX
 	}
 	if (pl2frame.choicejob == MAGIC) {
-		magic.hp = pl2frame.hp;		//HP
-		magic.hpmax = magic.hp;		//HPMAX
-		magic.mana = pl2frame.mana;	//MP
-		magic.manamax = magic.mana;	//MPMAX
-		magic.atk = pl2frame.atk;	//ATK
-		magic.atkmax = magic.atk;	//ATKMAX
-		magic.def = pl2frame.def;	//DEF
-		magic.defmax = magic.def;	//DEFMAX
-		magic.matk = pl2frame.matk;	//MATK
-		magic.matkmax = magic.matk;	//MATKMAX
-		magic.mdef = pl2frame.mdef;	//MDEF
-		magic.mdefmax = magic.mdef;	//MDEFMAX
+		magic.level = pl2frame.level;	//LEVEL
+		magic.hp = pl2frame.hp;			//HP
+		magic.hpmax = magic.hp;			//HPMAX
+		magic.mana = pl2frame.mana;		//MP
+		magic.manamax = magic.mana;		//MPMAX
+		magic.atk = pl2frame.atk;		//ATK
+		magic.atkmax = magic.atk;		//ATKMAX
+		magic.def = pl2frame.def;		//DEF
+		magic.defmax = magic.def;		//DEFMAX
+		magic.matk = pl2frame.matk;		//MATK
+		magic.matkmax = magic.matk;		//MATKMAX
+		magic.mdef = pl2frame.mdef;		//MDEF
+		magic.mdefmax = magic.mdef;		//MDEFMAX
 	}
 	if (pl3frame.choicejob == MAGIC) {
-		magic.hp = pl3frame.hp;		//HP
-		magic.hpmax = magic.hp;		//HPMAX
-		magic.mana = pl3frame.mana;	//MP
-		magic.manamax = magic.mana;	//MPMAX
-		magic.atk = pl3frame.atk;	//ATK
-		magic.atkmax = magic.atk;	//ATKMAX
-		magic.def = pl3frame.def;	//DEF
-		magic.defmax = magic.def;	//DEFMAX
-		magic.matk = pl3frame.matk;	//MATK
-		magic.matkmax = magic.matk;	//MATKMAX
-		magic.mdef = pl3frame.mdef;	//MDEF
-		magic.mdefmax = magic.mdef;	//MDEFMAX
+		magic.level = pl3frame.level;	//LEVEL
+		magic.hp = pl3frame.hp;			//HP
+		magic.hpmax = magic.hp;			//HPMAX
+		magic.mana = pl3frame.mana;		//MP
+		magic.manamax = magic.mana;		//MPMAX
+		magic.atk = pl3frame.atk;		//ATK
+		magic.atkmax = magic.atk;		//ATKMAX
+		magic.def = pl3frame.def;		//DEF
+		magic.defmax = magic.def;		//DEFMAX
+		magic.matk = pl3frame.matk;		//MATK
+		magic.matkmax = magic.matk;		//MATKMAX
+		magic.mdef = pl3frame.mdef;		//MDEF
+		magic.mdefmax = magic.mdef;		//MDEFMAX
 	}
 	//聖職者
 	if (pl1frame.choicejob == HEALER) {
-		healer.hp = pl1frame.hp;	//HP
-		healer.hpmax = healer.hp;	//HPMAX
-		healer.mana = pl1frame.mana;//MP
-		healer.manamax = healer.mana;//MPMAX
-		healer.atk = pl1frame.atk;	//ATK
-		healer.atkmax = healer.atk;	//ATKMAX
-		healer.def = pl1frame.def;	//DEF
-		healer.defmax = healer.def;	//DEFMAX
-		healer.matk = pl1frame.matk;//MATK
-		healer.matkmax = healer.matk;//MATKMAX
-		healer.mdef = pl1frame.mdef;//MDEF
-		healer.mdefmax = healer.mdef;//MDEFMAX
+		healer.level = pl1frame.level;	//LEVEL
+		healer.hp = pl1frame.hp;		//HP
+		healer.hpmax = healer.hp;		//HPMAX
+		healer.mana = pl1frame.mana;	//MP
+		healer.manamax = healer.mana;	//MPMAX
+		healer.atk = pl1frame.atk;		//ATK
+		healer.atkmax = healer.atk;		//ATKMAX
+		healer.def = pl1frame.def;		//DEF
+		healer.defmax = healer.def;		//DEFMAX
+		healer.matk = pl1frame.matk;	//MATK
+		healer.matkmax = healer.matk;	//MATKMAX
+		healer.mdef = pl1frame.mdef;	//MDEF
+		healer.mdefmax = healer.mdef;	//MDEFMAX
 	}
 	if (pl2frame.choicejob == HEALER) {
-		healer.hp = pl2frame.hp;	//HP
-		healer.hpmax = healer.hp;	//HPMAX
-		healer.mana = pl2frame.mana;//MP
-		healer.manamax = healer.mana;//MPMAX
-		healer.atk = pl2frame.atk;	//ATK
-		healer.atkmax = healer.atk;	//ATKMAX
-		healer.def = pl2frame.def;	//DEF
-		healer.defmax = healer.def;	//DEFMAX
-		healer.matk = pl2frame.matk;//MATK
-		healer.matkmax = healer.matk;//MATKMAX
-		healer.mdef = pl2frame.mdef;//MDEF
-		healer.mdefmax = healer.mdef;//MDEFMAX
+		healer.level = pl2frame.level;	//LEVEL
+		healer.hp = pl2frame.hp;		//HP
+		healer.hpmax = healer.hp;		//HPMAX
+		healer.mana = pl2frame.mana;	//MP
+		healer.manamax = healer.mana;	//MPMAX
+		healer.atk = pl2frame.atk;		//ATK
+		healer.atkmax = healer.atk;		//ATKMAX
+		healer.def = pl2frame.def;		//DEF
+		healer.defmax = healer.def;		//DEFMAX
+		healer.matk = pl2frame.matk;	//MATK
+		healer.matkmax = healer.matk;	//MATKMAX
+		healer.mdef = pl2frame.mdef;	//MDEF
+		healer.mdefmax = healer.mdef;	//MDEFMAX
 	}
 	if (pl3frame.choicejob == HEALER) {
-		healer.hp = pl3frame.hp;	//HP
-		healer.hpmax = healer.hp;	//HPMAX
-		healer.mana = pl3frame.mana;//MP
-		healer.manamax = healer.mana;//MPMAX
-		healer.atk = pl3frame.atk;	//ATK
-		healer.atkmax = healer.atk;	//ATKMAX
-		healer.def = pl3frame.def;	//DEF
-		healer.defmax = healer.def;	//DEFMAX
-		healer.matk = pl3frame.matk;//MATK
-		healer.matkmax = healer.matk;//MATKMAX
-		healer.mdef = pl3frame.mdef;//MDEF
-		healer.mdefmax = healer.mdef;//MDEFMAX
+		healer.level = pl3frame.level;	//LEVEL
+		healer.hp = pl3frame.hp;		//HP
+		healer.hpmax = healer.hp;		//HPMAX
+		healer.mana = pl3frame.mana;	//MP
+		healer.manamax = healer.mana;	//MPMAX
+		healer.atk = pl3frame.atk;		//ATK
+		healer.atkmax = healer.atk;		//ATKMAX
+		healer.def = pl3frame.def;		//DEF
+		healer.defmax = healer.def;		//DEFMAX
+		healer.matk = pl3frame.matk;	//MATK
+		healer.matkmax = healer.matk;	//MATKMAX
+		healer.mdef = pl3frame.mdef;	//MDEF
+		healer.mdefmax = healer.mdef;	//MDEFMAX
 	}
 
 	//初期設定
@@ -311,6 +327,8 @@ void BossScene::update(float flame)
 			if (pl1frame.choicejob == SHIELD || pl2frame.choicejob == SHIELD || pl3frame.choicejob == SHIELD) {
 				if (shield.hp == 0) {
 					shield.deathflag = true;
+					coverflag1 = false;
+					coverflag2 = false;
 				}
 			}
 			//魔術師のキャラのHPが0になったら
@@ -367,7 +385,7 @@ void BossScene::update(float flame)
 				pl3 = PL3DEATH;
 			}
 
-			//HPがゼロになったら画面遷移
+			//プレイヤー全員の死亡判定が
 			//剣士がいないとき
 			if (shield.deathflag == true && magic.deathflag == true && healer.deathflag == true) {
 				Scene *pScene = GameClear::createScene();							// 遷移策の画面をｲﾝｽﾀﾝｽ
@@ -417,14 +435,14 @@ void BossScene::update(float flame)
 
 
 				//攻撃コマンドボタン
-				AttackButton1 = CCSprite::create("UI/Command/UI_Button_Attack01.png");	 //画像指定
-				AttackButton1->setPosition(rightSize.width / 3, rightSize.height / 2.1f);//配置場所
-				this->addChild(AttackButton1, middledepth, attackbuttonaI);				//追加		
+				UI_PUSH_BEFORE_ATTACKBUTTON = CCSprite::create("UI/Command/UI_Button_Attack01.png");	 //画像指定
+				UI_PUSH_BEFORE_ATTACKBUTTON->setPosition(rightSize.width / 3, rightSize.height / 2.1f);//配置場所
+				this->addChild(UI_PUSH_BEFORE_ATTACKBUTTON, middledepth, attackbuttonaI);				//追加		
 
 				//攻撃コマンドボタン(押されているとき)
-				AttackButton2 = CCSprite::create("UI/Command/UI_Button_Attack02.png");	 //画像指定
-				AttackButton2->setPosition(rightSize.width / 3, rightSize.height / 2.1f);//配置場所
-				this->addChild(AttackButton2, backdepth, attackbuttonbI);				//追加
+				UI_PUSH_AFTER_ATTACKBUTTON = CCSprite::create("UI/Command/UI_Button_Attack02.png");	 //画像指定
+				UI_PUSH_AFTER_ATTACKBUTTON->setPosition(rightSize.width / 3, rightSize.height / 2.1f);//配置場所
+				this->addChild(UI_PUSH_AFTER_ATTACKBUTTON, backdepth, attackbuttonbI);				//追加
 
 				//スキルコマンドボタン
 				SkillButton1 = CCSprite::create("UI/Command/UI_Button_Skill01.png");	//画像指定
@@ -457,7 +475,7 @@ void BossScene::update(float flame)
 			if (choicetime == flame30)this->unscheduleUpdate();
 				
 			//タッチ処理
-			auto Abutton = AttackButton1;
+			auto Abutton = UI_PUSH_BEFORE_ATTACKBUTTON;
 			auto Sbutton = SkillButton1;
 
 			//アタックボタン
@@ -471,7 +489,7 @@ void BossScene::update(float flame)
 							if (choicetime > flame15) {
 								//ボタン画像の範囲内をタッチした場合。
 								if (rectButton1.containsPoint(point1)) {
-									AttackButton1->setVisible(false);		//上のボタンを消す
+									UI_PUSH_BEFORE_ATTACKBUTTON->setVisible(false);		//上のボタンを消す
 									pl1 = PL1ATTACK;						//アタックにする
 									this->removeChildByTag(choiceS);
 									choicetime = 0;
@@ -494,14 +512,14 @@ void BossScene::update(float flame)
 						}
 						break;
 					}
-										   //キャラ2
+					 //キャラ2
 					case BossScene::CHAR2: {
 						if (!(pl2 == PL2DEATH)) {
 							if (choicetime > flame15) {
 								//ボタン画像の範囲内をタッチした場合。
 								if (rectButton1.containsPoint(point1)) {
 									this->removeChildByTag(choiceS);
-									AttackButton1->setVisible(false);	//上のボタンを消す
+									UI_PUSH_BEFORE_ATTACKBUTTON->setVisible(false);	//上のボタンを消す
 									pl2 = PL2ATTACK;					//アタックにする
 									choicetime = 0;
 									choices = CHAR3;					//次のキャラへ
@@ -519,6 +537,7 @@ void BossScene::update(float flame)
 							this->removeChildByTag(choiceS);
 							choicetime = 0;
 							choices = CHAR3;							//次のキャラへ
+							if (choicetime == 0)this->scheduleUpdate();
 						}
 						break;
 					}
@@ -588,10 +607,10 @@ void BossScene::update(float flame)
 								SkillButton1->setVisible(false);					//上のボタンを消す
 								pl1 = PL1SKILL;										//スキルを使う
 								//PL1の職業にあったスキルを使う
-								if (pl1frame.choicejob == ATTACKER)askill = ASKILL5;	//剣士のスキル
+								if (pl1frame.choicejob == ATTACKER)askill = ASKILL5;//剣士のスキル
 								if (pl1frame.choicejob == SHIELD)sskill = SSKILL1;	//騎士のスキル
-								if (pl1frame.choicejob == MAGIC)mskill = MSKILL1;	//魔術師のスキル
-								if (pl1frame.choicejob == HEALER)hskill = HSKILL4;	//聖職者のスキル
+								if (pl1frame.choicejob == MAGIC)mskill = MSKILL5;	//魔術師のスキル
+								if (pl1frame.choicejob == HEALER)hskill = HSKILL8;	//聖職者のスキル
 								this->removeChildByTag(choiceS);
 
 								//騎士の選択系スキルだった場合
@@ -601,6 +620,7 @@ void BossScene::update(float flame)
 										choicetime = 0;
 										this->removeChildByTag(choiceS);
 										shield_choice_skillflag = true;
+										if (choicetime == 0)this->scheduleUpdate();
 									}
 								}
 								//魔術師の選択系スキルの場合
@@ -610,6 +630,7 @@ void BossScene::update(float flame)
 										choicetime = 0;
 										this->removeChildByTag(choiceS);
 										magic_choice_skillflag = true;
+										if (choicetime == 0)this->scheduleUpdate();
 									}
 								}
 								//聖職者の単体スキル系統だった場合など
@@ -631,6 +652,7 @@ void BossScene::update(float flame)
 										choicetime = 0;
 										this->removeChildByTag(choiceS);
 										healer_choice_skillflag = true;
+										if (choicetime == 0)this->scheduleUpdate();
 									}
 								}
 								//単体選択系のスキルじゃない場合
@@ -641,10 +663,10 @@ void BossScene::update(float flame)
 											choicetime = 0;
 											choiceendflag = false;
 											this->removeChildByTag(choiceS);
+											if (choicetime == 0)this->scheduleUpdate();
 										}
 									}
 								}
-								if (choicetime == 0)this->scheduleUpdate();
 								return true;
 							}
 							if (pl1 == PL1DEATH) {
@@ -652,6 +674,7 @@ void BossScene::update(float flame)
 								choicetime = 0;
 								choiceendflag = false;
 								this->removeChildByTag(choiceS);
+								if (choicetime == 0)this->scheduleUpdate();
 							}
 							else {
 								CCLOG("NO TOUCH");
@@ -671,7 +694,7 @@ void BossScene::update(float flame)
 								pl2 = PL2SKILL;										//スキル使う
 								//PL2の職業にあったスキルを使う
 								if (pl2frame.choicejob == ATTACKER)askill = ASKILL2;//剣士のスキル
-								if (pl2frame.choicejob == SHIELD)sskill = SSKILL6;	//騎士のスキル
+								if (pl2frame.choicejob == SHIELD)sskill = SSKILL2;	//騎士のスキル
 								if (pl2frame.choicejob == MAGIC)mskill = MSKILL7;	//魔術師のスキル
 								if (pl2frame.choicejob == HEALER)hskill = HSKILL4;	//聖職者のスキル
 
@@ -682,6 +705,7 @@ void BossScene::update(float flame)
 										choicetime = 0;
 										this->removeChildByTag(choiceS);
 										shield_choice_skillflag = true;
+										if (choicetime == 0)this->scheduleUpdate();
 									}
 								}
 
@@ -692,6 +716,7 @@ void BossScene::update(float flame)
 										choicetime = 0;
 										this->removeChildByTag(choiceS);
 										magic_choice_skillflag = true;
+										if (choicetime == 0)this->scheduleUpdate();
 									}
 								}
 
@@ -714,6 +739,7 @@ void BossScene::update(float flame)
 										choicetime = 0;
 										this->removeChildByTag(choiceS);
 										healer_choice_skillflag = true;
+										if (choicetime == 0)this->scheduleUpdate();
 									}
 								}
 								//単体選択系のスキルじゃない場合
@@ -724,6 +750,7 @@ void BossScene::update(float flame)
 											choicetime = 0;
 											choiceendflag = false;
 											this->removeChildByTag(choiceS);
+											if (choicetime == 0)this->scheduleUpdate();
 										}
 									}
 								}
@@ -764,7 +791,7 @@ void BossScene::update(float flame)
 								if (pl3frame.choicejob == ATTACKER)askill = ASKILL1;//剣士のスキル
 								if (pl3frame.choicejob == SHIELD)sskill = SSKILL3;	//騎士のスキル
 								if (pl3frame.choicejob == MAGIC)mskill = MSKILL1;	//魔術師のスキル
-								if (pl3frame.choicejob == HEALER)hskill = HSKILL4;	//聖職者のスキル
+								if (pl3frame.choicejob == HEALER)hskill = HSKILL6;	//聖職者のスキル
 
 								//騎士の選択系スキルだった場合
 								if (pl3frame.choicejob == SHIELD && sskill == SSKILL4) {
@@ -845,9 +872,9 @@ void BossScene::update(float flame)
 								auto healerframetouch = EventListenerTouchOneByOne::create();	//聖職者タッチ
 
 								//タッチ処理
-								auto attackerbutton = PL_ATTACKER_STATUSPLATE;	//剣士
-								auto magicbutton =  PL_MAGIC_STATUSPLATE;			//魔術師
-								auto healerbutton = PL_HEALER_STATUSPLATE;		//聖職者
+								auto attackerbutton = UI_PL_ATTACKER_STATUSPLATE;	//剣士
+								auto magicbutton =  UI_PL_MAGIC_STATUSPLATE;			//魔術師
+								auto healerbutton = UI_PL_HEALER_STATUSPLATE;		//聖職者
 
 								//剣士をタッチした場合
 								attackerframetouch->onTouchBegan = [this, visibleSize, attackerbutton](Touch* touch, Event* event) {
@@ -857,8 +884,10 @@ void BossScene::update(float flame)
 										//PL1が騎士の場合
 										if (pl1frame.choicejob == SHIELD) {
 											sskillchoice = ATTACKER;
-											choices = CHAR2;
 											choicetime = 0;
+											if (choicetime == 0)this->scheduleUpdate();
+											choices = CHAR2;
+
 											this->removeChildByTag(choiceplS);
 											shield_choice_skillflag = false;
 										}
@@ -869,6 +898,7 @@ void BossScene::update(float flame)
 											choicetime = 0;
 											this->removeChildByTag(choiceplS);
 											shield_choice_skillflag = false;
+											if (choicetime == 0)this->scheduleUpdate();
 										}
 										//PL3が騎士の場合
 										else if (pl3frame.choicejob == SHIELD) {
@@ -879,6 +909,7 @@ void BossScene::update(float flame)
 											choiceendflag = false;
 											this->removeChildByTag(choiceplS);
 											shield_choice_skillflag = false;
+											if (choicetime == 0)this->scheduleUpdate();
 										}
 									}
 									return true;
@@ -894,6 +925,7 @@ void BossScene::update(float flame)
 											choicetime = 0;
 											this->removeChildByTag(choiceplS);
 											shield_choice_skillflag = false;
+											if (choicetime == 0)this->scheduleUpdate();
 										}
 										else if (pl2frame.choicejob == SHIELD) {
 											sskillchoice = MAGIC;
@@ -901,6 +933,7 @@ void BossScene::update(float flame)
 											choicetime = 0;
 											this->removeChildByTag(choiceplS);
 											shield_choice_skillflag = false;
+											if (choicetime == 0)this->scheduleUpdate();
 										}
 										else if (pl3frame.choicejob == SHIELD) {
 											sskillchoice = MAGIC;
@@ -910,6 +943,7 @@ void BossScene::update(float flame)
 											choiceendflag = false;
 											this->removeChildByTag(choiceplS);
 											shield_choice_skillflag = false;
+											if (choicetime == 0)this->scheduleUpdate();
 										}
 									}
 									return true;
@@ -925,6 +959,7 @@ void BossScene::update(float flame)
 											choicetime = 0;
 											this->removeChildByTag(choiceplS);
 											shield_choice_skillflag = false;
+											if (choicetime == 0)this->scheduleUpdate();
 										}
 										else if (pl2frame.choicejob == SHIELD) {
 											sskillchoice = HEALER;
@@ -932,6 +967,7 @@ void BossScene::update(float flame)
 											choicetime = 0;
 											this->removeChildByTag(choiceplS);
 											shield_choice_skillflag = false;
+											if (choicetime == 0)this->scheduleUpdate();
 										}
 										else if (pl3frame.choicejob == SHIELD) {
 											sskillchoice = HEALER;
@@ -941,6 +977,7 @@ void BossScene::update(float flame)
 											choiceendflag = false;
 											this->removeChildByTag(choiceplS);
 											shield_choice_skillflag = false;
+											if (choicetime == 0)this->scheduleUpdate();
 										}
 									}
 									return true;
@@ -969,9 +1006,9 @@ void BossScene::update(float flame)
 								auto healerframetouch = EventListenerTouchOneByOne::create();	
 
 								//タッチ処理
-								auto attackerbutton = PL_ATTACKER_STATUSPLATE;	
-								auto shieldbutton = PL_SHIELD_STATUSPLATE;		
-								auto healerbutton = PL_HEALER_STATUSPLATE;		
+								auto attackerbutton = UI_PL_ATTACKER_STATUSPLATE;	
+								auto shieldbutton = UI_PL_SHIELD_STATUSPLATE;		
+								auto healerbutton = UI_PL_HEALER_STATUSPLATE;		
 
 								//剣士をタッチした場合
 								attackerframetouch->onTouchBegan = [this, visibleSize, attackerbutton](Touch* touch, Event* event) {
@@ -983,7 +1020,7 @@ void BossScene::update(float flame)
 										choicetime = 0;
 										this->removeChildByTag(choiceplS);
 										magic_choice_skillflag = false;
-										
+										if (choicetime == 0)this->scheduleUpdate();
 										if (pl1frame.choicejob == MAGIC) {
 											choices = CHAR2;
 										}
@@ -1010,6 +1047,7 @@ void BossScene::update(float flame)
 										choicetime = 0;
 										this->removeChildByTag(choiceplS);
 										magic_choice_skillflag = false;
+										if (choicetime == 0)this->scheduleUpdate();
 										if (pl1frame.choicejob == MAGIC) {
 											choices = CHAR2;
 										}
@@ -1036,6 +1074,7 @@ void BossScene::update(float flame)
 											choicetime = 0;
 											this->removeChildByTag(choiceplS);
 											magic_choice_skillflag = false;
+											if (choicetime == 0)this->scheduleUpdate();
 										}
 										else if (pl2frame.choicejob == MAGIC) {
 											mskillchoice = HEALER;
@@ -1043,6 +1082,7 @@ void BossScene::update(float flame)
 											choicetime = 0;
 											this->removeChildByTag(choiceplS);
 											magic_choice_skillflag = false;
+											if (choicetime == 0)this->scheduleUpdate();
 										}
 										else if (pl3frame.choicejob == MAGIC) {
 											mskillchoice = HEALER;
@@ -1052,6 +1092,7 @@ void BossScene::update(float flame)
 											choiceendflag = false;
 											this->removeChildByTag(choiceplS);
 											magic_choice_skillflag = false;
+											if (choicetime == 0)this->scheduleUpdate();
 										}
 									}
 									return true;
@@ -1081,10 +1122,10 @@ void BossScene::update(float flame)
 								auto healerframetouch = EventListenerTouchOneByOne::create();	//聖職者タッチ
 
 								//タッチ処理
-								auto attackerbutton = PL_ATTACKER_STATUSPLATE;	//剣士
-								auto shieldbutton = PL_SHIELD_STATUSPLATE;		//騎士
-								auto magicbutton =  PL_MAGIC_STATUSPLATE;			//魔術師
-								auto healerbutton = PL_HEALER_STATUSPLATE;		//聖職者
+								auto attackerbutton = UI_PL_ATTACKER_STATUSPLATE;	//剣士
+								auto shieldbutton = UI_PL_SHIELD_STATUSPLATE;		//騎士
+								auto magicbutton =  UI_PL_MAGIC_STATUSPLATE;		//魔術師
+								auto healerbutton = UI_PL_HEALER_STATUSPLATE;		//聖職者
 
 								//剣士をタッチした場合
 								if (attacker.deathflag == false) {
@@ -1096,11 +1137,29 @@ void BossScene::update(float flame)
 											choicetime = 0;
 											healer_choice_skillflag = false;
 											this->removeChildByTag(choiceplS);
+											if (choicetime == 0)this->scheduleUpdate();
 											if (pl1frame.choicejob == HEALER) {
-												choices = CHAR2;
+												if (pl2 != PL2DEATH && pl3 != PL3DEATH) {
+													choices = CHAR2;
+												}
+												else if (pl2 == PL2DEATH && pl3 != PL3DEATH) {
+													choices = CHAR3;
+												}
+												else if (pl2 == PL2DEATH && pl3 == PL3DEATH) {
+													battle = ACTION;			//エフェクトなどを担当
+													choices = CHAR1;
+													choiceendflag = false;
+												}
 											}
 											else if (pl2frame.choicejob == HEALER) {
-												choices = CHAR3;
+												if ((!pl3 == PL3DEATH)) {
+													choices = CHAR3;
+												}
+												else if (pl3 == PL3DEATH) {
+													battle = ACTION;			//エフェクトなどを担当
+													choices = CHAR1;
+													choiceendflag = false;
+												}
 											}
 											else if (pl3frame.choicejob == HEALER) {
 												battle = ACTION;			//エフェクトなどを担当
@@ -1121,11 +1180,29 @@ void BossScene::update(float flame)
 											choicetime = 0;
 											healer_choice_skillflag = false;
 											this->removeChildByTag(choiceplS);
+											if (choicetime == 0)this->scheduleUpdate();
 											if (pl1frame.choicejob == HEALER) {
-												choices = CHAR2;
+												if (pl2 != PL2DEATH && pl3 != PL3DEATH) {
+													choices = CHAR2;
+												}
+												else if (pl2 == PL2DEATH && pl3 != PL3DEATH) {
+													choices = CHAR3;
+												}
+												else if (pl2 == PL2DEATH && pl3 == PL3DEATH) {
+													battle = ACTION;			//エフェクトなどを担当
+													choices = CHAR1;
+													choiceendflag = false;
+												}
 											}
 											else if (pl2frame.choicejob == HEALER) {
-												choices = CHAR3;
+												if ((!pl3 == PL3DEATH)) {
+													choices = CHAR3;
+												}
+												else if (pl3 == PL3DEATH) {
+													battle = ACTION;			//エフェクトなどを担当
+													choices = CHAR1;
+													choiceendflag = false;
+												}
 											}
 											else if (pl3frame.choicejob == HEALER) {
 												battle = ACTION;			//エフェクトなどを担当
@@ -1147,11 +1224,29 @@ void BossScene::update(float flame)
 											choicetime = 0;
 											healer_choice_skillflag = false;
 											this->removeChildByTag(choiceplS);
+											if (choicetime == 0)this->scheduleUpdate();
 											if (pl1frame.choicejob == HEALER) {
-												choices = CHAR2;
+												if (pl2 != PL2DEATH && pl3 != PL3DEATH) {
+													choices = CHAR2;
+												}
+												else if (pl2 == PL2DEATH && pl3 != PL3DEATH) {
+													choices = CHAR3;
+												}
+												else if (pl2 == PL2DEATH && pl3 == PL3DEATH) {
+													battle = ACTION;			//エフェクトなどを担当
+													choices = CHAR1;
+													choiceendflag = false;
+												}
 											}
 											else if (pl2frame.choicejob == HEALER) {
-												choices = CHAR3;
+												if ((!pl3 == PL3DEATH)) {
+													choices = CHAR3;
+												}
+												else if (pl3 == PL3DEATH) {
+													battle = ACTION;			//エフェクトなどを担当
+													choices = CHAR1;
+													choiceendflag = false;
+												}
 											}
 											else if (pl3frame.choicejob == HEALER) {
 												battle = ACTION;			//エフェクトなどを担当
@@ -1173,11 +1268,29 @@ void BossScene::update(float flame)
 											choicetime = 0;
 											healer_choice_skillflag = false;
 											this->removeChildByTag(choiceplS);
+											if (choicetime == 0)this->scheduleUpdate();
 											if (pl1frame.choicejob == HEALER) {
-												choices = CHAR2;
+												if (pl2 != PL2DEATH && pl3 != PL3DEATH) {
+													choices = CHAR2;
+												}
+												else if (pl2 == PL2DEATH && pl3 != PL3DEATH) {
+													choices = CHAR3;
+												}
+												else if (pl2 == PL2DEATH && pl3 == PL3DEATH) {
+													battle = ACTION;			//エフェクトなどを担当
+													choices = CHAR1;
+													choiceendflag = false;
+												}
 											}
 											else if (pl2frame.choicejob == HEALER) {
-												choices = CHAR3;
+												if ((!pl3 == PL3DEATH)) {
+													choices = CHAR3;
+												}
+												else if (pl3 == PL3DEATH) {
+													battle = ACTION;			//エフェクトなどを担当
+													choices = CHAR1;
+													choiceendflag = false;
+												}
 											}
 											else if (pl3frame.choicejob == HEALER) {
 												battle = ACTION;			//エフェクトなどを担当
@@ -1208,31 +1321,47 @@ void BossScene::update(float flame)
 					//選択中は色をもどす
 					if (!(hskill == HSKILL8)) {
 						if (attacker.deathflag == false) {
-							PL_ATTACKER_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
+							UI_PL_ATTACKER_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
 						}
 						if (shield.deathflag == false) {
-							PL_SHIELD_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
+							UI_PL_SHIELD_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
 						}
 						if (magic.deathflag == false) {
-							 PL_MAGIC_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
+							 UI_PL_MAGIC_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
 						}
 						if (healer.deathflag == false) {
-							PL_HEALER_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
+							UI_PL_HEALER_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
 						}
 					}
 					else if (hskill == HSKILL8) {
+						//剣士
 						if (attacker.deathflag == true) {
-							PL_ATTACKER_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
+							UI_PL_ATTACKER_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
 						}
+						else if (attacker.deathflag == false) {
+							UI_PL_ATTACKER_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
+						}
+						//騎士
 						if (shield.deathflag == true) {
-							PL_SHIELD_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
+							UI_PL_SHIELD_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
 						}
+						else if (shield.deathflag == false) {
+							UI_PL_SHIELD_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
+						}
+						//魔術師
 						if (magic.deathflag == true) {
-							 PL_MAGIC_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
+							 UI_PL_MAGIC_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
 						}
+						else if (magic.deathflag == false) {
+							UI_PL_MAGIC_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
+						}
+						//聖職者
 						if (healer.deathflag == true) {
-							PL_HEALER_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
+							UI_PL_HEALER_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
 						}
+						else if (healer.deathflag == false) {
+							UI_PL_HEALER_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
+						}					
 					}
 
 					break;
@@ -1313,91 +1442,91 @@ void BossScene::update(float flame)
 				//pl1frameの時
 				//剣士
 				if (pl1frame.choicejob == ATTACKER) {
-					PL_ATTACKER_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
-					PL_SHIELD_STATUSPLATE->setColor(ccc3(colordown, colordown, colordown));
-					 PL_MAGIC_STATUSPLATE->setColor(ccc3(colordown, colordown, colordown));
-					PL_HEALER_STATUSPLATE->setColor(ccc3(colordown, colordown, colordown));
+					UI_PL_ATTACKER_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
+					UI_PL_SHIELD_STATUSPLATE->setColor(ccc3(colordown, colordown, colordown));
+					UI_PL_MAGIC_STATUSPLATE->setColor(ccc3(colordown, colordown, colordown));
+					UI_PL_HEALER_STATUSPLATE->setColor(ccc3(colordown, colordown, colordown));
 				}
 				//騎士
 				else if (pl1frame.choicejob == SHIELD) {
-					PL_ATTACKER_STATUSPLATE->setColor(ccc3(colordown, colordown, colordown));
-					PL_SHIELD_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
-					 PL_MAGIC_STATUSPLATE->setColor(ccc3(colordown, colordown, colordown));
-					PL_HEALER_STATUSPLATE->setColor(ccc3(colordown, colordown, colordown));
+					UI_PL_ATTACKER_STATUSPLATE->setColor(ccc3(colordown, colordown, colordown));
+					UI_PL_SHIELD_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
+					UI_PL_MAGIC_STATUSPLATE->setColor(ccc3(colordown, colordown, colordown));
+					UI_PL_HEALER_STATUSPLATE->setColor(ccc3(colordown, colordown, colordown));
 				}
 				//魔術師
 				else if (pl1frame.choicejob == MAGIC) {
-					PL_ATTACKER_STATUSPLATE->setColor(ccc3(colordown, colordown, colordown));
-					PL_SHIELD_STATUSPLATE->setColor(ccc3(colordown, colordown, colordown));
-					 PL_MAGIC_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
-					PL_HEALER_STATUSPLATE->setColor(ccc3(colordown, colordown, colordown));
+					UI_PL_ATTACKER_STATUSPLATE->setColor(ccc3(colordown, colordown, colordown));
+					UI_PL_SHIELD_STATUSPLATE->setColor(ccc3(colordown, colordown, colordown));
+					UI_PL_MAGIC_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
+					UI_PL_HEALER_STATUSPLATE->setColor(ccc3(colordown, colordown, colordown));
 				}
 				//聖職者
 				else if (pl1frame.choicejob == HEALER) {
-					PL_ATTACKER_STATUSPLATE->setColor(ccc3(colordown, colordown, colordown));
-					PL_SHIELD_STATUSPLATE->setColor(ccc3(colordown, colordown, colordown));
-					 PL_MAGIC_STATUSPLATE->setColor(ccc3(colordown, colordown, colordown));
-					PL_HEALER_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
+					UI_PL_ATTACKER_STATUSPLATE->setColor(ccc3(colordown, colordown, colordown));
+					UI_PL_SHIELD_STATUSPLATE->setColor(ccc3(colordown, colordown, colordown));
+					UI_PL_MAGIC_STATUSPLATE->setColor(ccc3(colordown, colordown, colordown));
+					UI_PL_HEALER_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
 				}
 			}
 			if (choices == CHAR2) {
 				//pl2frameの時
 				if (pl2frame.choicejob == ATTACKER) {
-					PL_ATTACKER_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
-					PL_SHIELD_STATUSPLATE->setColor(ccc3(colordown, colordown, colordown));
-					 PL_MAGIC_STATUSPLATE->setColor(ccc3(colordown, colordown, colordown));
-					PL_HEALER_STATUSPLATE->setColor(ccc3(colordown, colordown, colordown));
+					UI_PL_ATTACKER_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
+					UI_PL_SHIELD_STATUSPLATE->setColor(ccc3(colordown, colordown, colordown));
+					UI_PL_MAGIC_STATUSPLATE->setColor(ccc3(colordown, colordown, colordown));
+					UI_PL_HEALER_STATUSPLATE->setColor(ccc3(colordown, colordown, colordown));
 				}
 				//騎士
 				else if (pl2frame.choicejob == SHIELD) {
-					PL_ATTACKER_STATUSPLATE->setColor(ccc3(colordown, colordown, colordown));
-					PL_SHIELD_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
-					 PL_MAGIC_STATUSPLATE->setColor(ccc3(colordown, colordown, colordown));
-					PL_HEALER_STATUSPLATE->setColor(ccc3(colordown, colordown, colordown));
+					UI_PL_ATTACKER_STATUSPLATE->setColor(ccc3(colordown, colordown, colordown));
+					UI_PL_SHIELD_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
+					UI_PL_MAGIC_STATUSPLATE->setColor(ccc3(colordown, colordown, colordown));
+					UI_PL_HEALER_STATUSPLATE->setColor(ccc3(colordown, colordown, colordown));
 				}
 				//魔術師
 				else if (pl2frame.choicejob == MAGIC) {
-					PL_ATTACKER_STATUSPLATE->setColor(ccc3(colordown, colordown, colordown));
-					PL_SHIELD_STATUSPLATE->setColor(ccc3(colordown, colordown, colordown));
-					 PL_MAGIC_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
-					PL_HEALER_STATUSPLATE->setColor(ccc3(colordown, colordown, colordown));
+					UI_PL_ATTACKER_STATUSPLATE->setColor(ccc3(colordown, colordown, colordown));
+					UI_PL_SHIELD_STATUSPLATE->setColor(ccc3(colordown, colordown, colordown));
+					UI_PL_MAGIC_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
+					UI_PL_HEALER_STATUSPLATE->setColor(ccc3(colordown, colordown, colordown));
 				}
 				//聖職者
 				else if (pl2frame.choicejob == HEALER) {
-					PL_ATTACKER_STATUSPLATE->setColor(ccc3(colordown, colordown, colordown));
-					PL_SHIELD_STATUSPLATE->setColor(ccc3(colordown, colordown, colordown));
-					 PL_MAGIC_STATUSPLATE->setColor(ccc3(colordown, colordown, colordown));
-					PL_HEALER_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
+					UI_PL_ATTACKER_STATUSPLATE->setColor(ccc3(colordown, colordown, colordown));
+					UI_PL_SHIELD_STATUSPLATE->setColor(ccc3(colordown, colordown, colordown));
+					UI_PL_MAGIC_STATUSPLATE->setColor(ccc3(colordown, colordown, colordown));
+					UI_PL_HEALER_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
 				}
 			}
 			if (choices == CHAR3) {
 				//pl3frameの時
 				if (pl3frame.choicejob == ATTACKER) {
-					PL_ATTACKER_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
-					PL_SHIELD_STATUSPLATE->setColor(ccc3(colordown, colordown, colordown));
-					 PL_MAGIC_STATUSPLATE->setColor(ccc3(colordown, colordown, colordown));
-					PL_HEALER_STATUSPLATE->setColor(ccc3(colordown, colordown, colordown));
+					UI_PL_ATTACKER_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
+					UI_PL_SHIELD_STATUSPLATE->setColor(ccc3(colordown, colordown, colordown));
+					UI_PL_MAGIC_STATUSPLATE->setColor(ccc3(colordown, colordown, colordown));
+					UI_PL_HEALER_STATUSPLATE->setColor(ccc3(colordown, colordown, colordown));
 				}
 				//騎士
 				else if (pl3frame.choicejob == SHIELD) {
-					PL_ATTACKER_STATUSPLATE->setColor(ccc3(colordown, colordown, colordown));
-					PL_SHIELD_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
-					 PL_MAGIC_STATUSPLATE->setColor(ccc3(colordown, colordown, colordown));
-					PL_HEALER_STATUSPLATE->setColor(ccc3(colordown, colordown, colordown));
+					UI_PL_ATTACKER_STATUSPLATE->setColor(ccc3(colordown, colordown, colordown));
+					UI_PL_SHIELD_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
+					UI_PL_MAGIC_STATUSPLATE->setColor(ccc3(colordown, colordown, colordown));
+					UI_PL_HEALER_STATUSPLATE->setColor(ccc3(colordown, colordown, colordown));
 				}
 				//魔術師
 				else if (pl3frame.choicejob == MAGIC) {
-					PL_ATTACKER_STATUSPLATE->setColor(ccc3(colordown, colordown, colordown));
-					PL_SHIELD_STATUSPLATE->setColor(ccc3(colordown, colordown, colordown));
-					 PL_MAGIC_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
-					PL_HEALER_STATUSPLATE->setColor(ccc3(colordown, colordown, colordown));
+					UI_PL_ATTACKER_STATUSPLATE->setColor(ccc3(colordown, colordown, colordown));
+					UI_PL_SHIELD_STATUSPLATE->setColor(ccc3(colordown, colordown, colordown));
+					UI_PL_MAGIC_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
+					UI_PL_HEALER_STATUSPLATE->setColor(ccc3(colordown, colordown, colordown));
 				}
 				//聖職者
 				else if (pl3frame.choicejob == HEALER) {
-					PL_ATTACKER_STATUSPLATE->setColor(ccc3(colordown, colordown, colordown));
-					PL_SHIELD_STATUSPLATE->setColor(ccc3(colordown, colordown, colordown));
-					 PL_MAGIC_STATUSPLATE->setColor(ccc3(colordown, colordown, colordown));
-					PL_HEALER_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
+					UI_PL_ATTACKER_STATUSPLATE->setColor(ccc3(colordown, colordown, colordown));
+					UI_PL_SHIELD_STATUSPLATE->setColor(ccc3(colordown, colordown, colordown));
+				 UI_PL_MAGIC_STATUSPLATE->setColor(ccc3(colordown, colordown, colordown));
+					UI_PL_HEALER_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
 				}
 			}
 			
@@ -1411,10 +1540,19 @@ void BossScene::update(float flame)
 		//プレイヤーのアクション(エフェクトなど)
 		case BossScene::ACTION: {
 			//プレイヤーたちの画像の色を戻す
-			PL_ATTACKER_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
-			PL_SHIELD_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
-			PL_HEALER_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
-			 PL_MAGIC_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
+			if (attacker.deathflag == false) {
+				UI_PL_ATTACKER_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
+			}
+			if (shield.deathflag == false) {
+				UI_PL_SHIELD_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
+			}
+			if (magic.deathflag == false) {
+				UI_PL_HEALER_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
+			}
+			if (healer.deathflag == false) {
+				UI_PL_MAGIC_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
+			}
+
 
 			if (state == true) {
 				gameflame++;							//カウント開始
@@ -1640,41 +1778,41 @@ void BossScene::update(float flame)
 	}
 
 	//剣士のHPゲージを減らす
-	PL_ATTACKER_HPBAR->setTextureRect(Rect(HPbar.x, HPbar.y,
+	UI_PL_ATTACKER_HPBAR->setTextureRect(Rect(HPbar.x, HPbar.y,
 		attackerhpgaugewidth * attacker.hp / attacker.hpmax,
-		PL_ATTACKER_HPBAR->getContentSize().height));
+		UI_PL_ATTACKER_HPBAR->getContentSize().height));
 	//剣士のMANAゲージに変化をつける
-	PL_ATTACKER_MANAHAR->setTextureRect(Rect(MNbar.x, MNbar.y,
+	UI_PL_ATTACKER_MANABAR->setTextureRect(Rect(MNbar.x, MNbar.y,
 		attackermngaugewidth * attacker.mana / attacker.manamax,
-		PL_ATTACKER_MANAHAR->getContentSize().height));
+		UI_PL_ATTACKER_MANABAR->getContentSize().height));
 	//騎士のHPゲージを減らす
-	PL_SHIELD_HPBAR->setTextureRect(Rect(HPbar.x, HPbar.y,
+	UI_PL_SHIELD_HPBAR->setTextureRect(Rect(HPbar.x, HPbar.y,
 		shieldhpgaugewidth * shield.hp / shield.hpmax,
-		PL_SHIELD_HPBAR->getContentSize().height));
+		UI_PL_SHIELD_HPBAR->getContentSize().height));
 	//騎士のMANAゲージに変化をつける
-	PL_SHIELD_HPBAR->setTextureRect(Rect(MNbar.x, MNbar.y,
+	UI_PL_SHIELD_MANABAR->setTextureRect(Rect(MNbar.x, MNbar.y,
 		shieldmngaugewidth * shield.mana / shield.manamax,
-		PL_SHIELD_HPBAR->getContentSize().height));
+		UI_PL_SHIELD_MANABAR->getContentSize().height));
 	//魔術師のHPゲージを減らす
-	PL_MAGIC_HPBAR->setTextureRect(Rect(HPbar.x, HPbar.y,
+	UI_PL_MAGIC_HPBAR->setTextureRect(Rect(HPbar.x, HPbar.y,
 		healerhpgaugewidth * magic.hp / magic.hpmax,
-		PL_MAGIC_HPBAR->getContentSize().height));
+		UI_PL_MAGIC_HPBAR->getContentSize().height));
 	//魔術師のMANAゲージに変化をつける
-	PL_MAGIC_MANAHAR->setTextureRect(Rect(MNbar.x, MNbar.y,
+	UI_PL_MAGIC_MANABAR->setTextureRect(Rect(MNbar.x, MNbar.y,
 		healermngaugewidth * magic.mana / magic.manamax,
-		PL_MAGIC_MANAHAR->getContentSize().height));
+		UI_PL_MAGIC_MANABAR->getContentSize().height));
 	//聖職者のHPゲージを減らす
-	PL_HEALER_HPBAR->setTextureRect(Rect(HPbar.x, HPbar.y,
+	UI_PL_HEALER_HPBAR->setTextureRect(Rect(HPbar.x, HPbar.y,
 		healerhpgaugewidth * healer.hp / healer.hpmax,
-		PL_HEALER_HPBAR->getContentSize().height));
+		UI_PL_HEALER_HPBAR->getContentSize().height));
 	//聖職者のMANAゲージに変化をつける
-	PL_HEALER_MANAHAR->setTextureRect(Rect(MNbar.x, MNbar.y,
+	UI_PL_HEALER_MANABAR->setTextureRect(Rect(MNbar.x, MNbar.y,
 		healermngaugewidth * healer.mana / healer.manamax,
-		PL_HEALER_MANAHAR->getContentSize().height));
+		UI_PL_HEALER_MANABAR->getContentSize().height));
 	//ボスのHPゲージに変化をつける
-	BOSS_HPBAR->setTextureRect(Rect(HPbar.x, HPbar.y,
+	UI_BOSS_HPBAR->setTextureRect(Rect(HPbar.x, HPbar.y,
 		bosshpgaugewidth * valkyrie.hp / valkyrie.hpmax,
-		BOSS_HPBAR->getContentSize().height));
+		UI_BOSS_HPBAR->getContentSize().height));
 
 	//それぞれのキャラのHP、MANAがMAX以上の時MAXにする
 	//剣士
@@ -1761,46 +1899,46 @@ void BossScene::update(float flame)
 	//PL1
 	if (pl1 == PL1DEATH) {
 		if (pl1frame.choicejob == ATTACKER) {
-			PL_ATTACKER_STATUSPLATE->setColor(ccc3(colordown, colordown, colordown));
+			UI_PL_ATTACKER_STATUSPLATE->setColor(ccc3(colordown, colordown, colordown));
 		}
 		else if (pl1frame.choicejob == SHIELD) {
-			PL_SHIELD_STATUSPLATE->setColor(ccc3(colordown, colordown, colordown));
+			UI_PL_SHIELD_STATUSPLATE->setColor(ccc3(colordown, colordown, colordown));
 		}
 		else if (pl1frame.choicejob == MAGIC) {
-			 PL_MAGIC_STATUSPLATE->setColor(ccc3(colordown, colordown, colordown));
+			 UI_PL_MAGIC_STATUSPLATE->setColor(ccc3(colordown, colordown, colordown));
 		}
 		else if (pl1frame.choicejob == HEALER) {
-			PL_HEALER_STATUSPLATE->setColor(ccc3(colordown, colordown, colordown));
+			UI_PL_HEALER_STATUSPLATE->setColor(ccc3(colordown, colordown, colordown));
 		}
 	}
 	//PL2
 	else if (pl2 == PL2DEATH) {
 		if (pl2frame.choicejob == ATTACKER) {
-			PL_ATTACKER_STATUSPLATE->setColor(ccc3(colordown, colordown, colordown));
+			UI_PL_ATTACKER_STATUSPLATE->setColor(ccc3(colordown, colordown, colordown));
 		}
 		else if (pl2frame.choicejob == SHIELD) {
-			PL_SHIELD_STATUSPLATE->setColor(ccc3(colordown, colordown, colordown));
+			UI_PL_SHIELD_STATUSPLATE->setColor(ccc3(colordown, colordown, colordown));
 		}
 		else if (pl2frame.choicejob == MAGIC) {
-			 PL_MAGIC_STATUSPLATE->setColor(ccc3(colordown, colordown, colordown));
+			 UI_PL_MAGIC_STATUSPLATE->setColor(ccc3(colordown, colordown, colordown));
 		}
 		else if (pl2frame.choicejob == HEALER) {
-			PL_HEALER_STATUSPLATE->setColor(ccc3(colordown, colordown, colordown));
+			UI_PL_HEALER_STATUSPLATE->setColor(ccc3(colordown, colordown, colordown));
 		}
 	}
 	//PL3
 	else if (pl3 == PL3DEATH) {
 		if (pl3frame.choicejob == ATTACKER) {
-			PL_ATTACKER_STATUSPLATE->setColor(ccc3(colordown, colordown, colordown));
+			UI_PL_ATTACKER_STATUSPLATE->setColor(ccc3(colordown, colordown, colordown));
 		}
 		else if (pl3frame.choicejob == SHIELD) {
-			PL_SHIELD_STATUSPLATE->setColor(ccc3(colordown, colordown, colordown));
+			UI_PL_SHIELD_STATUSPLATE->setColor(ccc3(colordown, colordown, colordown));
 		}
 		else if (pl3frame.choicejob == MAGIC) {
-			 PL_MAGIC_STATUSPLATE->setColor(ccc3(colordown, colordown, colordown));
+			 UI_PL_MAGIC_STATUSPLATE->setColor(ccc3(colordown, colordown, colordown));
 		}
 		else if (pl3frame.choicejob == HEALER) {
-			PL_HEALER_STATUSPLATE->setColor(ccc3(colordown, colordown, colordown));
+			UI_PL_HEALER_STATUSPLATE->setColor(ccc3(colordown, colordown, colordown));
 		}
 	}
  }
@@ -1843,7 +1981,7 @@ void BossScene::PLturn()
 				attackendflag = false;							//フラグを戻す
 			}
 		}
-		if (pl1 == PL1DEATH) {
+		if (pl1 == PL1DEATH || pl1 == PL1NON) {
 			choices = CHAR2;								//次のキャラへ
 			gameflame = 0;									//時間を初期値に戻す
 			skillflame = 0;									//スキルの時間を初期値に
@@ -1884,7 +2022,7 @@ void BossScene::PLturn()
 				attackendflag = false;							//フラグを戻す
 			}
 		}
-		if (pl2 == PL2DEATH) {
+		if (pl2 == PL2DEATH || pl2 == PL2NON) {
 			choices = CHAR3;
 			gameflame = 0;									//時間を初期値に戻す
 			skillflame = 0;									//スキルの時間を初期値に
@@ -1933,7 +2071,7 @@ void BossScene::PLturn()
 				this->addChild(emturn, backdepth, bossturnI);								// 追加
 			}
 		}
-		if (pl3 == PL3DEATH) {
+		if (pl3 == PL3DEATH || pl2 == PL3DEATH) {
 			turn = BOSS;								//ボスのターンにする
 			bsact = PICK;								//ボスの動きを初期化
 			choices = CHAR1;							//選択を最初からに戻す
@@ -3501,6 +3639,7 @@ void BossScene::Plskills()
 				if (hskillchoice == ATTACKER) {
 					attacker.hp += attacker.hpmax;							//回復
 					attackerhpal->setString(std::to_string(attacker.hp));	//HPの数字を変える
+					UI_PL_ATTACKER_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
 					if (pl1frame.choicejob == ATTACKER) {
 						pl1 = PL1NON;
 					}
@@ -3515,6 +3654,7 @@ void BossScene::Plskills()
 				else if (hskillchoice == SHIELD) {
 					shield.hp += shield.hpmax;
 					shieldhpal->setString(std::to_string(shield.hp));
+					UI_PL_SHIELD_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
 					if (pl1frame.choicejob == SHIELD) {
 						pl1 = PL1NON;
 					}
@@ -3529,6 +3669,7 @@ void BossScene::Plskills()
 				else if (hskillchoice == HEALER) {
 					healer.hp += healer.hpmax;
 					healerhpal->setString(std::to_string(healer.hp));
+					UI_PL_MAGIC_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
 					if (pl1frame.choicejob == MAGIC) {
 						pl1 = PL1NON;
 					}
@@ -3543,6 +3684,7 @@ void BossScene::Plskills()
 				else if (hskillchoice == MAGIC) {
 					magic.hp += magic.hpmax;
 					magichpal->setString(std::to_string(magic.hp));
+					UI_PL_HEALER_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
 					if (pl1frame.choicejob == HEALER) {
 						pl1 = PL1NON;
 					}
@@ -3553,22 +3695,23 @@ void BossScene::Plskills()
 						pl3 = PL3NON;
 					}
 				}
+
 				//剣士を選んだ場合
-				if (sskillchoice == ATTACKER) {
+				if (hskillchoice == ATTACKER) {
 					//効果表記
-					auto revival = CCLabelTTF::create("剣士の代わりに攻撃を受ける", "HGRSGU.TTC", fontsizeL);
+					auto revival = CCLabelTTF::create("剣士を復活させた", "HGRSGU.TTC", fontsizeL);
 					revival->setPosition(rightSize.width / 2, rightSize.height / 1.15f);
 					this->addChild(revival, backdepth, insteadS);
 				}
 				//騎士を選んだ場合
-				else if (sskillchoice == SHIELD) {
-					auto revival = CCLabelTTF::create("騎士の代わりに攻撃を受ける", "HGRSGU.TTC", fontsizeL);
+				else if (hskillchoice == SHIELD) {
+					auto revival = CCLabelTTF::create("騎士を復活させた", "HGRSGU.TTC", fontsizeL);
 					revival->setPosition(rightSize.width / 2, rightSize.height / 1.15f);
 					this->addChild(revival, backdepth, insteadS);
 				}
 				//魔術師を選んだ場合
-				else if (sskillchoice == MAGIC) {
-					auto revival = CCLabelTTF::create("魔術師の代わりに攻撃を受ける", "HGRSGU.TTC", fontsizeL);
+				else if (hskillchoice == MAGIC) {
+					auto revival = CCLabelTTF::create("魔術師を復活させた", "HGRSGU.TTC", fontsizeL);
 					revival->setPosition(rightSize.width / 2, rightSize.height / 1.15f);
 					this->addChild(revival, backdepth, insteadS);
 				}
@@ -3587,94 +3730,7 @@ void BossScene::BSturn()
 {
 	//狙うプレイヤーを決める
 	if (bsact == PICK) {
-		//聖職者がいないとき
-		if (pl1frame.choicejob == ATTACKER || pl2frame.choicejob == ATTACKER || pl3frame.choicejob == ATTACKER) {
-			if (pl1frame.choicejob == SHIELD || pl2frame.choicejob == SHIELD || pl3frame.choicejob == SHIELD) {
-				if (pl1frame.choicejob == MAGIC || pl2frame.choicejob == MAGIC || pl3frame.choicejob == MAGIC) {
-					if (coverflag1 == false && coverflag2 == false && allinsteadflag == false) {
-						if (pick_rnd < fortypercent) {
-							job = ATTACKER;
-						}
-						if (pick_rnd >= fortypercent && pick_rnd < seventypercent) {
-							job = SHIELD;
-						}
-						if (pick_rnd >= seventypercent && pick_rnd < rndmax) {
-							job = MAGIC;
-						}
-					}
-					//タゲ集中が働いているのなら
-					else if (coverflag1 == true || coverflag2 == true || allinsteadflag == true) {
-						job = SHIELD;
-					}
-				}
-			}
-		}
-		//剣士がいないとき
-		if (pl1frame.choicejob == HEALER || pl2frame.choicejob == HEALER || pl3frame.choicejob == HEALER) {
-			if (pl1frame.choicejob == SHIELD || pl2frame.choicejob == SHIELD || pl3frame.choicejob == SHIELD) {
-				if (pl1frame.choicejob == MAGIC || pl2frame.choicejob == MAGIC || pl3frame.choicejob == MAGIC) {
-					if (coverflag1 == false && coverflag2 == false && allinsteadflag == false) {
-						if (pick_rnd < fortypercent) {
-							job = SHIELD;
-						}
-						if (pick_rnd >= fortypercent && pick_rnd < seventypercent) {
-							job = MAGIC;
-						}
-						if (pick_rnd >= seventypercent && pick_rnd < rndmax) {
-							job = HEALER;
-						}
-					}
-					//タゲ集中が働いているのなら
-					else if (coverflag1 == true || coverflag2 == true || allinsteadflag == true) {
-						job = SHIELD;
-					}
-				}
-			}
-		}
-		//騎士がいないとき
-		if (pl1frame.choicejob == ATTACKER || pl2frame.choicejob == ATTACKER || pl3frame.choicejob == ATTACKER) {
-			if (pl1frame.choicejob == HEALER || pl2frame.choicejob == HEALER || pl3frame.choicejob == HEALER) {
-				if (pl1frame.choicejob == MAGIC || pl2frame.choicejob == MAGIC || pl3frame.choicejob == MAGIC) {
-					if (coverflag1 == false && coverflag2 == false && allinsteadflag == false) {
-						if (pick_rnd < fortypercent) {
-							job = ATTACKER;
-						}
-						if (pick_rnd >= fortypercent && pick_rnd < seventypercent) {
-							job = MAGIC;
-						}
-						if (pick_rnd >= seventypercent && pick_rnd < rndmax) {
-							job = HEALER;
-						}
-					}
-					//タゲ集中が働いているのなら
-					else if (coverflag1 == true || coverflag2 == true || allinsteadflag == true) {
-						job = SHIELD;
-					}
-				}
-			}
-		}
-		//魔術師がいないとき
-		if (pl1frame.choicejob == ATTACKER || pl2frame.choicejob == ATTACKER || pl3frame.choicejob == ATTACKER) {
-			if (pl1frame.choicejob == SHIELD || pl2frame.choicejob == SHIELD || pl3frame.choicejob == SHIELD) {
-				if (pl1frame.choicejob == HEALER || pl2frame.choicejob == HEALER || pl3frame.choicejob == HEALER) {
-					if (coverflag1 == false && coverflag2 == false && allinsteadflag == false) {
-						if (pick_rnd < fortypercent) {
-							job = ATTACKER;
-						}
-						if (pick_rnd >= fortypercent && pick_rnd < seventypercent) {
-							job = SHIELD;
-						}
-						if (pick_rnd >= seventypercent && pick_rnd < rndmax) {
-							job = HEALER;
-						}
-					}
-					//タゲ集中が働いているのなら
-					else if (coverflag1 == true || coverflag2 == true || allinsteadflag == true) {
-						job = SHIELD;
-					}
-				}
-			}
-		}
+		Pick();
 		bsact = DECIDE;
 	}
 
@@ -3693,33 +3749,16 @@ void BossScene::BSturn()
 		if (skill_rnd < fiftypercent) {
 			bskill = BSKILL1;
 		}
-		if (skill_rnd >= fiftypercent && skill_rnd < eightypercent) {
+		else if (skill_rnd >= fiftypercent && skill_rnd < eightypercent) {
 			bskill = BSKILL2;
 		}
-		if (skill_rnd >= eightypercent && skill_rnd < ninetypercent) {
+		else if (skill_rnd >= eightypercent && skill_rnd < ninetypercent) {
 			bskill = BSKILL3;
 		}
-		if (skill_rnd >= ninetypercent && skill_rnd <= rndmax) {
+		else if (skill_rnd >= ninetypercent && skill_rnd <= rndmax) {
 			bskill = BSKILL4;
 		}
 	}
-
-	//選んだキャラを出力に表示
-	log("job %i", job);
-	//カウントを出力に表示
-	log("skill_rnd %i", skill_rnd);
-	//プレイヤー1のHPを表示
-	CCString *hpstr1 = CCString::createWithFormat("現在PL1HPは%dです", attacker.hp);
-	log("%s", hpstr1->getCString());
-	//プレイヤー2のHPを表示
-	CCString *hpstr2 = CCString::createWithFormat("現在PL2HPは%dです", healer.hp);
-	log("%s", hpstr2->getCString());
-	//プレイヤー3のHPを表示
-	CCString *hpstr3 = CCString::createWithFormat("現在PL3HPは%dです", magic.hp);
-	log("%s", hpstr3->getCString());
-	//ボスのHPを表示
-	CCString *hpstrBS = CCString::createWithFormat("現在ヴァルキリーHPは%dです", valkyrie.hp);
-	log("%s", hpstrBS->getCString());
 
 	//攻撃モードの時
 	if (bsact == BOSSATTACK) {
@@ -3745,18 +3784,18 @@ void BossScene::BSturn()
 			if (insteadflag == false) {
 				//剣士
 				if (job == ATTACKER) {
-					hpcut = (valkyrie.atk - attacker.def);					//減らすHPを計算
-					hpcut = max(1, hpcut);							//もし減らすHPが1以下の場合1にする
-					attacker.hp -= hpcut;										//HPを減らす
-					PL_ATTACKER_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));	//ダメージを受けるプレイヤーは赤くする
-					attackerhpal->setString(std::to_string(attacker.hp));		//ダメージを受けるプレイヤーのHPを減らす
-					attackerdmf->setString(std::to_string(hpcut));	//ダメージを変化させる
-					this->addChild(attackerdmf, onece);				//ダメージ文字を出す
-					attackerdmf->runAction(attackerfadeout);		//ダメージ文字をフェードアウトさせる
-					attackerdmf->runAction(attackerfdoutmov);		//ダメージ文字を上に動かす
-					PL_ATTACKER_STATUSPLATE->runAction(attacker_repeat_smallquake[0]);
-					PL_ATTACKER_HPBAR->runAction(attacker_repeat_smallquake[1]);
-					PL_ATTACKER_MANAHAR->runAction(attacker_repeat_smallquake[2]);
+					hpcut = (valkyrie.atk - attacker.def);									
+					hpcut = max(1, hpcut);						//もし減らすHPが1以下の場合1にする
+					attacker.hp -= hpcut;						//HPを減らす
+					UI_PL_ATTACKER_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
+					attackerhpal->setString(std::to_string(attacker.hp));		
+					attackerdmf->setString(std::to_string(hpcut));	
+					this->addChild(attackerdmf, onece);			//ダメージ文字を出す
+					attackerdmf->runAction(attackerfadeout);	//ダメージ文字をフェードアウトさせる
+					attackerdmf->runAction(attackerfdoutmov);	//ダメージ文字を上に動かす
+					UI_PL_ATTACKER_STATUSPLATE->runAction(attacker_repeat_smallquake[0]);
+					UI_PL_ATTACKER_HPBAR->runAction(attacker_repeat_smallquake[1]);
+					UI_PL_ATTACKER_MANABAR->runAction(attacker_repeat_smallquake[2]);
 					attackerhpal->runAction(attacker_repeat_smallquake[3]);
 					attackerhpmaxal->runAction(attacker_repeat_smallquake[4]);
 					attackermnal->runAction(attacker_repeat_smallquake[5]);
@@ -3767,39 +3806,34 @@ void BossScene::BSturn()
 					hpcut = (valkyrie.atk - shield.def);
 					hpcut = max(1, hpcut);							//もし減らすHPが1以下の場合1にする
 					shield.hp -= hpcut;
-					PL_SHIELD_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
+					UI_PL_SHIELD_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
 					shieldhpal->setString(std::to_string(shield.hp));
 					shielddmf->setString(std::to_string(hpcut));	//ダメージを変化させる
 					this->addChild(shielddmf, onece);				//ダメージ文字を出す
 					shielddmf->runAction(shieldfadeout);			//ダメージ文字をフェードアウトさせる
 					shielddmf->runAction(shieldfdoutmov);			//ダメージ文字を上に動かす
-					PL_SHIELD_STATUSPLATE->runAction(shield_repeat_smallquake[0]);
-					PL_SHIELD_HPBAR->runAction(shield_repeat_smallquake[1]);
-					PL_SHIELD_HPBAR->runAction(shield_repeat_smallquake[2]);
+					UI_PL_SHIELD_STATUSPLATE->runAction(shield_repeat_smallquake[0]);
+					UI_PL_SHIELD_HPBAR->runAction(shield_repeat_smallquake[1]);
+					UI_PL_SHIELD_MANABAR->runAction(shield_repeat_smallquake[2]);
 					shieldhpal->runAction(shield_repeat_smallquake[3]);
 					shieldhpmaxal->runAction(shield_repeat_smallquake[4]);
 					shieldmnal->runAction(shield_repeat_smallquake[5]);
 					shieldmnmaxal->runAction(shield_repeat_smallquake[6]);
-					if (resurrectionflag == true) {
-						if (shield.hp == 0) {
-							shield.hp = 1;
-						}
-					}
 				}
 				//魔術師
 				else if (job == MAGIC) {
 					hpcut = (valkyrie.atk - magic.def);
 					hpcut = max(1, hpcut);							//もし減らすHPが1以下の場合1にする
 					magic.hp -= hpcut;
-					 PL_MAGIC_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
+					 UI_PL_MAGIC_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
 					magichpal->setString(std::to_string(magic.hp));
 					magicdmf->setString(std::to_string(hpcut));		//ダメージを変化させる
 					this->addChild(magicdmf, onece);				//ダメージ文字を出す
 					magicdmf->runAction(magicfadeout);				//ダメージ文字をフェードアウトさせる
 					magicdmf->runAction(magicfdoutmov);				//ダメージ文字を上に動かす
-					 PL_MAGIC_STATUSPLATE->runAction(magic_repeat_smallquake[0]);
-					PL_MAGIC_HPBAR->runAction(magic_repeat_smallquake[1]);
-					PL_MAGIC_MANAHAR->runAction(magic_repeat_smallquake[2]);
+					 UI_PL_MAGIC_STATUSPLATE->runAction(magic_repeat_smallquake[0]);
+					UI_PL_MAGIC_HPBAR->runAction(magic_repeat_smallquake[1]);
+					UI_PL_MAGIC_MANABAR->runAction(magic_repeat_smallquake[2]);
 					magichpal->runAction(magic_repeat_smallquake[3]);
 					magichpmaxal->runAction(magic_repeat_smallquake[4]);
 					magicmnal->runAction(magic_repeat_smallquake[5]);
@@ -3810,15 +3844,15 @@ void BossScene::BSturn()
 					hpcut = (valkyrie.atk - healer.def);
 					hpcut = max(1, hpcut);							//もし減らすHPが1以下の場合1にする
 					healer.hp -= hpcut;
-					PL_HEALER_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
+					UI_PL_HEALER_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
 					healerhpal->setString(std::to_string(healer.hp));
 					healerdmf->setString(std::to_string(hpcut));	//ダメージを変化させる
 					this->addChild(healerdmf, onece);				//ダメージ文字を出す
 					healerdmf->runAction(healerfadeout);			//ダメージ文字をフェードアウトさせる
 					healerdmf->runAction(healerfdoutmov);			//ダメージ文字を上に動かす
-					PL_HEALER_STATUSPLATE->runAction(healaer_repeat_bigquake[0]);
-					PL_HEALER_HPBAR->runAction(healaer_repeat_bigquake[1]);
-					PL_HEALER_MANAHAR->runAction(healaer_repeat_bigquake[2]);
+					UI_PL_HEALER_STATUSPLATE->runAction(healaer_repeat_bigquake[0]);
+					UI_PL_HEALER_HPBAR->runAction(healaer_repeat_bigquake[1]);
+					UI_PL_HEALER_MANABAR->runAction(healaer_repeat_bigquake[2]);
 					healerhpal->runAction(healaer_repeat_bigquake[3]);
 					healerhpmaxal->runAction(healaer_repeat_bigquake[4]);
 					healermnal->runAction(healaer_repeat_bigquake[5]);
@@ -3840,9 +3874,9 @@ void BossScene::BSturn()
 						shielddmf->runAction(shieldfadeout);				//ダメージ文字をフェードアウトさせる
 						shielddmf->runAction(shieldfdoutmov);				//ダメージ文字を上に動かす
 						shieldhpal->setString(std::to_string(shield.hp));
-						PL_SHIELD_STATUSPLATE->runAction(shield_repeat_bigquake[0]);
-						PL_SHIELD_HPBAR->runAction(shield_repeat_bigquake[1]);
-						PL_SHIELD_HPBAR->runAction(shield_repeat_bigquake[2]);
+						UI_PL_SHIELD_STATUSPLATE->runAction(shield_repeat_bigquake[0]);
+						UI_PL_SHIELD_HPBAR->runAction(shield_repeat_bigquake[1]);
+						UI_PL_SHIELD_HPBAR->runAction(shield_repeat_bigquake[2]);
 						shieldhpal->runAction(shield_repeat_bigquake[3]);
 						shieldhpmaxal->runAction(shield_repeat_bigquake[4]);
 						shieldmnal->runAction(shield_repeat_bigquake[5]);
@@ -3853,15 +3887,15 @@ void BossScene::BSturn()
 						hpcut = (valkyrie.atk - shield.def);
 						hpcut = max(1, hpcut);										//もし減らすHPが1以下の場合1にする
 						shield.hp -= hpcut;
-						PL_SHIELD_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
+						UI_PL_SHIELD_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
 						shielddmf->setString(std::to_string(hpcut));				//ダメージを変化させる
 						this->addChild(shielddmf, onece);							//ダメージ文字を出す
 						shielddmf->runAction(shieldfadeout);						//ダメージ文字をフェードアウトさせる
 						shielddmf->runAction(shieldfdoutmov);						//ダメージ文字を上に動かす
 						shieldhpal->setString(std::to_string(shield.hp));
-						PL_SHIELD_STATUSPLATE->runAction(shield_repeat_bigquake[0]);
-						PL_SHIELD_HPBAR->runAction(shield_repeat_bigquake[1]);
-						PL_SHIELD_HPBAR->runAction(shield_repeat_bigquake[2]);
+						UI_PL_SHIELD_STATUSPLATE->runAction(shield_repeat_bigquake[0]);
+						UI_PL_SHIELD_HPBAR->runAction(shield_repeat_bigquake[1]);
+						UI_PL_SHIELD_HPBAR->runAction(shield_repeat_bigquake[2]);
 						shieldhpal->runAction(shield_repeat_bigquake[3]);
 						shieldhpmaxal->runAction(shield_repeat_bigquake[4]);
 						shieldmnal->runAction(shield_repeat_bigquake[5]);
@@ -3872,15 +3906,15 @@ void BossScene::BSturn()
 						hpcut = (valkyrie.atk - magic.def);
 						hpcut = max(1, hpcut);									//もし減らすHPが1以下の場合1にする
 						magic.hp -= hpcut;
-						 PL_MAGIC_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
+						 UI_PL_MAGIC_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
 						magicdmf->setString(std::to_string(hpcut));				//ダメージを変化させる
 						this->addChild(magicdmf, onece);						//ダメージ文字を出す
 						magicdmf->runAction(magicfadeout);						//ダメージ文字をフェードアウトさせる
 						magicdmf->runAction(magicfdoutmov);						//ダメージ文字を上に動かす
 						magichpal->setString(std::to_string(magic.hp));
-						 PL_MAGIC_STATUSPLATE->runAction(magic_repeat_bigquake[0]);
-						PL_MAGIC_HPBAR->runAction(magic_repeat_bigquake[1]);
-						PL_MAGIC_MANAHAR->runAction(magic_repeat_bigquake[2]);
+						 UI_PL_MAGIC_STATUSPLATE->runAction(magic_repeat_bigquake[0]);
+						UI_PL_MAGIC_HPBAR->runAction(magic_repeat_bigquake[1]);
+						UI_PL_MAGIC_MANABAR->runAction(magic_repeat_bigquake[2]);
 						magichpal->runAction(magic_repeat_bigquake[3]);
 						magichpmaxal->runAction(magic_repeat_bigquake[4]);
 						magicmnal->runAction(magic_repeat_bigquake[5]);
@@ -3891,15 +3925,15 @@ void BossScene::BSturn()
 						hpcut = (valkyrie.atk - healer.def);
 						hpcut = max(1, hpcut);										//もし減らすHPが1以下の場合1にする
 						healer.hp -= hpcut;
-						PL_HEALER_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
+						UI_PL_HEALER_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
 						healerdmf->setString(std::to_string(hpcut));				//ダメージを変化させる
 						this->addChild(healerdmf, onece);							//ダメージ文字を出す
 						healerdmf->runAction(healerfadeout);						//ダメージ文字をフェードアウトさせる
 						healerdmf->runAction(healerfdoutmov);						//ダメージ文字を上に動かす
 						healerhpal->setString(std::to_string(healer.hp));
-						PL_HEALER_STATUSPLATE->runAction(healaer_repeat_smallquake[0]);
-						PL_HEALER_HPBAR->runAction(healaer_repeat_smallquake[1]);
-						PL_HEALER_MANAHAR->runAction(healaer_repeat_smallquake[2]);
+						UI_PL_HEALER_STATUSPLATE->runAction(healaer_repeat_smallquake[0]);
+						UI_PL_HEALER_HPBAR->runAction(healaer_repeat_smallquake[1]);
+						UI_PL_HEALER_MANABAR->runAction(healaer_repeat_smallquake[2]);
 						healerhpal->runAction(healaer_repeat_smallquake[3]);
 						healerhpmaxal->runAction(healaer_repeat_smallquake[4]);
 						healermnal->runAction(healaer_repeat_smallquake[5]);
@@ -3918,9 +3952,9 @@ void BossScene::BSturn()
 						attackerdmf->runAction(attackerfadeout);				//ダメージ文字をフェードアウトさせる
 						attackerdmf->runAction(attackerfdoutmov);				//ダメージ文字を上に動かす
 						attackerhpal->setString(std::to_string(attacker.hp));
-						PL_ATTACKER_STATUSPLATE->runAction(attacker_repeat_smallquake[0]);
-						PL_ATTACKER_HPBAR->runAction(attacker_repeat_smallquake[1]);
-						PL_ATTACKER_MANAHAR->runAction(attacker_repeat_smallquake[2]);
+						UI_PL_ATTACKER_STATUSPLATE->runAction(attacker_repeat_smallquake[0]);
+						UI_PL_ATTACKER_HPBAR->runAction(attacker_repeat_smallquake[1]);
+						UI_PL_ATTACKER_MANABAR->runAction(attacker_repeat_smallquake[2]);
 						attackerhpal->runAction(attacker_repeat_smallquake[3]);
 						attackerhpmaxal->runAction(attacker_repeat_smallquake[4]);
 						attackermnal->runAction(attacker_repeat_smallquake[5]);
@@ -3931,15 +3965,15 @@ void BossScene::BSturn()
 						hpcut = (valkyrie.atk - shield.def);
 						hpcut = max(1, hpcut);									//もし減らすHPが1以下の場合1にする
 						shield.hp -= hpcut;
-						PL_SHIELD_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
+						UI_PL_SHIELD_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
 						shielddmf->setString(std::to_string(hpcut));			//ダメージを変化させる
 						this->addChild(shielddmf, onece);						//ダメージ文字を出す
 						shielddmf->runAction(shieldfadeout);					//ダメージ文字をフェードアウトさせる
 						shielddmf->runAction(shieldfdoutmov);					//ダメージ文字を上に動かす
 						shieldhpal->setString(std::to_string(shield.hp));
-						PL_SHIELD_STATUSPLATE->runAction(shield_repeat_bigquake[0]);
-						PL_SHIELD_HPBAR->runAction(shield_repeat_bigquake[1]);
-						PL_SHIELD_HPBAR->runAction(shield_repeat_bigquake[2]);
+						UI_PL_SHIELD_STATUSPLATE->runAction(shield_repeat_bigquake[0]);
+						UI_PL_SHIELD_HPBAR->runAction(shield_repeat_bigquake[1]);
+						UI_PL_SHIELD_HPBAR->runAction(shield_repeat_bigquake[2]);
 						shieldhpal->runAction(shield_repeat_bigquake[3]);
 						shieldhpmaxal->runAction(shield_repeat_bigquake[4]);
 						shieldmnal->runAction(shield_repeat_bigquake[5]);
@@ -3956,9 +3990,9 @@ void BossScene::BSturn()
 						shielddmf->runAction(shieldfadeout);				//ダメージ文字をフェードアウトさせる
 						shielddmf->runAction(shieldfdoutmov);				//ダメージ文字を上に動かす
 						magichpal->setString(std::to_string(magic.hp));
-						PL_SHIELD_STATUSPLATE->runAction(shield_repeat_bigquake[0]);
-						PL_SHIELD_HPBAR->runAction(shield_repeat_bigquake[1]);
-						PL_SHIELD_HPBAR->runAction(shield_repeat_bigquake[2]);
+						UI_PL_SHIELD_STATUSPLATE->runAction(shield_repeat_bigquake[0]);
+						UI_PL_SHIELD_HPBAR->runAction(shield_repeat_bigquake[1]);
+						UI_PL_SHIELD_HPBAR->runAction(shield_repeat_bigquake[2]);
 						shieldhpal->runAction(shield_repeat_bigquake[3]);
 						shieldhpmaxal->runAction(shield_repeat_bigquake[4]);
 						shieldmnal->runAction(shield_repeat_bigquake[5]);
@@ -3970,15 +4004,15 @@ void BossScene::BSturn()
 						hpcut = (valkyrie.atk - healer.def);
 						hpcut = max(1, hpcut);										//もし減らすHPが1以下の場合1にする
 						healer.hp -= hpcut;
-						PL_HEALER_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
+						UI_PL_HEALER_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
 						healerdmf->setString(std::to_string(hpcut));				//ダメージを変化させる
 						this->addChild(healerdmf, onece);							//ダメージ文字を出す
 						healerdmf->runAction(healerfadeout);						//ダメージ文字をフェードアウトさせる
 						healerdmf->runAction(healerfdoutmov);						//ダメージ文字を上に動かす
 						healerhpal->setString(std::to_string(healer.hp));
-						PL_HEALER_STATUSPLATE->runAction(healaer_repeat_smallquake[0]);
-						PL_HEALER_HPBAR->runAction(healaer_repeat_smallquake[1]);
-						PL_HEALER_MANAHAR->runAction(healaer_repeat_smallquake[2]);
+						UI_PL_HEALER_STATUSPLATE->runAction(healaer_repeat_smallquake[0]);
+						UI_PL_HEALER_HPBAR->runAction(healaer_repeat_smallquake[1]);
+						UI_PL_HEALER_MANABAR->runAction(healaer_repeat_smallquake[2]);
 						healerhpal->runAction(healaer_repeat_smallquake[3]);
 						healerhpmaxal->runAction(healaer_repeat_smallquake[4]);
 						healermnal->runAction(healaer_repeat_smallquake[5]);
@@ -3997,9 +4031,9 @@ void BossScene::BSturn()
 						attackerdmf->runAction(attackerfadeout);				//ダメージ文字をフェードアウトさせる
 						attackerdmf->runAction(attackerfdoutmov);				//ダメージ文字を上に動かす
 						attackerhpal->setString(std::to_string(attacker.hp));
-						PL_ATTACKER_STATUSPLATE->runAction(attacker_repeat_smallquake[0]);
-						PL_ATTACKER_HPBAR->runAction(attacker_repeat_smallquake[1]);
-						PL_ATTACKER_MANAHAR->runAction(attacker_repeat_smallquake[2]);
+						UI_PL_ATTACKER_STATUSPLATE->runAction(attacker_repeat_smallquake[0]);
+						UI_PL_ATTACKER_HPBAR->runAction(attacker_repeat_smallquake[1]);
+						UI_PL_ATTACKER_MANABAR->runAction(attacker_repeat_smallquake[2]);
 						attackerhpal->runAction(attacker_repeat_smallquake[3]);
 						attackerhpmaxal->runAction(attacker_repeat_smallquake[4]);
 						attackermnal->runAction(attacker_repeat_smallquake[5]);
@@ -4010,15 +4044,15 @@ void BossScene::BSturn()
 						hpcut = (valkyrie.atk - shield.def);
 						hpcut = max(1, hpcut);									//もし減らすHPが1以下の場合1にする
 						shield.hp -= hpcut;
-						PL_SHIELD_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
+						UI_PL_SHIELD_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
 						shielddmf->setString(std::to_string(hpcut));			//ダメージを変化させる
 						this->addChild(shielddmf, onece);						//ダメージ文字を出す
 						shielddmf->runAction(shieldfadeout);					//ダメージ文字をフェードアウトさせる
 						shielddmf->runAction(shieldfdoutmov);					//ダメージ文字を上に動かす
 						shieldhpal->setString(std::to_string(shield.hp));
-						PL_SHIELD_STATUSPLATE->runAction(shield_repeat_bigquake[0]);
-						PL_SHIELD_HPBAR->runAction(shield_repeat_bigquake[1]);
-						PL_SHIELD_HPBAR->runAction(shield_repeat_bigquake[2]);
+						UI_PL_SHIELD_STATUSPLATE->runAction(shield_repeat_bigquake[0]);
+						UI_PL_SHIELD_HPBAR->runAction(shield_repeat_bigquake[1]);
+						UI_PL_SHIELD_HPBAR->runAction(shield_repeat_bigquake[2]);
 						shieldhpal->runAction(shield_repeat_bigquake[3]);
 						shieldhpmaxal->runAction(shield_repeat_bigquake[4]);
 						shieldmnal->runAction(shield_repeat_bigquake[5]);
@@ -4029,15 +4063,15 @@ void BossScene::BSturn()
 						hpcut = (valkyrie.atk - magic.def);
 						hpcut = max(1, hpcut);									//もし減らすHPが1以下の場合1にする
 						magic.hp -= hpcut;
-						 PL_MAGIC_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
+						 UI_PL_MAGIC_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
 						magicdmf->setString(std::to_string(hpcut));				//ダメージを変化させる
 						this->addChild(magicdmf, onece);						//ダメージ文字を出す
 						magicdmf->runAction(magicfadeout);						//ダメージ文字をフェードアウトさせる
 						magicdmf->runAction(magicfdoutmov);						//ダメージ文字を上に動かす
 						magichpal->setString(std::to_string(magic.hp));
-						 PL_MAGIC_STATUSPLATE->runAction(magic_repeat_bigquake[0]);
-						PL_MAGIC_HPBAR->runAction(magic_repeat_bigquake[1]);
-						PL_MAGIC_MANAHAR->runAction(magic_repeat_bigquake[2]);
+						 UI_PL_MAGIC_STATUSPLATE->runAction(magic_repeat_bigquake[0]);
+						UI_PL_MAGIC_HPBAR->runAction(magic_repeat_bigquake[1]);
+						UI_PL_MAGIC_MANABAR->runAction(magic_repeat_bigquake[2]);
 						magichpal->runAction(magic_repeat_bigquake[3]);
 						magichpmaxal->runAction(magic_repeat_bigquake[4]);
 						magicmnal->runAction(magic_repeat_bigquake[5]);
@@ -4054,9 +4088,9 @@ void BossScene::BSturn()
 						shielddmf->runAction(shieldfadeout);				//ダメージ文字をフェードアウトさせる
 						shielddmf->runAction(shieldfdoutmov);				//ダメージ文字を上に動かす
 						shieldhpal->setString(std::to_string(shield.hp));
-						PL_SHIELD_STATUSPLATE->runAction(shield_repeat_bigquake[0]);
-						PL_SHIELD_HPBAR->runAction(shield_repeat_bigquake[1]);
-						PL_SHIELD_HPBAR->runAction(shield_repeat_bigquake[2]);
+						UI_PL_SHIELD_STATUSPLATE->runAction(shield_repeat_bigquake[0]);
+						UI_PL_SHIELD_HPBAR->runAction(shield_repeat_bigquake[1]);
+						UI_PL_SHIELD_HPBAR->runAction(shield_repeat_bigquake[2]);
 						shieldhpal->runAction(shield_repeat_bigquake[3]);
 						shieldhpmaxal->runAction(shield_repeat_bigquake[4]);
 						shieldmnal->runAction(shield_repeat_bigquake[5]);
@@ -4068,10 +4102,10 @@ void BossScene::BSturn()
 		}
 		//キャラ画像の色を戻す
 		if (gameflame == flame100) {
-			PL_ATTACKER_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
-			PL_SHIELD_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
-			PL_HEALER_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
-			 PL_MAGIC_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
+			UI_PL_ATTACKER_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
+			UI_PL_SHIELD_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
+			UI_PL_HEALER_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
+			UI_PL_MAGIC_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
 		}
 
 		//効果処理
@@ -4115,15 +4149,36 @@ void BossScene::BSturn()
 				boss_allwork_endflag = true;
 			}
 			if (job == SHIELD) {
-				if (counter_attackflag == false) {
+				if (counter_attackflag == false && resurrectionflag == false) {
 					boss_allwork_endflag = true;
 				}
-				else {
-					this->removeChildByTag(damageS);
-					//ステータスアップ表記
-					auto counter = CCLabelTTF::create("騎士のカウンター発動", "HGRSGU.TTC", fontsizeL);
-					counter->setPosition(rightSize.width / 2, rightSize.height / 1.15f);
-					this->addChild(counter, backdepth, buffupS);
+				else if(counter_attackflag == true){
+					if (shield.hp == 0) {
+						boss_allwork_endflag = true;
+					}
+					else {
+						this->removeChildByTag(damageS);
+						//ステータスアップ表記
+						auto counter = CCLabelTTF::create("騎士のカウンター発動", "HGRSGU.TTC", fontsizeL);
+						counter->setPosition(rightSize.width / 2, rightSize.height / 1.15f);
+						this->addChild(counter, backdepth, buffupS);
+					}
+				}
+				else if (resurrectionflag == true) {
+					if (shield.hp == 0) {
+						this->removeChildByTag(damageS);
+						shield.hp = 1;
+						shieldhpal->setString(std::to_string(shield.hp));
+						
+						//ステータスアップ表記
+						auto counter = CCLabelTTF::create("復活して1回復した", "HGRSGU.TTC", fontsizeL);
+						counter->setPosition(rightSize.width / 2, rightSize.height / 1.15f);
+						this->addChild(counter, backdepth, buffupS);
+
+					}
+					else {
+						boss_allwork_endflag = true;
+					}
 				}
 			}
 		}
@@ -4145,6 +4200,13 @@ void BossScene::BSturn()
 				//攻撃終わり
 				if (gameflame == flame310) {
 					this->removeChildByTag(shielddamageS);
+					boss_allwork_endflag = true;
+				}
+			}
+			else if (resurrectionflag == true) {
+				if (gameflame == flame280) {
+					this->removeChildByTag(buffupS);
+					resurrectionflag = false;
 					boss_allwork_endflag = true;
 				}
 			}
@@ -4193,9 +4255,9 @@ void BossScene::BSturn()
 					//剣士ダメージを受けた時に揺れる処理
 					if (pl1frame.choicejob == ATTACKER || pl2frame.choicejob == ATTACKER
 						|| pl3frame.choicejob == ATTACKER) {
-						PL_ATTACKER_STATUSPLATE->runAction(attacker_repeat_bigquake[0]);
-						PL_ATTACKER_HPBAR->runAction(attacker_repeat_bigquake[1]);
-						PL_ATTACKER_MANAHAR->runAction(attacker_repeat_bigquake[2]);
+						UI_PL_ATTACKER_STATUSPLATE->runAction(attacker_repeat_bigquake[0]);
+						UI_PL_ATTACKER_HPBAR->runAction(attacker_repeat_bigquake[1]);
+						UI_PL_ATTACKER_MANABAR->runAction(attacker_repeat_bigquake[2]);
 						attackerhpal->runAction(attacker_repeat_bigquake[3]);
 						attackerhpmaxal->runAction(attacker_repeat_bigquake[4]);
 						attackermnal->runAction(attacker_repeat_bigquake[5]);
@@ -4204,9 +4266,9 @@ void BossScene::BSturn()
 					//騎士ダメージを受けた時に揺れる処理
 					if (pl1frame.choicejob == SHIELD || pl2frame.choicejob == SHIELD
 						|| pl3frame.choicejob == SHIELD) {
-						PL_SHIELD_STATUSPLATE->runAction(shield_repeat_bigquake[0]);
-						PL_SHIELD_HPBAR->runAction(shield_repeat_bigquake[1]);
-						PL_SHIELD_HPBAR->runAction(shield_repeat_bigquake[2]);
+						UI_PL_SHIELD_STATUSPLATE->runAction(shield_repeat_bigquake[0]);
+						UI_PL_SHIELD_HPBAR->runAction(shield_repeat_bigquake[1]);
+						UI_PL_SHIELD_MANABAR->runAction(shield_repeat_bigquake[2]);
 						shieldhpal->runAction(shield_repeat_bigquake[3]);
 						shieldhpmaxal->runAction(shield_repeat_bigquake[4]);
 						shieldmnal->runAction(shield_repeat_bigquake[5]);
@@ -4215,9 +4277,9 @@ void BossScene::BSturn()
 					//魔術師ダメージを受けた時に揺れる処理
 					if (pl1frame.choicejob == MAGIC || pl2frame.choicejob == MAGIC
 						|| pl3frame.choicejob == MAGIC) {
-						 PL_MAGIC_STATUSPLATE->runAction(magic_repeat_bigquake[0]);
-						PL_MAGIC_HPBAR->runAction(magic_repeat_bigquake[1]);
-						PL_MAGIC_MANAHAR->runAction(magic_repeat_bigquake[2]);
+						 UI_PL_MAGIC_STATUSPLATE->runAction(magic_repeat_bigquake[0]);
+						UI_PL_MAGIC_HPBAR->runAction(magic_repeat_bigquake[1]);
+						UI_PL_MAGIC_MANABAR->runAction(magic_repeat_bigquake[2]);
 						magichpal->runAction(magic_repeat_bigquake[3]);
 						magichpmaxal->runAction(magic_repeat_bigquake[4]);
 						magicmnal->runAction(magic_repeat_bigquake[5]);
@@ -4226,9 +4288,9 @@ void BossScene::BSturn()
 					//聖職者ダメージを受けた時に揺れる処理
 					if (pl1frame.choicejob == HEALER || pl2frame.choicejob == HEALER
 						|| pl3frame.choicejob == HEALER) {
-						PL_HEALER_STATUSPLATE->runAction(healaer_repeat_smallquake[0]);
-						PL_HEALER_HPBAR->runAction(healaer_repeat_smallquake[1]);
-						PL_HEALER_MANAHAR->runAction(healaer_repeat_smallquake[2]);
+						UI_PL_HEALER_STATUSPLATE->runAction(healaer_repeat_smallquake[0]);
+						UI_PL_HEALER_HPBAR->runAction(healaer_repeat_smallquake[1]);
+						UI_PL_HEALER_MANABAR->runAction(healaer_repeat_smallquake[2]);
 						healerhpal->runAction(healaer_repeat_smallquake[3]);
 						healerhpmaxal->runAction(healaer_repeat_smallquake[4]);
 						healermnal->runAction(healaer_repeat_smallquake[5]);
@@ -4308,9 +4370,9 @@ void BossScene::BSturn()
 							this->addChild(shielddmf, onece);				//ダメージ文字を出す
 							shielddmf->runAction(shieldfadeout);			//ダメージ文字をフェードアウトさせる
 							shielddmf->runAction(shieldfdoutmov);			//ダメージ文字を上に動かす
-							PL_SHIELD_STATUSPLATE->runAction(shield_repeat_bigquake[0]);
-							PL_SHIELD_HPBAR->runAction(shield_repeat_bigquake[1]);
-							PL_SHIELD_HPBAR->runAction(shield_repeat_bigquake[2]);
+							UI_PL_SHIELD_STATUSPLATE->runAction(shield_repeat_bigquake[0]);
+							UI_PL_SHIELD_HPBAR->runAction(shield_repeat_bigquake[1]);
+							UI_PL_SHIELD_MANABAR->runAction(shield_repeat_bigquake[2]);
 							shieldhpal->runAction(shield_repeat_bigquake[3]);
 							shieldhpmaxal->runAction(shield_repeat_bigquake[4]);
 							shieldmnal->runAction(shield_repeat_bigquake[5]);
@@ -4328,9 +4390,9 @@ void BossScene::BSturn()
 							this->addChild(magicdmf, onece);				//ダメージ文字を出す
 							magicdmf->runAction(magicfadeout);				//ダメージ文字をフェードアウトさせる
 							magicdmf->runAction(magicfdoutmov);				//ダメージ文字を上に動かす
-							 PL_MAGIC_STATUSPLATE->runAction(magic_repeat_bigquake[0]);
-							PL_MAGIC_HPBAR->runAction(magic_repeat_bigquake[1]);
-							PL_MAGIC_MANAHAR->runAction(magic_repeat_bigquake[2]);
+							 UI_PL_MAGIC_STATUSPLATE->runAction(magic_repeat_bigquake[0]);
+							UI_PL_MAGIC_HPBAR->runAction(magic_repeat_bigquake[1]);
+							UI_PL_MAGIC_MANABAR->runAction(magic_repeat_bigquake[2]);
 							magichpal->runAction(magic_repeat_bigquake[3]);
 							magichpmaxal->runAction(magic_repeat_bigquake[4]);
 							magicmnal->runAction(magic_repeat_bigquake[5]);
@@ -4346,9 +4408,9 @@ void BossScene::BSturn()
 							this->addChild(healerdmf, onece);				//ダメージ文字を出す
 							healerdmf->runAction(healerfadeout);			//ダメージ文字をフェードアウトさせる
 							healerdmf->runAction(healerfdoutmov);			//ダメージ文字を上に動かす
-							PL_HEALER_STATUSPLATE->runAction(healaer_repeat_smallquake[0]);
-							PL_HEALER_HPBAR->runAction(healaer_repeat_smallquake[1]);
-							PL_HEALER_MANAHAR->runAction(healaer_repeat_smallquake[2]);
+							UI_PL_HEALER_STATUSPLATE->runAction(healaer_repeat_smallquake[0]);
+							UI_PL_HEALER_HPBAR->runAction(healaer_repeat_smallquake[1]);
+							UI_PL_HEALER_MANABAR->runAction(healaer_repeat_smallquake[2]);
 							healerhpal->runAction(healaer_repeat_smallquake[3]);
 							healerhpmaxal->runAction(healaer_repeat_smallquake[4]);
 							healermnal->runAction(healaer_repeat_smallquake[5]);
@@ -4367,9 +4429,9 @@ void BossScene::BSturn()
 							this->addChild(attackerdmf, onece);				//ダメージ文字を出す
 							attackerdmf->runAction(attackerfadeout);		//ダメージ文字をフェードアウトさせる
 							attackerdmf->runAction(attackerfdoutmov);		//ダメージ文字を上に動かす
-							PL_ATTACKER_STATUSPLATE->runAction(attacker_repeat_bigquake[0]);		//画像揺らす処理↓以下同文
-							PL_ATTACKER_HPBAR->runAction(attacker_repeat_bigquake[1]);
-							PL_ATTACKER_MANAHAR->runAction(attacker_repeat_bigquake[2]);
+							UI_PL_ATTACKER_STATUSPLATE->runAction(attacker_repeat_bigquake[0]);		//画像揺らす処理↓以下同文
+							UI_PL_ATTACKER_HPBAR->runAction(attacker_repeat_bigquake[1]);
+							UI_PL_ATTACKER_MANABAR->runAction(attacker_repeat_bigquake[2]);
 							attackerhpal->runAction(attacker_repeat_bigquake[3]);
 							attackerhpmaxal->runAction(attacker_repeat_bigquake[4]);
 							attackermnal->runAction(attacker_repeat_bigquake[5]);
@@ -4385,9 +4447,9 @@ void BossScene::BSturn()
 							this->addChild(shielddmf, onece);				//ダメージ文字を出す
 							shielddmf->runAction(shieldfadeout);			//ダメージ文字をフェードアウトさせる
 							shielddmf->runAction(shieldfdoutmov);			//ダメージ文字を上に動かす
-							PL_SHIELD_STATUSPLATE->runAction(shield_repeat_bigquake[0]);
-							PL_SHIELD_HPBAR->runAction(shield_repeat_bigquake[1]);
-							PL_SHIELD_HPBAR->runAction(shield_repeat_bigquake[2]);
+							UI_PL_SHIELD_STATUSPLATE->runAction(shield_repeat_bigquake[0]);
+							UI_PL_SHIELD_HPBAR->runAction(shield_repeat_bigquake[1]);
+							UI_PL_SHIELD_MANABAR->runAction(shield_repeat_bigquake[2]);
 							shieldhpal->runAction(shield_repeat_bigquake[3]);
 							shieldhpmaxal->runAction(shield_repeat_bigquake[4]);
 							shieldmnal->runAction(shield_repeat_bigquake[5]);
@@ -4403,9 +4465,9 @@ void BossScene::BSturn()
 							this->addChild(healerdmf, onece);				//ダメージ文字を出す
 							healerdmf->runAction(healerfadeout);			//ダメージ文字をフェードアウトさせる
 							healerdmf->runAction(healerfdoutmov);			//ダメージ文字を上に動かす
-							PL_HEALER_STATUSPLATE->runAction(healaer_repeat_smallquake[0]);
-							PL_HEALER_HPBAR->runAction(healaer_repeat_smallquake[1]);
-							PL_HEALER_MANAHAR->runAction(healaer_repeat_smallquake[2]);
+							UI_PL_HEALER_STATUSPLATE->runAction(healaer_repeat_smallquake[0]);
+							UI_PL_HEALER_HPBAR->runAction(healaer_repeat_smallquake[1]);
+							UI_PL_HEALER_MANABAR->runAction(healaer_repeat_smallquake[2]);
 							healerhpal->runAction(healaer_repeat_smallquake[3]);
 							healerhpmaxal->runAction(healaer_repeat_smallquake[4]);
 							healermnal->runAction(healaer_repeat_smallquake[5]);
@@ -4424,9 +4486,9 @@ void BossScene::BSturn()
 							this->addChild(attackerdmf, onece);				//ダメージ文字を出す
 							attackerdmf->runAction(attackerfadeout);		//ダメージ文字をフェードアウトさせる
 							attackerdmf->runAction(attackerfdoutmov);		//ダメージ文字を上に動かす
-							PL_ATTACKER_STATUSPLATE->runAction(attacker_repeat_bigquake[0]);		//画像揺らす処理↓以下同文
-							PL_ATTACKER_HPBAR->runAction(attacker_repeat_bigquake[1]);
-							PL_ATTACKER_MANAHAR->runAction(attacker_repeat_bigquake[2]);
+							UI_PL_ATTACKER_STATUSPLATE->runAction(attacker_repeat_bigquake[0]);		//画像揺らす処理↓以下同文
+							UI_PL_ATTACKER_HPBAR->runAction(attacker_repeat_bigquake[1]);
+							UI_PL_ATTACKER_MANABAR->runAction(attacker_repeat_bigquake[2]);
 							attackerhpal->runAction(attacker_repeat_bigquake[3]);
 							attackerhpmaxal->runAction(attacker_repeat_bigquake[4]);
 							attackermnal->runAction(attacker_repeat_bigquake[5]);
@@ -4442,9 +4504,9 @@ void BossScene::BSturn()
 							this->addChild(magicdmf, onece);				//ダメージ文字を出す
 							magicdmf->runAction(magicfadeout);				//ダメージ文字をフェードアウトさせる
 							magicdmf->runAction(magicfdoutmov);				//ダメージ文字を上に動かす
-							 PL_MAGIC_STATUSPLATE->runAction(magic_repeat_bigquake[0]);
-							PL_MAGIC_HPBAR->runAction(magic_repeat_bigquake[1]);
-							PL_MAGIC_MANAHAR->runAction(magic_repeat_bigquake[2]);
+							 UI_PL_MAGIC_STATUSPLATE->runAction(magic_repeat_bigquake[0]);
+							UI_PL_MAGIC_HPBAR->runAction(magic_repeat_bigquake[1]);
+							UI_PL_MAGIC_MANABAR->runAction(magic_repeat_bigquake[2]);
 							magichpal->runAction(magic_repeat_bigquake[3]);
 							magichpmaxal->runAction(magic_repeat_bigquake[4]);
 							magicmnal->runAction(magic_repeat_bigquake[5]);
@@ -4460,9 +4522,9 @@ void BossScene::BSturn()
 							this->addChild(shielddmf, onece);				//ダメージ文字を出す
 							shielddmf->runAction(shieldfadeout);			//ダメージ文字をフェードアウトさせる
 							shielddmf->runAction(shieldfdoutmov);			//ダメージ文字を上に動かす
-							PL_SHIELD_STATUSPLATE->runAction(shield_repeat_bigquake[0]);
-							PL_SHIELD_HPBAR->runAction(shield_repeat_bigquake[1]);
-							PL_SHIELD_HPBAR->runAction(shield_repeat_bigquake[2]);
+							UI_PL_SHIELD_STATUSPLATE->runAction(shield_repeat_bigquake[0]);
+							UI_PL_SHIELD_HPBAR->runAction(shield_repeat_bigquake[1]);
+							UI_PL_SHIELD_MANABAR->runAction(shield_repeat_bigquake[2]);
 							shieldhpal->runAction(shield_repeat_bigquake[3]);
 							shieldhpmaxal->runAction(shield_repeat_bigquake[4]);
 							shieldmnal->runAction(shield_repeat_bigquake[5]);
@@ -4473,9 +4535,9 @@ void BossScene::BSturn()
 						//剣士ダメージを受けた時に揺れる処理
 						if (pl1frame.choicejob == ATTACKER || pl2frame.choicejob == ATTACKER
 							|| pl3frame.choicejob == ATTACKER) {
-							PL_ATTACKER_STATUSPLATE->runAction(attacker_repeat_bigquake[0]);
-							PL_ATTACKER_HPBAR->runAction(attacker_repeat_bigquake[1]);
-							PL_ATTACKER_MANAHAR->runAction(attacker_repeat_bigquake[2]);
+							UI_PL_ATTACKER_STATUSPLATE->runAction(attacker_repeat_bigquake[0]);
+							UI_PL_ATTACKER_HPBAR->runAction(attacker_repeat_bigquake[1]);
+							UI_PL_ATTACKER_MANABAR->runAction(attacker_repeat_bigquake[2]);
 							attackerhpal->runAction(attacker_repeat_bigquake[3]);
 							attackerhpmaxal->runAction(attacker_repeat_bigquake[4]);
 							attackermnal->runAction(attacker_repeat_bigquake[5]);
@@ -4484,9 +4546,9 @@ void BossScene::BSturn()
 						//騎士ダメージを受けた時に揺れる処理
 						if (pl1frame.choicejob == SHIELD || pl2frame.choicejob == SHIELD
 							|| pl3frame.choicejob == SHIELD) {
-							PL_SHIELD_STATUSPLATE->runAction(shield_repeat_bigquake[0]);
-							PL_SHIELD_HPBAR->runAction(shield_repeat_bigquake[1]);
-							PL_SHIELD_HPBAR->runAction(shield_repeat_bigquake[2]);
+							UI_PL_SHIELD_STATUSPLATE->runAction(shield_repeat_bigquake[0]);
+							UI_PL_SHIELD_HPBAR->runAction(shield_repeat_bigquake[1]);
+							UI_PL_SHIELD_MANABAR->runAction(shield_repeat_bigquake[2]);
 							shieldhpal->runAction(shield_repeat_bigquake[3]);
 							shieldhpmaxal->runAction(shield_repeat_bigquake[4]);
 							shieldmnal->runAction(shield_repeat_bigquake[5]);
@@ -4495,9 +4557,9 @@ void BossScene::BSturn()
 						//魔術師ダメージを受けた時に揺れる処理
 						if (pl1frame.choicejob == MAGIC || pl2frame.choicejob == MAGIC
 							|| pl3frame.choicejob == MAGIC) {
-							 PL_MAGIC_STATUSPLATE->runAction(magic_repeat_bigquake[0]);
-							PL_MAGIC_HPBAR->runAction(magic_repeat_bigquake[1]);
-							PL_MAGIC_MANAHAR->runAction(magic_repeat_bigquake[2]);
+							 UI_PL_MAGIC_STATUSPLATE->runAction(magic_repeat_bigquake[0]);
+							UI_PL_MAGIC_HPBAR->runAction(magic_repeat_bigquake[1]);
+							UI_PL_MAGIC_MANABAR->runAction(magic_repeat_bigquake[2]);
 							magichpal->runAction(magic_repeat_bigquake[3]);
 							magichpmaxal->runAction(magic_repeat_bigquake[4]);
 							magicmnal->runAction(magic_repeat_bigquake[5]);
@@ -4506,9 +4568,9 @@ void BossScene::BSturn()
 						//聖職者ダメージを受けた時に揺れる処理
 						if (pl1frame.choicejob == HEALER || pl2frame.choicejob == HEALER
 							|| pl3frame.choicejob == HEALER) {
-							PL_HEALER_STATUSPLATE->runAction(healaer_repeat_smallquake[0]);
-							PL_HEALER_HPBAR->runAction(healaer_repeat_smallquake[1]);
-							PL_HEALER_MANAHAR->runAction(healaer_repeat_smallquake[2]);
+							UI_PL_HEALER_STATUSPLATE->runAction(healaer_repeat_smallquake[0]);
+							UI_PL_HEALER_HPBAR->runAction(healaer_repeat_smallquake[1]);
+							UI_PL_HEALER_MANABAR->runAction(healaer_repeat_smallquake[2]);
 							healerhpal->runAction(healaer_repeat_smallquake[3]);
 							healerhpmaxal->runAction(healaer_repeat_smallquake[4]);
 							healermnal->runAction(healaer_repeat_smallquake[5]);
@@ -4590,9 +4652,9 @@ void BossScene::BSturn()
 						this->addChild(shielddmf, onece);				//ダメージ文字を出す
 						shielddmf->runAction(shieldfadeout);			//ダメージ文字をフェードアウトさせる
 						shielddmf->runAction(shieldfdoutmov);			//ダメージ文字を上に動かす
-						PL_SHIELD_STATUSPLATE->runAction(shield_repeat_bigquake[0]);
-						PL_SHIELD_HPBAR->runAction(shield_repeat_bigquake[1]);
-						PL_SHIELD_HPBAR->runAction(shield_repeat_bigquake[2]);
+						UI_PL_SHIELD_STATUSPLATE->runAction(shield_repeat_bigquake[0]);
+						UI_PL_SHIELD_HPBAR->runAction(shield_repeat_bigquake[1]);
+						UI_PL_SHIELD_HPBAR->runAction(shield_repeat_bigquake[2]);
 						shieldhpal->runAction(shield_repeat_bigquake[3]);
 						shieldhpmaxal->runAction(shield_repeat_bigquake[4]);
 						shieldmnal->runAction(shield_repeat_bigquake[5]);
@@ -4601,10 +4663,10 @@ void BossScene::BSturn()
 				}
 
 				//紅に染めてこのキャラを
-				PL_ATTACKER_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
-				PL_SHIELD_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
-				PL_HEALER_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
-				 PL_MAGIC_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
+				UI_PL_ATTACKER_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
+				UI_PL_SHIELD_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
+				UI_PL_HEALER_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
+				 UI_PL_MAGIC_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
 
 				//HPの数値を変える
 				attackerhpal->setString(std::to_string(attacker.hp));
@@ -4668,21 +4730,41 @@ void BossScene::BSturn()
 				this->addChild(Gskill1dec, backdepth, bossskill1damageS);
 
 				//キャラの色を戻す
-				PL_ATTACKER_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
-				PL_SHIELD_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
-				PL_HEALER_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
-				 PL_MAGIC_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
+				UI_PL_ATTACKER_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
+				UI_PL_SHIELD_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
+				UI_PL_HEALER_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
+				 UI_PL_MAGIC_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
 			}
 			if (gameflame == flame280) {
-				if (counter_attackflag == false) {
+				if (counter_attackflag == false && resurrectionflag == false) {
 					boss_allwork_endflag = true;
 				}
-				else {
-					this->removeChildByTag(bossskill1damageS);
-					//ステータスアップ表記
-					auto counter = CCLabelTTF::create("騎士のカウンター発動", "HGRSGU.TTC", fontsizeL);
-					counter->setPosition(rightSize.width / 2, rightSize.height / 1.15f);
-					this->addChild(counter, backdepth, buffupS);
+				else if(counter_attackflag == true){
+					if (shield.hp == 0) {
+						boss_allwork_endflag = true;
+					}
+					else {
+						this->removeChildByTag(bossskill1damageS);
+						//ステータスアップ表記
+						auto counter = CCLabelTTF::create("騎士のカウンター発動", "HGRSGU.TTC", fontsizeL);
+						counter->setPosition(rightSize.width / 2, rightSize.height / 1.15f);
+						this->addChild(counter, backdepth, buffupS);
+					}
+				}
+				else if (resurrectionflag == true) {
+					if (shield.hp == 0) {
+						shield.hp = 1;
+						this->removeChildByTag(bossskill1damageS);
+						shieldhpal->setString(std::to_string(shield.hp));
+						//ステータスアップ表記
+						auto counter = CCLabelTTF::create("復活して1回復した", "HGRSGU.TTC", fontsizeL);
+						counter->setPosition(rightSize.width / 2, rightSize.height / 1.15f);
+						this->addChild(counter, backdepth, buffupS);
+
+					}
+					else {
+						boss_allwork_endflag = true;
+					}
 				}
 
 			}
@@ -4706,6 +4788,13 @@ void BossScene::BSturn()
 					boss_allwork_endflag = true;
 				}
 			}
+			else if (resurrectionflag == true) {
+				if (gameflame == flame310) {
+					this->removeChildByTag(buffupS);
+					resurrectionflag = false;
+					boss_allwork_endflag = true;
+				}
+			}
 		}
 		//二の太刀
 		if (bskill == BSKILL2) {
@@ -4726,7 +4815,7 @@ void BossScene::BSturn()
 							hpcut = 1;
 						}
 						attacker.hp -= hpcut;									//HPをへらす
-						PL_ATTACKER_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));	//受けるやつを赤くする
+						UI_PL_ATTACKER_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));	//受けるやつを赤くする
 						attackerdmf->setString(std::to_string(hpcut));				//ダメージを変化させる
 						this->addChild(attackerdmf, onece);							//ダメージ文字を出す
 						attackerdmf->runAction(attackerfadeout);					//ダメージ文字をフェードアウトさせる
@@ -4741,7 +4830,7 @@ void BossScene::BSturn()
 							hpcut = 1;
 						}
 						shield.hp -= hpcut;
-						PL_SHIELD_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
+						UI_PL_SHIELD_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
 						shielddmf->setString(std::to_string(hpcut));				//ダメージを変化させる
 						this->addChild(shielddmf, onece);							//ダメージ文字を出す
 						shielddmf->runAction(shieldfadeout);						//ダメージ文字をフェードアウトさせる
@@ -4756,7 +4845,7 @@ void BossScene::BSturn()
 							hpcut = 1;
 						}
 						magic.hp -= hpcut;
-						 PL_MAGIC_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
+						 UI_PL_MAGIC_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
 						magicdmf->setString(std::to_string(hpcut));					//ダメージを変化させる
 						this->addChild(magicdmf, onece);							//ダメージ文字を出す
 						magicdmf->runAction(magicfadeout);							//ダメージ文字をフェードアウトさせる
@@ -4771,7 +4860,7 @@ void BossScene::BSturn()
 							hpcut = 1;
 						}
 						healer.hp -= hpcut;
-						PL_HEALER_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
+						UI_PL_HEALER_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
 						healerdmf->setString(std::to_string(hpcut));				//ダメージを変化させる
 						this->addChild(healerdmf, onece);							//ダメージ文字を出す
 						healerdmf->runAction(healerfadeout);						//ダメージ文字をフェードアウトさせる
@@ -4805,7 +4894,7 @@ void BossScene::BSturn()
 								hpcut = 1;
 							}
 							shield.hp -= hpcut;
-							PL_SHIELD_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
+							UI_PL_SHIELD_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
 							shielddmf->setString(std::to_string(hpcut));				//ダメージを変化させる
 							this->addChild(shielddmf, onece);							//ダメージ文字を出す
 							shielddmf->runAction(shieldfadeout);						//ダメージ文字をフェードアウトさせる
@@ -4820,7 +4909,7 @@ void BossScene::BSturn()
 								hpcut = 1;
 							}
 							magic.hp -= hpcut;
-							 PL_MAGIC_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
+							 UI_PL_MAGIC_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
 							magicdmf->setString(std::to_string(hpcut));				//ダメージを変化させる
 							this->addChild(magicdmf, onece);							//ダメージ文字を出す
 							magicdmf->runAction(magicfadeout);						//ダメージ文字をフェードアウトさせる
@@ -4835,7 +4924,7 @@ void BossScene::BSturn()
 								hpcut = 1;
 							}
 							healer.hp -= hpcut;
-							PL_HEALER_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
+							UI_PL_HEALER_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
 							healerdmf->setString(std::to_string(hpcut));				//ダメージを変化させる
 							this->addChild(healerdmf, onece);							//ダメージ文字を出す
 							healerdmf->runAction(healerfadeout);						//ダメージ文字をフェードアウトさせる
@@ -4865,7 +4954,7 @@ void BossScene::BSturn()
 								hpcut = 1;
 							}
 							shield.hp -= hpcut;
-							PL_SHIELD_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
+							UI_PL_SHIELD_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
 							shielddmf->setString(std::to_string(hpcut));			//ダメージを変化させる
 							this->addChild(shielddmf, onece);						//ダメージ文字を出す
 							shielddmf->runAction(shieldfadeout);					//ダメージ文字をフェードアウトさせる
@@ -4897,7 +4986,7 @@ void BossScene::BSturn()
 								hpcut = 1;
 							}
 							healer.hp -= hpcut;
-							PL_HEALER_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
+							UI_PL_HEALER_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
 							healerdmf->setString(std::to_string(hpcut));				//ダメージを変化させる
 							this->addChild(healerdmf, onece);							//ダメージ文字を出す
 							healerdmf->runAction(healerfadeout);						//ダメージ文字をフェードアウトさせる
@@ -4928,7 +5017,7 @@ void BossScene::BSturn()
 								hpcut = 1;
 							}
 							shield.hp -= hpcut;
-							PL_SHIELD_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
+							UI_PL_SHIELD_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
 							shielddmf->setString(std::to_string(hpcut));				//ダメージを変化させる
 							this->addChild(shielddmf, onece);							//ダメージ文字を出す
 							shielddmf->runAction(shieldfadeout);						//ダメージ文字をフェードアウトさせる
@@ -4943,7 +5032,7 @@ void BossScene::BSturn()
 								hpcut = 1;
 							}
 							magic.hp -= hpcut;
-							 PL_MAGIC_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
+							 UI_PL_MAGIC_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
 							magicdmf->setString(std::to_string(hpcut));				//ダメージを変化させる
 							this->addChild(magicdmf, onece);							//ダメージ文字を出す
 							magicdmf->runAction(magicfadeout);						//ダメージ文字をフェードアウトさせる
@@ -4999,15 +5088,15 @@ void BossScene::BSturn()
 							hpcut = 1;
 						}
 						attacker.hp -= hpcut;									//HPを減らす
-						PL_ATTACKER_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));	//ダメージをくらった(プレイヤーの画像を赤くする)
+						UI_PL_ATTACKER_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));	//ダメージをくらった(プレイヤーの画像を赤くする)
 						attackerdmf->setString(std::to_string(hpcut));			//ダメージを変化させる
 						this->addChild(attackerdmf, onece);						//ダメージ文字を出す
 						attackerdmf->runAction(attackerfadeout);				//ダメージ文字をフェードアウトさせる
 						attackerdmf->runAction(attackerfdoutmov);				//ダメージ文字を上に動かす
 						attackerhpal->setString(std::to_string(attacker.hp));	//HP数値を減らす
-						PL_ATTACKER_STATUSPLATE->runAction(attacker_repeat_bigquake[0]);
-						PL_ATTACKER_HPBAR->runAction(attacker_repeat_bigquake[1]);
-						PL_ATTACKER_MANAHAR->runAction(attacker_repeat_bigquake[2]);
+						UI_PL_ATTACKER_STATUSPLATE->runAction(attacker_repeat_bigquake[0]);
+						UI_PL_ATTACKER_HPBAR->runAction(attacker_repeat_bigquake[1]);
+						UI_PL_ATTACKER_MANABAR->runAction(attacker_repeat_bigquake[2]);
 						attackerhpal->runAction(attacker_repeat_bigquake[3]);
 						attackerhpmaxal->runAction(attacker_repeat_bigquake[4]);
 						attackermnal->runAction(attacker_repeat_bigquake[5]);
@@ -5021,15 +5110,15 @@ void BossScene::BSturn()
 							hpcut = 1;
 						}
 						shield.hp -= hpcut;
-						PL_SHIELD_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
+						UI_PL_SHIELD_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
 						shieldhpal->setString(std::to_string(shield.hp));
 						shielddmf->setString(std::to_string(hpcut));			//ダメージを変化させる
 						this->addChild(shielddmf, onece);						//ダメージ文字を出す
 						shielddmf->runAction(shieldfadeout);					//ダメージ文字をフェードアウトさせる
 						shielddmf->runAction(shieldfdoutmov);					//ダメージ文字を上に動かす
-						PL_SHIELD_STATUSPLATE->runAction(shield_repeat_bigquake[0]);
-						PL_SHIELD_HPBAR->runAction(shield_repeat_bigquake[1]);
-						PL_SHIELD_HPBAR->runAction(shield_repeat_bigquake[2]);
+						UI_PL_SHIELD_STATUSPLATE->runAction(shield_repeat_bigquake[0]);
+						UI_PL_SHIELD_HPBAR->runAction(shield_repeat_bigquake[1]);
+						UI_PL_SHIELD_MANABAR->runAction(shield_repeat_bigquake[2]);
 						shieldhpal->runAction(shield_repeat_bigquake[3]);
 						shieldhpmaxal->runAction(shield_repeat_bigquake[4]);
 						shieldmnal->runAction(shield_repeat_bigquake[5]);
@@ -5043,15 +5132,15 @@ void BossScene::BSturn()
 							hpcut = 1;
 						}
 						magic.hp -= hpcut;
-						 PL_MAGIC_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
+						 UI_PL_MAGIC_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
 						magichpal->setString(std::to_string(magic.hp));
 						magicdmf->setString(std::to_string(hpcut));				//ダメージを変化させる
 						this->addChild(magicdmf, onece);						//ダメージ文字を出す
 						magicdmf->runAction(magicfadeout);						//ダメージ文字をフェードアウトさせる
 						magicdmf->runAction(magicfdoutmov);						//ダメージ文字を上に動かす
-						 PL_MAGIC_STATUSPLATE->runAction(magic_repeat_bigquake[0]);
-						PL_MAGIC_HPBAR->runAction(magic_repeat_bigquake[1]);
-						PL_MAGIC_MANAHAR->runAction(magic_repeat_bigquake[2]);
+						 UI_PL_MAGIC_STATUSPLATE->runAction(magic_repeat_bigquake[0]);
+						UI_PL_MAGIC_HPBAR->runAction(magic_repeat_bigquake[1]);
+						UI_PL_MAGIC_MANABAR->runAction(magic_repeat_bigquake[2]);
 						magichpal->runAction(magic_repeat_bigquake[3]);
 						magichpmaxal->runAction(magic_repeat_bigquake[4]);
 						magicmnal->runAction(magic_repeat_bigquake[5]);
@@ -5065,15 +5154,15 @@ void BossScene::BSturn()
 							hpcut = 1;
 						}
 						healer.hp -= hpcut;
-						PL_HEALER_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
+						UI_PL_HEALER_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
 						healerhpal->setString(std::to_string(healer.hp));
 						healerdmf->setString(std::to_string(hpcut));			//ダメージを変化させる
 						this->addChild(healerdmf, onece);						//ダメージ文字を出す
 						healerdmf->runAction(healerfadeout);					//ダメージ文字をフェードアウトさせる
 						healerdmf->runAction(healerfdoutmov);					//ダメージ文字を上に動かす
-						PL_HEALER_STATUSPLATE->runAction(healaer_repeat_smallquake[0]);
-						PL_HEALER_HPBAR->runAction(healaer_repeat_smallquake[1]);
-						PL_HEALER_MANAHAR->runAction(healaer_repeat_smallquake[2]);
+						UI_PL_HEALER_STATUSPLATE->runAction(healaer_repeat_smallquake[0]);
+						UI_PL_HEALER_HPBAR->runAction(healaer_repeat_smallquake[1]);
+						UI_PL_HEALER_MANABAR->runAction(healaer_repeat_smallquake[2]);
 						healerhpal->runAction(healaer_repeat_smallquake[3]);
 						healerhpmaxal->runAction(healaer_repeat_smallquake[4]);
 						healermnal->runAction(healaer_repeat_smallquake[5]);
@@ -5098,9 +5187,9 @@ void BossScene::BSturn()
 							shielddmf->runAction(shieldfadeout);				//ダメージ文字をフェードアウトさせる
 							shielddmf->runAction(shieldfdoutmov);				//ダメージ文字を上に動かす
 							shieldhpal->setString(std::to_string(shield.hp));
-							PL_SHIELD_STATUSPLATE->runAction(shield_repeat_bigquake[0]);
-							PL_SHIELD_HPBAR->runAction(shield_repeat_bigquake[1]);
-							PL_SHIELD_HPBAR->runAction(shield_repeat_bigquake[2]);
+							UI_PL_SHIELD_STATUSPLATE->runAction(shield_repeat_bigquake[0]);
+							UI_PL_SHIELD_HPBAR->runAction(shield_repeat_bigquake[1]);
+							UI_PL_SHIELD_MANABAR->runAction(shield_repeat_bigquake[2]);
 							shieldhpal->runAction(shield_repeat_bigquake[3]);
 							shieldhpmaxal->runAction(shield_repeat_bigquake[4]);
 							shieldmnal->runAction(shield_repeat_bigquake[5]);
@@ -5114,15 +5203,15 @@ void BossScene::BSturn()
 								hpcut = 1;
 							}
 							shield.hp -= hpcut;
-							PL_SHIELD_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
+							UI_PL_SHIELD_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
 							shielddmf->setString(std::to_string(hpcut));				//ダメージを変化させる
 							this->addChild(shielddmf, onece);							//ダメージ文字を出す
 							shielddmf->runAction(shieldfadeout);						//ダメージ文字をフェードアウトさせる
 							shielddmf->runAction(shieldfdoutmov);						//ダメージ文字を上に動かす
 							shieldhpal->setString(std::to_string(shield.hp));
-							PL_SHIELD_STATUSPLATE->runAction(shield_repeat_bigquake[0]);
-							PL_SHIELD_HPBAR->runAction(shield_repeat_bigquake[1]);
-							PL_SHIELD_HPBAR->runAction(shield_repeat_bigquake[2]);
+							UI_PL_SHIELD_STATUSPLATE->runAction(shield_repeat_bigquake[0]);
+							UI_PL_SHIELD_HPBAR->runAction(shield_repeat_bigquake[1]);
+							UI_PL_SHIELD_HPBAR->runAction(shield_repeat_bigquake[2]);
 							shieldhpal->runAction(shield_repeat_bigquake[3]);
 							shieldhpmaxal->runAction(shield_repeat_bigquake[4]);
 							shieldmnal->runAction(shield_repeat_bigquake[5]);
@@ -5136,15 +5225,15 @@ void BossScene::BSturn()
 								hpcut = 1;
 							}
 							magic.hp -= hpcut;
-							 PL_MAGIC_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
+							 UI_PL_MAGIC_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
 							magicdmf->setString(std::to_string(hpcut));				//ダメージを変化させる
 							this->addChild(magicdmf, onece);							//ダメージ文字を出す
 							magicdmf->runAction(magicfadeout);						//ダメージ文字をフェードアウトさせる
 							magicdmf->runAction(magicfdoutmov);						//ダメージ文字を上に動かす
 							magichpal->setString(std::to_string(magic.hp));
-							 PL_MAGIC_STATUSPLATE->runAction(magic_repeat_bigquake[0]);
-							PL_MAGIC_HPBAR->runAction(magic_repeat_bigquake[1]);
-							PL_MAGIC_MANAHAR->runAction(magic_repeat_bigquake[2]);
+							 UI_PL_MAGIC_STATUSPLATE->runAction(magic_repeat_bigquake[0]);
+							UI_PL_MAGIC_HPBAR->runAction(magic_repeat_bigquake[1]);
+							UI_PL_MAGIC_MANABAR->runAction(magic_repeat_bigquake[2]);
 							magichpal->runAction(magic_repeat_bigquake[3]);
 							magichpmaxal->runAction(magic_repeat_bigquake[4]);
 							magicmnal->runAction(magic_repeat_bigquake[5]);
@@ -5158,15 +5247,15 @@ void BossScene::BSturn()
 								hpcut = 1;
 							}
 							healer.hp -= hpcut;
-							PL_HEALER_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
+							UI_PL_HEALER_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
 							healerdmf->setString(std::to_string(hpcut));				//ダメージを変化させる
 							this->addChild(healerdmf, onece);							//ダメージ文字を出す
 							healerdmf->runAction(healerfadeout);						//ダメージ文字をフェードアウトさせる
 							healerdmf->runAction(healerfdoutmov);						//ダメージ文字を上に動かす
 							healerhpal->setString(std::to_string(healer.hp));
-							PL_HEALER_STATUSPLATE->runAction(healaer_repeat_smallquake[0]);
-							PL_HEALER_HPBAR->runAction(healaer_repeat_smallquake[1]);
-							PL_HEALER_MANAHAR->runAction(healaer_repeat_smallquake[2]);
+							UI_PL_HEALER_STATUSPLATE->runAction(healaer_repeat_smallquake[0]);
+							UI_PL_HEALER_HPBAR->runAction(healaer_repeat_smallquake[1]);
+							UI_PL_HEALER_MANABAR->runAction(healaer_repeat_smallquake[2]);
 							healerhpal->runAction(healaer_repeat_smallquake[3]);
 							healerhpmaxal->runAction(healaer_repeat_smallquake[4]);
 							healermnal->runAction(healaer_repeat_smallquake[5]);
@@ -5188,9 +5277,9 @@ void BossScene::BSturn()
 							attackerdmf->runAction(attackerfadeout);				//ダメージ文字をフェードアウトさせる
 							attackerdmf->runAction(attackerfdoutmov);				//ダメージ文字を上に動かす
 							attackerhpal->setString(std::to_string(attacker.hp));
-							PL_ATTACKER_STATUSPLATE->runAction(attacker_repeat_bigquake[0]);
-							PL_ATTACKER_HPBAR->runAction(attacker_repeat_bigquake[1]);
-							PL_ATTACKER_MANAHAR->runAction(attacker_repeat_bigquake[2]);
+							UI_PL_ATTACKER_STATUSPLATE->runAction(attacker_repeat_bigquake[0]);
+							UI_PL_ATTACKER_HPBAR->runAction(attacker_repeat_bigquake[1]);
+							UI_PL_ATTACKER_MANABAR->runAction(attacker_repeat_bigquake[2]);
 							attackerhpal->runAction(attacker_repeat_bigquake[3]);
 							attackerhpmaxal->runAction(attacker_repeat_bigquake[4]);
 							attackermnal->runAction(attacker_repeat_bigquake[5]);
@@ -5204,15 +5293,15 @@ void BossScene::BSturn()
 								hpcut = 1;
 							}
 							shield.hp -= hpcut;
-							PL_SHIELD_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
+							UI_PL_SHIELD_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
 							shielddmf->setString(std::to_string(hpcut));			//ダメージを変化させる
 							this->addChild(shielddmf, onece);						//ダメージ文字を出す
 							shielddmf->runAction(shieldfadeout);					//ダメージ文字をフェードアウトさせる
 							shielddmf->runAction(shieldfdoutmov);					//ダメージ文字を上に動かす
 							shieldhpal->setString(std::to_string(shield.hp));
-							PL_SHIELD_STATUSPLATE->runAction(shield_repeat_bigquake[0]);
-							PL_SHIELD_HPBAR->runAction(shield_repeat_bigquake[1]);
-							PL_SHIELD_HPBAR->runAction(shield_repeat_bigquake[2]);
+							UI_PL_SHIELD_STATUSPLATE->runAction(shield_repeat_bigquake[0]);
+							UI_PL_SHIELD_HPBAR->runAction(shield_repeat_bigquake[1]);
+							UI_PL_SHIELD_HPBAR->runAction(shield_repeat_bigquake[2]);
 							shieldhpal->runAction(shield_repeat_bigquake[3]);
 							shieldhpmaxal->runAction(shield_repeat_bigquake[4]);
 							shieldmnal->runAction(shield_repeat_bigquake[5]);
@@ -5232,9 +5321,9 @@ void BossScene::BSturn()
 							shielddmf->runAction(shieldfadeout);				//ダメージ文字をフェードアウトさせる
 							shielddmf->runAction(shieldfdoutmov);				//ダメージ文字を上に動かす
 							magichpal->setString(std::to_string(magic.hp));
-							PL_SHIELD_STATUSPLATE->runAction(shield_repeat_bigquake[0]);
-							PL_SHIELD_HPBAR->runAction(shield_repeat_bigquake[1]);
-							PL_SHIELD_HPBAR->runAction(shield_repeat_bigquake[2]);
+							UI_PL_SHIELD_STATUSPLATE->runAction(shield_repeat_bigquake[0]);
+							UI_PL_SHIELD_HPBAR->runAction(shield_repeat_bigquake[1]);
+							UI_PL_SHIELD_HPBAR->runAction(shield_repeat_bigquake[2]);
 							shieldhpal->runAction(shield_repeat_bigquake[3]);
 							shieldhpmaxal->runAction(shield_repeat_bigquake[4]);
 							shieldmnal->runAction(shield_repeat_bigquake[5]);
@@ -5249,15 +5338,15 @@ void BossScene::BSturn()
 								hpcut = 1;
 							}
 							healer.hp -= hpcut;
-							PL_HEALER_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
+							UI_PL_HEALER_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
 							healerdmf->setString(std::to_string(hpcut));				//ダメージを変化させる
 							this->addChild(healerdmf, onece);							//ダメージ文字を出す
 							healerdmf->runAction(healerfadeout);						//ダメージ文字をフェードアウトさせる
 							healerdmf->runAction(healerfdoutmov);						//ダメージ文字を上に動かす
 							healerhpal->setString(std::to_string(healer.hp));
-							PL_HEALER_STATUSPLATE->runAction(healaer_repeat_smallquake[0]);
-							PL_HEALER_HPBAR->runAction(healaer_repeat_smallquake[1]);
-							PL_HEALER_MANAHAR->runAction(healaer_repeat_smallquake[2]);
+							UI_PL_HEALER_STATUSPLATE->runAction(healaer_repeat_smallquake[0]);
+							UI_PL_HEALER_HPBAR->runAction(healaer_repeat_smallquake[1]);
+							UI_PL_HEALER_MANABAR->runAction(healaer_repeat_smallquake[2]);
 							healerhpal->runAction(healaer_repeat_smallquake[3]);
 							healerhpmaxal->runAction(healaer_repeat_smallquake[4]);
 							healermnal->runAction(healaer_repeat_smallquake[5]);
@@ -5279,9 +5368,9 @@ void BossScene::BSturn()
 							attackerdmf->runAction(attackerfadeout);				//ダメージ文字をフェードアウトさせる
 							attackerdmf->runAction(attackerfdoutmov);				//ダメージ文字を上に動かす
 							attackerhpal->setString(std::to_string(attacker.hp));
-							PL_ATTACKER_STATUSPLATE->runAction(attacker_repeat_bigquake[0]);
-							PL_ATTACKER_HPBAR->runAction(attacker_repeat_bigquake[1]);
-							PL_ATTACKER_MANAHAR->runAction(attacker_repeat_bigquake[2]);
+							UI_PL_ATTACKER_STATUSPLATE->runAction(attacker_repeat_bigquake[0]);
+							UI_PL_ATTACKER_HPBAR->runAction(attacker_repeat_bigquake[1]);
+							UI_PL_ATTACKER_MANABAR->runAction(attacker_repeat_bigquake[2]);
 							attackerhpal->runAction(attacker_repeat_bigquake[3]);
 							attackerhpmaxal->runAction(attacker_repeat_bigquake[4]);
 							attackermnal->runAction(attacker_repeat_bigquake[5]);
@@ -5295,15 +5384,15 @@ void BossScene::BSturn()
 								hpcut = 1;
 							}
 							shield.hp -= hpcut;
-							PL_SHIELD_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
+							UI_PL_SHIELD_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
 							shielddmf->setString(std::to_string(hpcut));			//ダメージを変化させる
 							this->addChild(shielddmf, onece);						//ダメージ文字を出す
 							shielddmf->runAction(shieldfadeout);					//ダメージ文字をフェードアウトさせる
 							shielddmf->runAction(shieldfdoutmov);					//ダメージ文字を上に動かす
 							shieldhpal->setString(std::to_string(shield.hp));
-							PL_SHIELD_STATUSPLATE->runAction(shield_repeat_bigquake[0]);
-							PL_SHIELD_HPBAR->runAction(shield_repeat_bigquake[1]);
-							PL_SHIELD_HPBAR->runAction(shield_repeat_bigquake[2]);
+							UI_PL_SHIELD_STATUSPLATE->runAction(shield_repeat_bigquake[0]);
+							UI_PL_SHIELD_HPBAR->runAction(shield_repeat_bigquake[1]);
+							UI_PL_SHIELD_HPBAR->runAction(shield_repeat_bigquake[2]);
 							shieldhpal->runAction(shield_repeat_bigquake[3]);
 							shieldhpmaxal->runAction(shield_repeat_bigquake[4]);
 							shieldmnal->runAction(shield_repeat_bigquake[5]);
@@ -5317,15 +5406,15 @@ void BossScene::BSturn()
 								hpcut = 1;
 							}
 							magic.hp -= hpcut;
-							 PL_MAGIC_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
+							 UI_PL_MAGIC_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
 							magicdmf->setString(std::to_string(hpcut));				//ダメージを変化させる
 							this->addChild(magicdmf, onece);						//ダメージ文字を出す
 							magicdmf->runAction(magicfadeout);						//ダメージ文字をフェードアウトさせる
 							magicdmf->runAction(magicfdoutmov);						//ダメージ文字を上に動かす
 							magichpal->setString(std::to_string(magic.hp));
-							 PL_MAGIC_STATUSPLATE->runAction(magic_repeat_bigquake[0]);
-							PL_MAGIC_HPBAR->runAction(magic_repeat_bigquake[1]);
-							PL_MAGIC_MANAHAR->runAction(magic_repeat_bigquake[2]);
+							 UI_PL_MAGIC_STATUSPLATE->runAction(magic_repeat_bigquake[0]);
+							UI_PL_MAGIC_HPBAR->runAction(magic_repeat_bigquake[1]);
+							UI_PL_MAGIC_MANABAR->runAction(magic_repeat_bigquake[2]);
 							magichpal->runAction(magic_repeat_bigquake[3]);
 							magichpmaxal->runAction(magic_repeat_bigquake[4]);
 							magicmnal->runAction(magic_repeat_bigquake[5]);
@@ -5345,9 +5434,9 @@ void BossScene::BSturn()
 							shielddmf->runAction(shieldfadeout);				//ダメージ文字をフェードアウトさせる
 							shielddmf->runAction(shieldfdoutmov);				//ダメージ文字を上に動かす
 							shieldhpal->setString(std::to_string(shield.hp));
-							PL_SHIELD_STATUSPLATE->runAction(shield_repeat_bigquake[0]);
-							PL_SHIELD_HPBAR->runAction(shield_repeat_bigquake[1]);
-							PL_SHIELD_HPBAR->runAction(shield_repeat_bigquake[2]);
+							UI_PL_SHIELD_STATUSPLATE->runAction(shield_repeat_bigquake[0]);
+							UI_PL_SHIELD_HPBAR->runAction(shield_repeat_bigquake[1]);
+							UI_PL_SHIELD_HPBAR->runAction(shield_repeat_bigquake[2]);
 							shieldhpal->runAction(shield_repeat_bigquake[3]);
 							shieldhpmaxal->runAction(shield_repeat_bigquake[4]);
 							shieldmnal->runAction(shield_repeat_bigquake[5]);
@@ -5357,10 +5446,10 @@ void BossScene::BSturn()
 				}
 
 				//キャラの画像の色を戻す
-				PL_ATTACKER_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
-				PL_SHIELD_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
-				PL_HEALER_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
-				 PL_MAGIC_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
+				UI_PL_ATTACKER_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
+				UI_PL_SHIELD_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
+				UI_PL_HEALER_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
+				 UI_PL_MAGIC_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
 			}
 			//効果処理
 			//フレームが230(仮)になると効果を表記
@@ -5374,19 +5463,40 @@ void BossScene::BSturn()
 					boss_allwork_endflag = true;
 				}
 				if (job == SHIELD) {
-					if (counter_attackflag == false) {
+					if (counter_attackflag == false && resurrectionflag == false) {
 						boss_allwork_endflag = true;
 					}
-					else {
-						this->removeChildByTag(bossskill2damageS);
-						//ステータスアップ表記
-						auto counter = CCLabelTTF::create("騎士のカウンター発動", "HGRSGU.TTC", fontsizeL);
-						counter->setPosition(rightSize.width / 2, rightSize.height / 1.15f);
-						this->addChild(counter, backdepth, buffupS);
+					else if(counter_attackflag == true){
+						if (shield.hp == 0) {
+							boss_allwork_endflag = true;
+						}
+						else {
+							this->removeChildByTag(bossskill2damageS);
+							//ステータスアップ表記
+							auto counter = CCLabelTTF::create("騎士のカウンター発動", "HGRSGU.TTC", fontsizeL);
+							counter->setPosition(rightSize.width / 2, rightSize.height / 1.15f);
+							this->addChild(counter, backdepth, buffupS);
+						}
+					}
+					else if (resurrectionflag == true) {
+						if (shield.hp == 0) {
+							this->removeChildByTag(damageS);
+							shield.hp = 1;
+							shieldhpal->setString(std::to_string(shield.hp));
+
+							//ステータスアップ表記
+							auto counter = CCLabelTTF::create("復活して1回復した", "HGRSGU.TTC", fontsizeL);
+							counter->setPosition(rightSize.width / 2, rightSize.height / 1.15f);
+							this->addChild(counter, backdepth, buffupS);
+
+						}
+						else {
+							boss_allwork_endflag = true;
+						}
 					}
 				}
 			}
-			//ダメージを与え手から終わりまで
+			//ダメージをあたえてから終わりまで
 			if (job == SHIELD) {
 				if (counter_attackflag == true) {
 					if (gameflame == flame280) {
@@ -5404,6 +5514,13 @@ void BossScene::BSturn()
 					//攻撃終わり
 					if (gameflame == flame310) {
 						this->removeChildByTag(shielddamageS);
+						boss_allwork_endflag = true;
+					}
+				}
+				else if (resurrectionflag == true) {
+					if (gameflame == flame280) {
+						this->removeChildByTag(buffupS);
+						resurrectionflag = false;
 						boss_allwork_endflag = true;
 					}
 				}
@@ -5467,6 +5584,23 @@ void BossScene::BSturn()
 			}
 		}
 	}
+
+	//選んだキャラを出力に表示
+	log("job %i", job);
+	//カウントを出力に表示
+	log("skill_rnd %i", skill_rnd);
+	//プレイヤー1のHPを表示
+	CCString *hpstr1 = CCString::createWithFormat("現在PL1HPは%dです", attacker.hp);
+	log("%s", hpstr1->getCString());
+	//プレイヤー2のHPを表示
+	CCString *hpstr2 = CCString::createWithFormat("現在PL2HPは%dです", healer.hp);
+	log("%s", hpstr2->getCString());
+	//プレイヤー3のHPを表示
+	CCString *hpstr3 = CCString::createWithFormat("現在PL3HPは%dです", magic.hp);
+	log("%s", hpstr3->getCString());
+	//ボスのHPを表示
+	CCString *hpstrBS = CCString::createWithFormat("現在ヴァルキリーHPは%dです", valkyrie.hp);
+	log("%s", hpstrBS->getCString());
 }
 
 //画像を揺らすための処理
@@ -7765,6 +7899,10 @@ void BossScene::Skillturn()
 //騎士　sskill6(一度死んだら復活)
 	case BossScene::SSKILL6T: {
 		//重ね掛けの場合があるから増やしておく
+		//フラグがないなら終わり
+		if (resurrectionflag == false) {
+			sskill6.buffendflag1 = true;
+		}
 		//騎士　sskill6の効果ターン処理1
 		if (sskill6.buffendflag1 == false) {
 			if (sskill6.buffturn1 > 1) {
@@ -9124,6 +9262,98 @@ void BossScene::Skillturn()
 	}
 }
 
+void BossScene::Pick()
+{
+	//聖職者がいないとき
+	if (pl1frame.choicejob == ATTACKER || pl2frame.choicejob == ATTACKER || pl3frame.choicejob == ATTACKER) {
+		if (pl1frame.choicejob == SHIELD || pl2frame.choicejob == SHIELD || pl3frame.choicejob == SHIELD) {
+			if (pl1frame.choicejob == MAGIC || pl2frame.choicejob == MAGIC || pl3frame.choicejob == MAGIC) {
+				if (coverflag1 == false && coverflag2 == false && allinsteadflag == false) {
+					if (pick_rnd < fortypercent) {
+						job = ATTACKER;
+					}
+					if (pick_rnd >= fortypercent && pick_rnd < seventypercent) {
+						job = SHIELD;
+					}
+					if (pick_rnd >= seventypercent && pick_rnd < rndmax) {
+						job = MAGIC;
+					}
+				}
+				//タゲ集中が働いているのなら
+				else if (coverflag1 == true || coverflag2 == true || allinsteadflag == true) {
+					job = SHIELD;
+				}
+			}
+		}
+	}
+	//剣士がいないとき
+	if (pl1frame.choicejob == HEALER || pl2frame.choicejob == HEALER || pl3frame.choicejob == HEALER) {
+		if (pl1frame.choicejob == SHIELD || pl2frame.choicejob == SHIELD || pl3frame.choicejob == SHIELD) {
+			if (pl1frame.choicejob == MAGIC || pl2frame.choicejob == MAGIC || pl3frame.choicejob == MAGIC) {
+				if (coverflag1 == false && coverflag2 == false && allinsteadflag == false) {
+					if (pick_rnd < fortypercent) {
+						job = SHIELD;
+					}
+					if (pick_rnd >= fortypercent && pick_rnd < seventypercent) {
+						job = MAGIC;
+					}
+					if (pick_rnd >= seventypercent && pick_rnd < rndmax) {
+						job = HEALER;
+					}
+				}
+				//タゲ集中が働いているのなら
+				else if (coverflag1 == true || coverflag2 == true || allinsteadflag == true) {
+					job = SHIELD;
+				}
+			}
+		}
+	}
+	//騎士がいないとき
+	if (pl1frame.choicejob == ATTACKER || pl2frame.choicejob == ATTACKER || pl3frame.choicejob == ATTACKER) {
+		if (pl1frame.choicejob == HEALER || pl2frame.choicejob == HEALER || pl3frame.choicejob == HEALER) {
+			if (pl1frame.choicejob == MAGIC || pl2frame.choicejob == MAGIC || pl3frame.choicejob == MAGIC) {
+				if (coverflag1 == false && coverflag2 == false && allinsteadflag == false) {
+					if (pick_rnd < fortypercent) {
+						job = ATTACKER;
+					}
+					if (pick_rnd >= fortypercent && pick_rnd < seventypercent) {
+						job = MAGIC;
+					}
+					if (pick_rnd >= seventypercent && pick_rnd < rndmax) {
+						job = HEALER;
+					}
+				}
+				//タゲ集中が働いているのなら
+				else if (coverflag1 == true || coverflag2 == true || allinsteadflag == true) {
+					job = SHIELD;
+				}
+			}
+		}
+	}
+	//魔術師がいないとき
+	if (pl1frame.choicejob == ATTACKER || pl2frame.choicejob == ATTACKER || pl3frame.choicejob == ATTACKER) {
+		if (pl1frame.choicejob == SHIELD || pl2frame.choicejob == SHIELD || pl3frame.choicejob == SHIELD) {
+			if (pl1frame.choicejob == HEALER || pl2frame.choicejob == HEALER || pl3frame.choicejob == HEALER) {
+				if (coverflag1 == false && coverflag2 == false && allinsteadflag == false) {
+					if (pick_rnd < fortypercent) {
+						job = ATTACKER;
+					}
+					if (pick_rnd >= fortypercent && pick_rnd < seventypercent) {
+						job = SHIELD;
+					}
+					if (pick_rnd >= seventypercent && pick_rnd < rndmax) {
+						job = HEALER;
+					}
+				}
+				//タゲ集中が働いているのなら
+				else if (coverflag1 == true || coverflag2 == true || allinsteadflag == true) {
+					job = SHIELD;
+				}
+			}
+		}
+	}
+}
+
 // 最初に出ている画像
 void BossScene::BossBackGroudn()
 {
@@ -9139,79 +9369,79 @@ void BossScene::BossBackGroudn()
 	BACK_GRAND_SPRITE_BOSS->setPosition(ccp(rightSize.width / 2, rightSize.height / 2));			// 表示座標指定
 	this->addChild(BACK_GRAND_SPRITE_BOSS, backdepth);											//追加
 //テロップ
-	BOSS_SCENE_TELOP = CCSprite::create("UI/UI_Terop.png");
-	BOSS_SCENE_TELOP->setPosition(rightSize.width / 2, rightSize.height / 1.15f);
-	BOSS_SCENE_TELOP->setScaleX(1.5f);
-	this->addChild(BOSS_SCENE_TELOP, backdepth);
+	UI_BOSSSCENE_TELOP = CCSprite::create("UI/UI_Terop.png");
+	UI_BOSSSCENE_TELOP->setPosition(rightSize.width / 2, rightSize.height / 1.15f);
+	UI_BOSSSCENE_TELOP->setScaleX(1.5f);
+	this->addChild(UI_BOSSSCENE_TELOP, backdepth);
 //ボス
 	// ボスの表示
 	BOSS_VALKYRIE = CCSprite::create("enemy/EM_Valkyrie.png");							// 画像指定
 	BOSS_VALKYRIE->setPosition(ccp(rightSize.width / 2, rightSize.height / 1.7f));		// 表示座標指定
 	this->addChild(BOSS_VALKYRIE, backdepth);											// 追加
 	//BOSSHPバー
-	BOSS_HPBAR = CCSprite::create("UI/Status/UI_Status_EMLife.png");
-	BOSS_HPBAR->setPosition(ccp(rightSize.width / 2 - BOSS_HPBAR->getContentSize().width / 2,
-		rightSize.height / 1.4f + BOSS_HPBAR->getContentSize().height / 2));
-	BOSS_HPBAR->setAnchorPoint(ancharpoint);
-	HPbar = BOSS_HPBAR->getTextureRect().origin;
-	bosshpgaugewidth = BOSS_HPBAR->getContentSize().width;
-	this->addChild(BOSS_HPBAR, middledepth);
+	UI_BOSS_HPBAR = CCSprite::create("UI/Status/UI_Status_EMLife.png");
+	UI_BOSS_HPBAR->setPosition(ccp(rightSize.width / 2 - UI_BOSS_HPBAR->getContentSize().width / 2,
+		rightSize.height / 1.4f + UI_BOSS_HPBAR->getContentSize().height / 2));
+	UI_BOSS_HPBAR->setAnchorPoint(ancharpoint);
+	HPbar = UI_BOSS_HPBAR->getTextureRect().origin;
+	bosshpgaugewidth = UI_BOSS_HPBAR->getContentSize().width;
+	this->addChild(UI_BOSS_HPBAR, middledepth);
 	//うしろの黒いバー
-	BOSS_BACK_HPBAR = CCSprite::create("UI/Status/UI_Status_EMLost.png");
-	BOSS_BACK_HPBAR->setPosition(ccp(rightSize.width / 2 - BOSS_HPBAR->getContentSize().width / 2,
-		rightSize.height / 1.4f + BOSS_HPBAR->getContentSize().height / 2));
-	BOSS_BACK_HPBAR->setAnchorPoint(ancharpoint);
-	bosshpgaugewidth = BOSS_BACK_HPBAR->getContentSize().width;
-	this->addChild(BOSS_BACK_HPBAR, backdepth);
+	UI_BOSS_BACK_HPBAR = CCSprite::create("UI/Status/UI_Status_EMLost.png");
+	UI_BOSS_BACK_HPBAR->setPosition(ccp(rightSize.width / 2 - UI_BOSS_HPBAR->getContentSize().width / 2,
+		rightSize.height / 1.4f + UI_BOSS_HPBAR->getContentSize().height / 2));
+	UI_BOSS_BACK_HPBAR->setAnchorPoint(ancharpoint);
+	bosshpgaugewidth = UI_BOSS_BACK_HPBAR->getContentSize().width;
+	this->addChild(UI_BOSS_BACK_HPBAR, backdepth);
 //剣士のステータスバー
 	//ステータスのプレート(一番後ろのやつ)
-	PL_ATTACKER_STATUSPLATE = CCSprite::create("UI/Status/UI_Status_Attacker.png");
+	UI_PL_ATTACKER_STATUSPLATE = CCSprite::create("UI/Status/UI_Status_Attacker.png");
 	if (pl1frame.choicejob == ATTACKER) {
-		PL_ATTACKER_STATUSPLATE->setPosition(rightSize.width / 4.1f, rightSize.height / 5);
+		UI_PL_ATTACKER_STATUSPLATE->setPosition(rightSize.width / 4.1f, rightSize.height / 5);
 	}
 	if (pl2frame.choicejob == ATTACKER) {
-		PL_ATTACKER_STATUSPLATE->setPosition(rightSize.width / 2, rightSize.height / 5);
+		UI_PL_ATTACKER_STATUSPLATE->setPosition(rightSize.width / 2, rightSize.height / 5);
 	}
 	if (pl3frame.choicejob == ATTACKER) {
-		PL_ATTACKER_STATUSPLATE->setPosition(rightSize.width / 1.32f, rightSize.height / 5);
+		UI_PL_ATTACKER_STATUSPLATE->setPosition(rightSize.width / 1.32f, rightSize.height / 5);
 	}
-	PL_ATTACKER_STATUSPLATE->setScaleX(0.6f);
-	PL_ATTACKER_STATUSPLATE->setScaleY(0.8f);
-	this->addChild(PL_ATTACKER_STATUSPLATE, backdepth);
+	UI_PL_ATTACKER_STATUSPLATE->setScaleX(0.6f);
+	UI_PL_ATTACKER_STATUSPLATE->setScaleY(0.8f);
+	this->addChild(UI_PL_ATTACKER_STATUSPLATE, backdepth);
 	//HPバー
-	PL_ATTACKER_HPBAR = CCSprite::create("UI/Status/UI_Status_Life.png");
+	UI_PL_ATTACKER_HPBAR = CCSprite::create("UI/Status/UI_Status_Life.png");
 	if (pl1frame.choicejob == ATTACKER) {
-		PL_ATTACKER_HPBAR->setPosition(ccp(rightSize.width / 6.325f, rightSize.height / 5.735f));
+		UI_PL_ATTACKER_HPBAR->setPosition(ccp(rightSize.width / 6.325f, rightSize.height / 5.735f));
 	}
 	if (pl2frame.choicejob == ATTACKER) {
-		PL_ATTACKER_HPBAR->setPosition(ccp(rightSize.width / 2.42f, rightSize.height / 5.735f));
+		UI_PL_ATTACKER_HPBAR->setPosition(ccp(rightSize.width / 2.42f, rightSize.height / 5.735f));
 	}
 	if (pl3frame.choicejob == ATTACKER) {
-		PL_ATTACKER_HPBAR->setPosition(ccp(rightSize.width / 1.489f, rightSize.height / 5.73f));
+		UI_PL_ATTACKER_HPBAR->setPosition(ccp(rightSize.width / 1.489f, rightSize.height / 5.73f));
 	}
-	PL_ATTACKER_HPBAR->setAnchorPoint(ancharpoint);
-	PL_ATTACKER_HPBAR->setScaleX(0.6f);
-	PL_ATTACKER_HPBAR->setScaleY(0.8f);
-	HPbar = PL_ATTACKER_HPBAR->getTextureRect().origin;
-	attackerhpgaugewidth = PL_ATTACKER_HPBAR->getContentSize().width;
-	this->addChild(PL_ATTACKER_HPBAR, prevdepth);
+	UI_PL_ATTACKER_HPBAR->setAnchorPoint(ancharpoint);
+	UI_PL_ATTACKER_HPBAR->setScaleX(0.6f);
+	UI_PL_ATTACKER_HPBAR->setScaleY(0.8f);
+	HPbar = UI_PL_ATTACKER_HPBAR->getTextureRect().origin;
+	attackerhpgaugewidth = UI_PL_ATTACKER_HPBAR->getContentSize().width;
+	this->addChild(UI_PL_ATTACKER_HPBAR, prevdepth);
 	//MANAバー
-	PL_ATTACKER_MANAHAR = CCSprite::create("UI/Status/UI_Status_Mana.png");
+	UI_PL_ATTACKER_MANABAR = CCSprite::create("UI/Status/UI_Status_Mana.png");
 	if (pl1frame.choicejob == ATTACKER) {
-		PL_ATTACKER_MANAHAR->setPosition(ccp(rightSize.width / 3.6f, rightSize.height / 5.73f));
+		UI_PL_ATTACKER_MANABAR->setPosition(ccp(rightSize.width / 3.6f, rightSize.height / 5.73f));
 	}
 	if (pl2frame.choicejob == ATTACKER) {
-		PL_ATTACKER_MANAHAR->setPosition(ccp(rightSize.width / 1.87f, rightSize.height / 5.735f));
+		UI_PL_ATTACKER_MANABAR->setPosition(ccp(rightSize.width / 1.87f, rightSize.height / 5.735f));
 	}
 	if (pl3frame.choicejob == ATTACKER) {
-		PL_ATTACKER_MANAHAR->setPosition(ccp(rightSize.width / 1.265f, rightSize.height / 5.73f));
+		UI_PL_ATTACKER_MANABAR->setPosition(ccp(rightSize.width / 1.265f, rightSize.height / 5.73f));
 	}
-	PL_ATTACKER_MANAHAR->setAnchorPoint(ancharpoint);
-	PL_ATTACKER_MANAHAR->setScaleX(0.6f);
-	PL_ATTACKER_MANAHAR->setScaleY(0.8f);
-	MNbar = PL_ATTACKER_MANAHAR->getTextureRect().origin;
-	attackermngaugewidth = PL_ATTACKER_MANAHAR->getContentSize().width;
-	this->addChild(PL_ATTACKER_MANAHAR, prevdepth);
+	UI_PL_ATTACKER_MANABAR->setAnchorPoint(ancharpoint);
+	UI_PL_ATTACKER_MANABAR->setScaleX(0.6f);
+	UI_PL_ATTACKER_MANABAR->setScaleY(0.8f);
+	MNbar = UI_PL_ATTACKER_MANABAR->getTextureRect().origin;
+	attackermngaugewidth = UI_PL_ATTACKER_MANABAR->getContentSize().width;
+	this->addChild(UI_PL_ATTACKER_MANABAR, prevdepth);
 	//剣士HP表記
 	//数値が変わる部分
 	attackerhpal = LabelTTF::create(std::to_string(attacker.hp), "HGRSGU.TTC", fontsizeM);
@@ -9268,53 +9498,53 @@ void BossScene::BossBackGroudn()
 	this->addChild(attackermnmaxal, prevdepth);
 //騎士のステータスバー
 	//ステータスのプレート(一番後ろのやつ)
-	PL_SHIELD_STATUSPLATE = CCSprite::create("UI/Status/UI_Status_Shield.png");
+	UI_PL_SHIELD_STATUSPLATE = CCSprite::create("UI/Status/UI_Status_Shield.png");
 	if (pl1frame.choicejob == SHIELD) {
-		PL_SHIELD_STATUSPLATE->setPosition(rightSize.width / 4.1f, rightSize.height / 5);
+		UI_PL_SHIELD_STATUSPLATE->setPosition(rightSize.width / 4.1f, rightSize.height / 5);
 	}
 	if (pl2frame.choicejob == SHIELD) {
-		PL_SHIELD_STATUSPLATE->setPosition(rightSize.width / 2, rightSize.height / 5);
+		UI_PL_SHIELD_STATUSPLATE->setPosition(rightSize.width / 2, rightSize.height / 5);
 	}
 	if (pl3frame.choicejob == SHIELD) {
-		PL_SHIELD_STATUSPLATE->setPosition(rightSize.width / 1.32f, rightSize.height / 5);
+		UI_PL_SHIELD_STATUSPLATE->setPosition(rightSize.width / 1.32f, rightSize.height / 5);
 	}
-	PL_SHIELD_STATUSPLATE->setScaleX(0.6f);
-	PL_SHIELD_STATUSPLATE->setScaleY(0.8f);
-	this->addChild(PL_SHIELD_STATUSPLATE, backdepth);
+	UI_PL_SHIELD_STATUSPLATE->setScaleX(0.6f);
+	UI_PL_SHIELD_STATUSPLATE->setScaleY(0.8f);
+	this->addChild(UI_PL_SHIELD_STATUSPLATE, backdepth);
 	//HPバー
-	PL_SHIELD_HPBAR = CCSprite::create("UI/Status/UI_Status_Life.png");
+	UI_PL_SHIELD_HPBAR = CCSprite::create("UI/Status/UI_Status_Life.png");
 	if (pl1frame.choicejob == SHIELD) {
-		PL_SHIELD_HPBAR->setPosition(ccp(rightSize.width / 6.325f, rightSize.height / 5.735f));
+		UI_PL_SHIELD_HPBAR->setPosition(ccp(rightSize.width / 6.325f, rightSize.height / 5.735f));
 	}
 	if (pl2frame.choicejob == SHIELD) {
-		PL_SHIELD_HPBAR->setPosition(ccp(rightSize.width / 2.42f, rightSize.height / 5.735f));
+		UI_PL_SHIELD_HPBAR->setPosition(ccp(rightSize.width / 2.42f, rightSize.height / 5.735f));
 	}
 	if (pl3frame.choicejob == SHIELD) {
-		PL_SHIELD_HPBAR->setPosition(ccp(rightSize.width / 1.489f, rightSize.height / 5.73f));
+		UI_PL_SHIELD_HPBAR->setPosition(ccp(rightSize.width / 1.489f, rightSize.height / 5.73f));
 	}
-	PL_SHIELD_HPBAR->setAnchorPoint(ancharpoint);
-	PL_SHIELD_HPBAR->setScaleX(0.6f);
-	PL_SHIELD_HPBAR->setScaleY(0.8f);
-	HPbar = PL_SHIELD_HPBAR->getTextureRect().origin;
-	shieldhpgaugewidth = PL_SHIELD_HPBAR->getContentSize().width;
-	this->addChild(PL_SHIELD_HPBAR, prevdepth);
+	UI_PL_SHIELD_HPBAR->setAnchorPoint(ancharpoint);
+	UI_PL_SHIELD_HPBAR->setScaleX(0.6f);
+	UI_PL_SHIELD_HPBAR->setScaleY(0.8f);
+	HPbar = UI_PL_SHIELD_HPBAR->getTextureRect().origin;
+	shieldhpgaugewidth = UI_PL_SHIELD_HPBAR->getContentSize().width;
+	this->addChild(UI_PL_SHIELD_HPBAR, prevdepth);
 	//MANAバー
-	PL_SHIELD_MANAHAR = CCSprite::create("UI/Status/UI_Status_Mana.png");
+	UI_PL_SHIELD_MANABAR = CCSprite::create("UI/Status/UI_Status_Mana.png");
 	if (pl1frame.choicejob == SHIELD) {
-		PL_SHIELD_MANAHAR->setPosition(ccp(rightSize.width / 3.6f, rightSize.height / 5.73f));
+		UI_PL_SHIELD_MANABAR->setPosition(ccp(rightSize.width / 3.6f, rightSize.height / 5.73f));
 	}
 	if (pl2frame.choicejob == SHIELD) {
-		PL_SHIELD_MANAHAR->setPosition(ccp(rightSize.width / 1.87f, rightSize.height / 5.735f));
+		UI_PL_SHIELD_MANABAR->setPosition(ccp(rightSize.width / 1.87f, rightSize.height / 5.735f));
 	}
 	if (pl3frame.choicejob == SHIELD) {
-		PL_SHIELD_MANAHAR->setPosition(ccp(rightSize.width / 1.265f, rightSize.height / 5.73f));
+		UI_PL_SHIELD_MANABAR->setPosition(ccp(rightSize.width / 1.265f, rightSize.height / 5.73f));
 	}
-	PL_SHIELD_MANAHAR->setAnchorPoint(ancharpoint);
-	PL_SHIELD_MANAHAR->setScaleX(0.6f);
-	PL_SHIELD_MANAHAR->setScaleY(0.8f);
-	MNbar = PL_SHIELD_MANAHAR->getTextureRect().origin;
-	shieldmngaugewidth = PL_SHIELD_MANAHAR->getContentSize().width;
-	this->addChild(PL_SHIELD_MANAHAR, prevdepth);
+	UI_PL_SHIELD_MANABAR->setAnchorPoint(ancharpoint);
+	UI_PL_SHIELD_MANABAR->setScaleX(0.6f);
+	UI_PL_SHIELD_MANABAR->setScaleY(0.8f);
+	MNbar = UI_PL_SHIELD_MANABAR->getTextureRect().origin;
+	shieldmngaugewidth = UI_PL_SHIELD_MANABAR->getContentSize().width;
+	this->addChild(UI_PL_SHIELD_MANABAR, prevdepth);
 	//騎士HP表記
 	//数値が変わる部分
 	shieldhpal = LabelTTF::create(std::to_string(shield.hp), "HGRSGU.TTC", fontsizeM);
@@ -9371,53 +9601,53 @@ void BossScene::BossBackGroudn()
 	this->addChild(shieldmnmaxal, prevdepth);
 //魔術師のステータスバー
 	//ステータスプレート(一番後ろのやつ)
-	 PL_MAGIC_STATUSPLATE = CCSprite::create("UI/Status/UI_Status_Magic.png");					//画像指定
+	 UI_PL_MAGIC_STATUSPLATE = CCSprite::create("UI/Status/UI_Status_Magic.png");					//画像指定
 	if (pl1frame.choicejob == MAGIC) {
-		 PL_MAGIC_STATUSPLATE->setPosition(rightSize.width / 4.1f, rightSize.height / 5);
+		 UI_PL_MAGIC_STATUSPLATE->setPosition(rightSize.width / 4.1f, rightSize.height / 5);
 	}
 	if (pl2frame.choicejob == MAGIC) {
-		 PL_MAGIC_STATUSPLATE->setPosition(rightSize.width / 2, rightSize.height / 5);
+		 UI_PL_MAGIC_STATUSPLATE->setPosition(rightSize.width / 2, rightSize.height / 5);
 	}
 	if (pl3frame.choicejob == MAGIC) {
-		 PL_MAGIC_STATUSPLATE->setPosition(rightSize.width / 1.32f, rightSize.height / 5);
+		 UI_PL_MAGIC_STATUSPLATE->setPosition(rightSize.width / 1.32f, rightSize.height / 5);
 	}
-	 PL_MAGIC_STATUSPLATE->setScaleX(0.6f);														//大きさ変更
-	 PL_MAGIC_STATUSPLATE->setScaleY(0.8f);
-	this->addChild( PL_MAGIC_STATUSPLATE, backdepth);											//追加
+	 UI_PL_MAGIC_STATUSPLATE->setScaleX(0.6f);														//大きさ変更
+	 UI_PL_MAGIC_STATUSPLATE->setScaleY(0.8f);
+	this->addChild( UI_PL_MAGIC_STATUSPLATE, backdepth);											//追加
 	//HPバー																	//HPバー
-	PL_MAGIC_HPBAR = CCSprite::create("UI/Status/UI_Status_Life.png");
+	UI_PL_MAGIC_HPBAR = CCSprite::create("UI/Status/UI_Status_Life.png");
 	if (pl1frame.choicejob == MAGIC) {
-		PL_MAGIC_HPBAR->setPosition(ccp(rightSize.width / 6.325f, rightSize.height / 5.735f));
+		UI_PL_MAGIC_HPBAR->setPosition(ccp(rightSize.width / 6.325f, rightSize.height / 5.735f));
 	}
 	if (pl2frame.choicejob == MAGIC) {
-		PL_MAGIC_HPBAR->setPosition(ccp(rightSize.width / 2.42f, rightSize.height / 5.735f));
+		UI_PL_MAGIC_HPBAR->setPosition(ccp(rightSize.width / 2.42f, rightSize.height / 5.735f));
 	}
 	if (pl3frame.choicejob == MAGIC) {
-		PL_MAGIC_HPBAR->setPosition(ccp(rightSize.width / 1.489f, rightSize.height / 5.73f));
+		UI_PL_MAGIC_HPBAR->setPosition(ccp(rightSize.width / 1.489f, rightSize.height / 5.73f));
 	}
-	PL_MAGIC_HPBAR->setAnchorPoint(ancharpoint);
-	PL_MAGIC_HPBAR->setScaleX(0.6f);
-	PL_MAGIC_HPBAR->setScaleY(0.8f);
-	HPbar = PL_MAGIC_HPBAR->getTextureRect().origin;
-	healerhpgaugewidth = PL_MAGIC_HPBAR->getContentSize().width;
-	this->addChild(PL_MAGIC_HPBAR, prevdepth);
+	UI_PL_MAGIC_HPBAR->setAnchorPoint(ancharpoint);
+	UI_PL_MAGIC_HPBAR->setScaleX(0.6f);
+	UI_PL_MAGIC_HPBAR->setScaleY(0.8f);
+	HPbar = UI_PL_MAGIC_HPBAR->getTextureRect().origin;
+	healerhpgaugewidth = UI_PL_MAGIC_HPBAR->getContentSize().width;
+	this->addChild(UI_PL_MAGIC_HPBAR, prevdepth);
 	//MANAバー
-	PL_MAGIC_MANAHAR = CCSprite::create("UI/Status/UI_Status_Mana.png");
+	UI_PL_MAGIC_MANABAR = CCSprite::create("UI/Status/UI_Status_Mana.png");
 	if (pl1frame.choicejob == MAGIC) {
-		PL_MAGIC_MANAHAR->setPosition(ccp(rightSize.width / 3.6f, rightSize.height / 5.73f));
+		UI_PL_MAGIC_MANABAR->setPosition(ccp(rightSize.width / 3.6f, rightSize.height / 5.73f));
 	}
 	if (pl2frame.choicejob == MAGIC) {
-		PL_MAGIC_MANAHAR->setPosition(ccp(rightSize.width / 1.87f, rightSize.height / 5.735f));
+		UI_PL_MAGIC_MANABAR->setPosition(ccp(rightSize.width / 1.87f, rightSize.height / 5.735f));
 	}
 	if (pl3frame.choicejob == MAGIC) {
-		PL_MAGIC_MANAHAR->setPosition(ccp(rightSize.width / 1.265f, rightSize.height / 5.73f));
+		UI_PL_MAGIC_MANABAR->setPosition(ccp(rightSize.width / 1.265f, rightSize.height / 5.73f));
 	}
-	PL_MAGIC_MANAHAR->setAnchorPoint(ancharpoint);
-	PL_MAGIC_MANAHAR->setScaleX(0.6f);
-	PL_MAGIC_MANAHAR->setScaleY(0.8f);
-	MNbar = PL_MAGIC_MANAHAR->getTextureRect().origin;
-	healermngaugewidth = PL_MAGIC_MANAHAR->getContentSize().width;
-	this->addChild(PL_MAGIC_MANAHAR, prevdepth);
+	UI_PL_MAGIC_MANABAR->setAnchorPoint(ancharpoint);
+	UI_PL_MAGIC_MANABAR->setScaleX(0.6f);
+	UI_PL_MAGIC_MANABAR->setScaleY(0.8f);
+	MNbar = UI_PL_MAGIC_MANABAR->getTextureRect().origin;
+	healermngaugewidth = UI_PL_MAGIC_MANABAR->getContentSize().width;
+	this->addChild(UI_PL_MAGIC_MANABAR, prevdepth);
 	//魔術師HP表記
 	//数値が変わる部分
 	magichpal = LabelTTF::create(std::to_string(magic.hp), "HGRSGU.TTC", fontsizeM);
@@ -9474,53 +9704,53 @@ void BossScene::BossBackGroudn()
 	this->addChild(magicmnmaxal, prevdepth);
 //聖職者のステータスバー
 	////ステータスのプレート(一番後ろのやつ)
-	PL_HEALER_STATUSPLATE = CCSprite::create("UI/Status/UI_Status_Healer.png");					//画像指定
+	UI_PL_HEALER_STATUSPLATE = CCSprite::create("UI/Status/UI_Status_Healer.png");					//画像指定
 	if (pl1frame.choicejob == HEALER) {
-		PL_HEALER_STATUSPLATE->setPosition(rightSize.width / 4.1f, rightSize.height / 5);
+		UI_PL_HEALER_STATUSPLATE->setPosition(rightSize.width / 4.1f, rightSize.height / 5);
 	}
 	if (pl2frame.choicejob == HEALER) {
-		PL_HEALER_STATUSPLATE->setPosition(rightSize.width / 2, rightSize.height / 5);
+		UI_PL_HEALER_STATUSPLATE->setPosition(rightSize.width / 2, rightSize.height / 5);
 	}
 	if (pl3frame.choicejob == HEALER) {
-		PL_HEALER_STATUSPLATE->setPosition(rightSize.width / 1.32f, rightSize.height / 5);
+		UI_PL_HEALER_STATUSPLATE->setPosition(rightSize.width / 1.32f, rightSize.height / 5);
 	}
-	PL_HEALER_STATUSPLATE->setScaleX(0.6f);														//大きさ変更
-	PL_HEALER_STATUSPLATE->setScaleY(0.8f);
-	this->addChild(PL_HEALER_STATUSPLATE, backdepth);											//追加
+	UI_PL_HEALER_STATUSPLATE->setScaleX(0.6f);														//大きさ変更
+	UI_PL_HEALER_STATUSPLATE->setScaleY(0.8f);
+	this->addChild(UI_PL_HEALER_STATUSPLATE, backdepth);											//追加
 																					//HPバー
-	PL_HEALER_HPBAR = CCSprite::create("UI/Status/UI_Status_Life.png");
+	UI_PL_HEALER_HPBAR = CCSprite::create("UI/Status/UI_Status_Life.png");
 	if (pl1frame.choicejob == HEALER) {
-		PL_HEALER_HPBAR->setPosition(ccp(rightSize.width / 6.325f, rightSize.height / 5.735f));
+		UI_PL_HEALER_HPBAR->setPosition(ccp(rightSize.width / 6.325f, rightSize.height / 5.735f));
 	}
 	if (pl2frame.choicejob == HEALER) {
-		PL_HEALER_HPBAR->setPosition(ccp(rightSize.width / 2.42f, rightSize.height / 5.735f));
+		UI_PL_HEALER_HPBAR->setPosition(ccp(rightSize.width / 2.42f, rightSize.height / 5.735f));
 	}
 	if (pl3frame.choicejob == HEALER) {
-		PL_HEALER_HPBAR->setPosition(ccp(rightSize.width / 1.489f, rightSize.height / 5.73f));
+		UI_PL_HEALER_HPBAR->setPosition(ccp(rightSize.width / 1.489f, rightSize.height / 5.73f));
 	}
-	PL_HEALER_HPBAR->setAnchorPoint(ancharpoint);
-	PL_HEALER_HPBAR->setScaleX(0.6f);
-	PL_HEALER_HPBAR->setScaleY(0.8f);
-	HPbar = PL_HEALER_HPBAR->getTextureRect().origin;
-	healerhpgaugewidth = PL_HEALER_HPBAR->getContentSize().width;
-	this->addChild(PL_HEALER_HPBAR, prevdepth);
+	UI_PL_HEALER_HPBAR->setAnchorPoint(ancharpoint);
+	UI_PL_HEALER_HPBAR->setScaleX(0.6f);
+	UI_PL_HEALER_HPBAR->setScaleY(0.8f);
+	HPbar = UI_PL_HEALER_HPBAR->getTextureRect().origin;
+	healerhpgaugewidth = UI_PL_HEALER_HPBAR->getContentSize().width;
+	this->addChild(UI_PL_HEALER_HPBAR, prevdepth);
 	//MANAバー
-	PL_HEALER_MANAHAR = CCSprite::create("UI/Status/UI_Status_Mana.png");
+	UI_PL_HEALER_MANABAR = CCSprite::create("UI/Status/UI_Status_Mana.png");
 	if (pl1frame.choicejob == HEALER) {
-		PL_HEALER_MANAHAR->setPosition(ccp(rightSize.width / 3.6f, rightSize.height / 5.73f));
+		UI_PL_HEALER_MANABAR->setPosition(ccp(rightSize.width / 3.6f, rightSize.height / 5.73f));
 	}
 	if (pl2frame.choicejob == HEALER) {
-		PL_HEALER_MANAHAR->setPosition(ccp(rightSize.width / 1.87f, rightSize.height / 5.735f));
+		UI_PL_HEALER_MANABAR->setPosition(ccp(rightSize.width / 1.87f, rightSize.height / 5.735f));
 	}
 	if (pl3frame.choicejob == HEALER) {
-		PL_HEALER_MANAHAR->setPosition(ccp(rightSize.width / 1.265f, rightSize.height / 5.73f));
+		UI_PL_HEALER_MANABAR->setPosition(ccp(rightSize.width / 1.265f, rightSize.height / 5.73f));
 	}
-	PL_HEALER_MANAHAR->setAnchorPoint(ancharpoint);
-	PL_HEALER_MANAHAR->setScaleX(0.6f);
-	PL_HEALER_MANAHAR->setScaleY(0.8f);
-	MNbar = PL_HEALER_MANAHAR->getTextureRect().origin;
-	healermngaugewidth = PL_HEALER_MANAHAR->getContentSize().width;
-	this->addChild(PL_HEALER_MANAHAR, prevdepth);
+	UI_PL_HEALER_MANABAR->setAnchorPoint(ancharpoint);
+	UI_PL_HEALER_MANABAR->setScaleX(0.6f);
+	UI_PL_HEALER_MANABAR->setScaleY(0.8f);
+	MNbar = UI_PL_HEALER_MANABAR->getTextureRect().origin;
+	healermngaugewidth = UI_PL_HEALER_MANABAR->getContentSize().width;
+	this->addChild(UI_PL_HEALER_MANABAR, prevdepth);
 	//聖職者HP表記
 	//数値が変わる部分
 	healerhpal = LabelTTF::create(std::to_string(healer.hp), "HGRSGU.TTC", fontsizeM);
@@ -9600,7 +9830,7 @@ void BossScene::onTouchEnded(cocos2d::Touch* touch, cocos2d::Event* event){
 	if (battle == CHOICE) {
 		if (choices == CHAR1 || choices == CHAR2 || choices == CHAR3) {
 			//問題①
-			AttackButton1->setVisible(true);
+			UI_PUSH_BEFORE_ATTACKBUTTON->setVisible(true);
 			SkillButton1->setVisible(true);
 		}
 	}
