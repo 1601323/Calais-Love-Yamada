@@ -159,6 +159,7 @@ public:
 
 	//キャラ枠、職業のステータス
 	struct FRAME {
+		int level = 1;
 		int hp = 0;			//体力
 		int hpmax = 0;		//初期の体力最大値
 		int mana = 0;		//精神力
@@ -395,7 +396,6 @@ public:
 	bool state = false;						//プレイヤーの状態
 	bool insteadflag = false;				//騎士のスキルで身代わり状態かどうか
 	bool allinsteadflag = false;			//騎士スキルで全員の身代わり状態かどうか
-	bool counterflag = false;				//騎士のスキルでカウンター状態かどうか
 	bool coverflag1 = false;				//騎士のスキルでタゲ集中状態かどうか
 	bool coverflag2= false;					//騎士のスキルでタゲ集中状態かどうか
 	bool resurrectionflag = false;			//騎士復活フラグ
@@ -482,72 +482,72 @@ public:
 	BUFFTURN hskill3;		//聖職者のスキル3(聖者の経典)
 	BUFFTURN vskill3;		//ヴァルキュリ－のスキル3(六帝の陣)
 	//cocos2d-x
-	cocos2d::Vec2 HPbar;	//HPばーの長さ
-	cocos2d::Vec2 MNbar;	//MANAばーの長さ
-	CCSize rightSize;		//オブジェクトを配置するときに必要
-	CCSprite * BACK_GRAND_SPRITE_BOSS;			//背景
-	CCSprite *BOSS_SCENE_TELOP;					//テロップ
-	CCSprite *plturn;		//PLTURN文字(抹消予定)
-	CCSprite *emturn;		//BSTURN文字(抹消予定)
-	CCSprite *AttackButton1;//攻撃コマンド
-	CCSprite *AttackButton2;//攻撃コマンド(押しているとき)
-	CCSprite *SkillButton1;	//スキルコマンド
-	CCSprite *SkillButton2;	//スキルコマンド(押しているとき)
-	LabelTTF *lo;			//剣士はどうする
-	LabelTTF *ls;			//騎士はどうする
-	LabelTTF *lw;			//魔術師は以下略
-	LabelTTF *ll;			//聖職者はどうする
-	LabelTTF *cho;			//選択中の文章
+	cocos2d::Vec2 HPbar;					//HPばーの長さ
+	cocos2d::Vec2 MNbar;					//MANAばーの長さ
+	CCSize rightSize;						//オブジェクトを配置するときに必要
+	CCSprite * BACK_GRAND_SPRITE_BOSS;		//背景
+	CCSprite *UI_BOSSSCENE_TELOP;			//テロップ
+	CCSprite *plturn;						//PLTURN文字(抹消予定)
+	CCSprite *emturn;						//BSTURN文字(抹消予定)
+	CCSprite *UI_PUSH_BEFORE_ATTACKBUTTON;	//攻撃コマンド
+	CCSprite *UI_PUSH_AFTER_ATTACKBUTTON;	//攻撃コマンド(押しているとき)
+	CCSprite *SkillButton1;					//スキルコマンド
+	CCSprite *SkillButton2;					//スキルコマンド(押しているとき)
+	LabelTTF *lo;							//剣士はどうする
+	LabelTTF *ls;							//騎士はどうする
+	LabelTTF *lw;							//魔術師は以下略
+	LabelTTF *ll;							//聖職者はどうする
+	LabelTTF *cho;							//選択中の文章
 	//剣士のUI
-	CCSprite *PL_ATTACKER_STATUSPLATE;		//剣士の大まかなステータスプレート
-	CCSprite *PL_ATTACKER_HPBAR;			//剣士のHP
-	CCSprite *PL_ATTACKER_MANAHAR;		//剣士のMN
-	LabelTTF *attackerhpal;		//剣士のHP表記
-	LabelTTF *attackerhpmaxal;	//HPの最大値
-	LabelTTF *attackermnal;		//剣士のMN表記
-	LabelTTF *attackermnmaxal;	//MANAの最大値
-	LabelTTF *attackerdmf;		//剣士ダメージ表示
-	CCFadeOut *attackerfadeout;	//剣士ダメージ表示フェードアウトの時間
-	CCSequence *attackerfdoutmov;//剣士ダメージ表示フェードアウト時の動き
+	CCSprite *UI_PL_ATTACKER_STATUSPLATE;	//剣士の大まかなステータスプレート
+	CCSprite *UI_PL_ATTACKER_HPBAR;			//剣士のHP
+	CCSprite *UI_PL_ATTACKER_MANABAR;		//剣士のMN
+	LabelTTF *attackerhpal;					//剣士のHP表記
+	LabelTTF *attackerhpmaxal;				//HPの最大値
+	LabelTTF *attackermnal;					//剣士のMN表記
+	LabelTTF *attackermnmaxal;				//MANAの最大値
+	LabelTTF *attackerdmf;					//剣士ダメージ表示
+	CCFadeOut *attackerfadeout;				//剣士ダメージ表示フェードアウトの時間
+	CCSequence *attackerfdoutmov;			//剣士ダメージ表示フェードアウト時の動き
 	 //騎士のUI
-	CCSprite *PL_SHIELD_STATUSPLATE;		//騎士の大まかなステータスプレート
-	CCSprite *PL_SHIELD_HPBAR;		//騎士のHP
-	CCSprite *PL_SHIELD_MANAHAR;		//騎士のMN
-	LabelTTF *shieldhpal;	//騎士のHP表記
-	LabelTTF *shieldhpmaxal;//HPの最大値
-	LabelTTF *shieldmnal;	//騎士のMN表記
-	LabelTTF *shieldmnmaxal;//MANAの最大値
-	LabelTTF *shielddmf;	//騎士ダメージ表示
-	CCFadeOut *shieldfadeout;//騎士ダメージ表示フェードアウトの時間
-	CCSequence *shieldfdoutmov;//騎士ダメージ表示フェードアウト時の動き
+	CCSprite *UI_PL_SHIELD_STATUSPLATE;		//騎士の大まかなステータスプレート
+	CCSprite *UI_PL_SHIELD_HPBAR;			//騎士のHP
+	CCSprite *UI_PL_SHIELD_MANABAR;			//騎士のMN
+	LabelTTF *shieldhpal;					//騎士のHP表記
+	LabelTTF *shieldhpmaxal;				//HPの最大値
+	LabelTTF *shieldmnal;					//騎士のMN表記
+	LabelTTF *shieldmnmaxal;				//MANAの最大値
+	LabelTTF *shielddmf;					//騎士ダメージ表示
+	CCFadeOut *shieldfadeout;				//騎士ダメージ表示フェードアウトの時間
+	CCSequence *shieldfdoutmov;				//騎士ダメージ表示フェードアウト時の動き
 	//魔術師のUI
-	CCSprite *PL_MAGIC_STATUSPLATE;		//魔術師の大まかなステータスプレート
-	CCSprite *PL_MAGIC_HPBAR;		//魔術師のHP
-	CCSprite *PL_MAGIC_MANAHAR;		//魔術師のMN
-	LabelTTF *magichpal;	//魔術師のHP表記
-	LabelTTF *magichpmaxal;	//HPの最大値
-	LabelTTF *magicmnal;	//魔術師のMN表記
-	LabelTTF *magicmnmaxal;	//MANAの最大値
-	LabelTTF *magicdmf;		//魔術師ダメージ表示
-	CCFadeOut *magicfadeout;//魔術師ダメージ表示フェードアウトの時間
-	CCSequence *magicfdoutmov;	//魔術師ダメージ表示フェードアウト時の動き
+	CCSprite *UI_PL_MAGIC_STATUSPLATE;		//魔術師の大まかなステータスプレート
+	CCSprite *UI_PL_MAGIC_HPBAR;			//魔術師のHP
+	CCSprite *UI_PL_MAGIC_MANABAR;			//魔術師のMN
+	LabelTTF *magichpal;					//魔術師のHP表記
+	LabelTTF *magichpmaxal;					//HPの最大値
+	LabelTTF *magicmnal;					//魔術師のMN表記
+	LabelTTF *magicmnmaxal;					//MANAの最大値
+	LabelTTF *magicdmf;						//魔術師ダメージ表示
+	CCFadeOut *magicfadeout;				//魔術師ダメージ表示フェードアウトの時間
+	CCSequence *magicfdoutmov;				//魔術師ダメージ表示フェードアウト時の動き
 	//聖職者のUI
-	CCSprite *PL_HEALER_STATUSPLATE;		//聖職者の大まかなステータスプレート
-	CCSprite *PL_HEALER_HPBAR;		//聖職者のHP
-	CCSprite *PL_HEALER_MANAHAR;		//聖職者のMN
-	LabelTTF *healerhpal;	//聖職者のHP表記
-	LabelTTF *healerhpmaxal;//HPの最大値
-	LabelTTF *healermnal;	//聖職者のMN表記
-	LabelTTF *healermnmaxal;//MANAの最大値
-	LabelTTF *healerdmf;	//聖職者ダメージ表示
-	CCFadeOut *healerfadeout;//聖職者ダメージ表示フェードアウトの時間
-	CCSequence *healerfdoutmov;//聖職者ダメージ表示フェードアウト時の動き
+	CCSprite *UI_PL_HEALER_STATUSPLATE;		//聖職者の大まかなステータスプレート
+	CCSprite *UI_PL_HEALER_HPBAR;			//聖職者のHP
+	CCSprite *UI_PL_HEALER_MANABAR;			//聖職者のMN
+	LabelTTF *healerhpal;					//聖職者のHP表記
+	LabelTTF *healerhpmaxal;				//HPの最大値
+	LabelTTF *healermnal;					//聖職者のMN表記
+	LabelTTF *healermnmaxal;				//MANAの最大値
+	LabelTTF *healerdmf;					//聖職者ダメージ表示
+	CCFadeOut *healerfadeout;				//聖職者ダメージ表示フェードアウトの時間
+	CCSequence *healerfdoutmov;				//聖職者ダメージ表示フェードアウト時の動き
 	//ボスのUI
-	CCSprite *BOSS_VALKYRIE;		//ボス
-	CCSprite *Efect;				//パーティクル
-	CCSprite *BOSS_HPBAR;			//ボスのhp
-	CCSprite *BOSS_BACK_HPBAR;		//ボスのhpの後ろ
-	Repeat *bossrepeat;				//ボスがダメージを受けた時に揺らす処理
+	CCSprite *BOSS_VALKYRIE;				//ボス
+	CCSprite *Efect;						//パーティクル
+	CCSprite *UI_BOSS_HPBAR;				//ボスのhp
+	CCSprite *UI_BOSS_BACK_HPBAR;			//ボスのhpの後ろ
+	Repeat *bossrepeat;						//ボスがダメージを受けた時に揺らす処理
 	//敵からダメージを受けた時の揺れの大きさ
 	Repeat* attacker_repeat_bigquake[7];	//剣士のUIを揺らす処理(揺らす幅が大きい)	
 	Repeat* attacker_repeat_smallquake[7];	//剣士のUIを揺らす処理(揺らす幅が小さい)	
@@ -569,6 +569,7 @@ public:
 	virtual void BSturn();				//ボスのターン
 	virtual void Damage();				//ダメージを受けた時の処理
 	virtual void Skillturn();			//スキルの効果が切れたかどうかを判断するための処理
+	void Pick();						//狙うプレイヤーを決める関数
 	virtual bool onTouchBegan(cocos2d::Touch* touch, cocos2d::Event* event);	//タッチ開始
 	virtual void onTouchMove(cocos2d::Touch* touch, cocos2d::Event* event);		//スワイプ
 	virtual void onTouchEnded(cocos2d::Touch* touch, cocos2d::Event* event);	//タッチ終了
