@@ -4118,13 +4118,13 @@ void BossScene::BSturn()
 				//剣士
 				if (job == ATTACKER) {
 					if (attacker_defenceflag == false) {
-						hpcut = (valkyrie.atk - attacker.def);
+						hpcut = (valkyrie.atk / 2 - attacker.def / 4);
 						hpcut = max(1, hpcut);						//もし減らすHPが1以下の場合1にする
 						attacker.hp -= hpcut;						//HPを減らす
 						
 					}
 					else if (attacker_defenceflag == true) {
-						hpcut = (valkyrie.atk - attacker.def) / 2;
+						hpcut = (valkyrie.atk / 2 - attacker.def / 4) / 2;
 						hpcut = max(1, hpcut);						//もし減らすHPが1以下の場合1にする
 						attacker.hp -= hpcut;
 					}
@@ -4145,12 +4145,12 @@ void BossScene::BSturn()
 				//騎士
 				else if (job == SHIELD) {
 					if (shield_defenceflag == false) {
-						hpcut = (valkyrie.atk - shield.def);
+						hpcut = (valkyrie.atk / 2 - shield.def / 4);
 						hpcut = max(1, hpcut);							//もし減らすHPが1以下の場合1にする
 						shield.hp -= hpcut;
 					}
 					else if (shield_defenceflag == true) {
-						hpcut = (valkyrie.atk - shield.def) / 2;
+						hpcut = (valkyrie.atk / 4- shield.def / 2) / 2;
 						hpcut = max(1, hpcut);							//もし減らすHPが1以下の場合1にする
 						shield.hp -= hpcut;
 					}
@@ -4171,12 +4171,12 @@ void BossScene::BSturn()
 				//魔術師
 				else if (job == MAGIC) {
 					if (magic_defenceflag == false) {
-						hpcut = (valkyrie.atk - magic.def);
+						hpcut = (valkyrie.atk / 4 - magic.def / 2);
 						hpcut = max(1, hpcut);							//もし減らすHPが1以下の場合1にする
 						magic.hp -= hpcut;
 					}
 					else if (magic_defenceflag == true) {
-						hpcut = (valkyrie.atk - magic.def) / 2;
+						hpcut = (valkyrie.atk / 4 - magic.def / 2) / 2;
 						hpcut = max(1, hpcut);							//もし減らすHPが1以下の場合1にする
 						magic.hp -= hpcut;
 					}
@@ -4197,12 +4197,12 @@ void BossScene::BSturn()
 				//聖職者
 				else if (job == HEALER) {
 					if (healer_defenceflag == false) {
-						hpcut = (valkyrie.atk - healer.def);
+						hpcut = (valkyrie.atk / 4 - healer.def / 2);
 						hpcut = max(1, hpcut);							//もし減らすHPが1以下の場合1にする
 						healer.hp -= hpcut;
 					}
 					else if (healer_defenceflag == true) {
-						hpcut = (valkyrie.atk - healer.def) / 2;
+						hpcut = (valkyrie.atk / 4 - healer.def / 2) / 2;
 						hpcut = max(1, hpcut);							//もし減らすHPが1以下の場合1にする
 						healer.hp -= hpcut;
 					}
@@ -4228,7 +4228,7 @@ void BossScene::BSturn()
 				if (sskillchoice == ATTACKER) {
 					//剣士
 					if (job == ATTACKER) {
-						hpcut = (valkyrie.atk - shield.def) / 2;			//減らすダメージを計算
+						hpcut = (valkyrie.atk / 2 - shield.def / 4) / 2;			//減らすダメージを計算
 						hpcut = max(1, hpcut);								//もし減らすHPが1以下の場合1にする
 						shield.hp -= hpcut;									//HPを減らす
 						shielddmf->setString(std::to_string(hpcut));		//ダメージを変化させる
@@ -4246,7 +4246,7 @@ void BossScene::BSturn()
 					}
 					//騎士
 					if (job == SHIELD) {
-						hpcut = (valkyrie.atk - shield.def);
+						hpcut = (valkyrie.atk / 2 - shield.def / 4);
 						hpcut = max(1, hpcut);										//もし減らすHPが1以下の場合1にする
 						shield.hp -= hpcut;
 						UI_PL_SHIELD_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
@@ -4266,12 +4266,12 @@ void BossScene::BSturn()
 					//魔術師
 					if (job == MAGIC) {
 						if (magic_defenceflag == false) {
-							hpcut = (valkyrie.atk - magic.def);
+							hpcut = (valkyrie.atk / 2 - magic.def / 4);
 							hpcut = max(1, hpcut);									//もし減らすHPが1以下の場合1にする
 							magic.hp -= hpcut;
 						}
 						else if (magic_defenceflag == true) {
-							hpcut = (valkyrie.atk - magic.def) / 2;
+							hpcut = (valkyrie.atk / 2 - magic.def / 4) / 2;
 							hpcut = max(1, hpcut);									//もし減らすHPが1以下の場合1にする
 							magic.hp -= hpcut;
 						}
@@ -4292,12 +4292,12 @@ void BossScene::BSturn()
 					//聖職者
 					if (job == HEALER) {
 						if (healer_defenceflag == false) {
-							hpcut = (valkyrie.atk - healer.def);
+							hpcut = (valkyrie.atk / 2 - healer.def / 4);
 							hpcut = max(1, hpcut);										//もし減らすHPが1以下の場合1にする
 							healer.hp -= hpcut;
 						}
 						else if (healer_defenceflag == true) {
-							hpcut = (valkyrie.atk - healer.def) / 2;
+							hpcut = (valkyrie.atk / 2 - healer.def / 4) / 2;
 							hpcut = max(1, hpcut);										//もし減らすHPが1以下の場合1にする
 							healer.hp -= hpcut;
 						}
@@ -4321,12 +4321,12 @@ void BossScene::BSturn()
 					//剣士
 					if (job == ATTACKER) {
 						if (attacker_defenceflag == false) {
-							hpcut = (valkyrie.atk * skillupmedium) - attacker.def;	//減らすダメージを計算
+							hpcut = (valkyrie.atk / 2 * skillupmedium / 4) - attacker.def;	//減らすダメージを計算
 							hpcut = max(1, hpcut);									//もし減らすHPが1以下の場合1にする
 							attacker.hp -= hpcut;									//HPを減らす
 						}
 						else if (attacker_defenceflag == true) {
-							hpcut = (valkyrie.atk - attacker.def) / 2;				//減らすダメージを計算
+							hpcut = (valkyrie.atk / 2 - attacker.def / 4) / 2;				//減らすダメージを計算
 							hpcut = max(1, hpcut);									//もし減らすHPが1以下の場合1にする
 							attacker.hp -= hpcut;									//HPを減らす
 						}
@@ -4345,7 +4345,7 @@ void BossScene::BSturn()
 					}
 					//騎士
 					if (job == SHIELD) {
-						hpcut = (valkyrie.atk - shield.def);
+						hpcut = (valkyrie.atk / 2 - shield.def / 4);
 						hpcut = max(1, hpcut);										//もし減らすHPが1以下の場合1にする
 						shield.hp -= hpcut;
 						UI_PL_SHIELD_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
@@ -4365,7 +4365,7 @@ void BossScene::BSturn()
 					//魔術師
 					if (job == MAGIC) {
 						//魔術師の代わりに騎士がダメージをくらう
-						hpcut = (valkyrie.atk * skillupmedium) - shield.def;//減らすダメージを計算
+						hpcut = (valkyrie.atk / 2 - shield.def / 4);//減らすダメージを計算
 						hpcut = max(1, hpcut);								//もし減らすHPが1以下の場合1にする
 						shield.hp -= hpcut;									//HPを減らす
 						shielddmf->setString(std::to_string(hpcut));		//ダメージを変化させる
@@ -4385,12 +4385,12 @@ void BossScene::BSturn()
 					//聖職者
 					if (job == HEALER) {
 						if (healer_defenceflag == false) {
-							hpcut = (valkyrie.atk - healer.def);
+							hpcut = (valkyrie.atk / 2 - healer.def / 4);
 							hpcut = max(1, hpcut);										//もし減らすHPが1以下の場合1にする
 							healer.hp -= hpcut;
 						}
 						else if (healer_defenceflag == true) {
-							hpcut = (valkyrie.atk - healer.def) / 2;
+							hpcut = (valkyrie.atk / 2 - healer.def / 4) / 2;
 							hpcut = max(1, hpcut);										//もし減らすHPが1以下の場合1にする
 							healer.hp -= hpcut;
 						}
@@ -4414,12 +4414,12 @@ void BossScene::BSturn()
 					//剣士
 					if (job == ATTACKER) {
 						if (attacker_defenceflag == false) {
-							hpcut = (valkyrie.atk * skillupmedium) - attacker.def;//減らすダメージを計算
+							hpcut = (valkyrie.atk / 2 - attacker.def / 4);//減らすダメージを計算
 							hpcut = max(1, hpcut);									//もし減らすHPが1以下の場合1にする
 							attacker.hp -= hpcut;									//HPを減らす
 						}
 						else if (attacker_defenceflag == true) {
-							hpcut = (valkyrie.atk - attacker.def) / 2;				//減らすダメージを計算
+							hpcut = (valkyrie.atk / 2 - attacker.def / 4) / 2;				//減らすダメージを計算
 							hpcut = max(1, hpcut);									//もし減らすHPが1以下の場合1にする
 							attacker.hp -= hpcut;
 						}
@@ -4438,7 +4438,7 @@ void BossScene::BSturn()
 					}
 					//騎士
 					if (job == SHIELD) {
-						hpcut = (valkyrie.atk - shield.def);
+						hpcut = (valkyrie.atk / 2 - shield.def / 4);
 						hpcut = max(1, hpcut);									//もし減らすHPが1以下の場合1にする
 						shield.hp -= hpcut;
 						UI_PL_SHIELD_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
@@ -4458,12 +4458,12 @@ void BossScene::BSturn()
 					//魔術師
 					if (job == MAGIC) {
 						if (magic_defenceflag == false) {
-							hpcut = (valkyrie.atk - magic.def);
+							hpcut = (valkyrie.atk / 2 - magic.def / 4);
 							hpcut = max(1, hpcut);									//もし減らすHPが1以下の場合1にする
 							magic.hp -= hpcut;
 						}
 						else if (magic_defenceflag == true) {
-							hpcut = (valkyrie.atk - magic.def) / 2;
+							hpcut = (valkyrie.atk / 2 - magic.def / 4) / 2;
 							hpcut = max(1, hpcut);									//もし減らすHPが1以下の場合1にする
 							magic.hp -= hpcut;
 						}
@@ -4484,7 +4484,7 @@ void BossScene::BSturn()
 					//聖職者
 					if (job == HEALER) {
 						//聖職者の代わりに騎士がダメージをくらう
-						hpcut = (valkyrie.atk * skillupmedium) - shield.def;//減らすダメージを計算
+						hpcut = (valkyrie.atk / 2 - shield.def / 4);//減らすダメージを計算
 						hpcut = max(1, hpcut);								//もし減らすHPが1以下の場合1にする
 						shield.hp -= hpcut;									//HPを減らす
 						shielddmf->setString(std::to_string(hpcut));		//ダメージを変化させる
