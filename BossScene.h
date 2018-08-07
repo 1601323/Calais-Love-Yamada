@@ -4,6 +4,18 @@
 #include "cocos2d.h"
 #include <random>
 
+#define BUFFUP_RECORD_VALUE_NUMBER 2			//上昇した値を記録する数
+#define BUFFDOWN_RECORD_VALUE_NUMBER 2			//下降した値を記録する数
+#define SKILL_RECORD_TURN 6						//スキルのターンを記録する数
+#define SKILL_RECORD_FLAG 6						//スキルのフラグ管理を記録する数
+#define ALLSKILL_BUFF_NUMBER 4					//全体スキルのバフをかけたステータスの種類
+#define ALLSKILL_RECORD_TURN 5					//全体スキルのターン数を記録する数
+#define ALLSKILL_BUFF_VALUE_NUMBER 4			//全体スキルの上昇した値の種類
+#define SIMPLESUBSTANCESKILL_BUFFUP_NUMBER 2	//単体スキルのバフをかけたステータスの種類
+#define SIMPLESUBSTANCESKILL_BUFFDOWN_NUMBER 2	//単体スキルのバフをかけたステータスの種類
+#define SIMPLESUBSTANCESKILL_RECORD_TURN 6		//単体スキルのターン数を記録する数
+
+
 USING_NS_CC;
 
 class BossScene :public cocos2d::Layer
@@ -15,13 +27,21 @@ public:
 		BOSS,			//敵のターン
 	};
 
-	//とりあえずプレイヤーを増やします
+	//職業
 	enum JOB {
 		NON,			//何も選択されていない
 		ATTACKER,		//剣士
 		SHIELD,			//騎士
 		MAGIC,			//魔術師
 		HEALER,			//聖職者
+	};
+	
+	//選択系で職業を選ぶ
+	enum SJOB {
+		S_ATTACKER,		//剣士
+		S_SHIELD,		//騎士
+		S_MAGIC,		//魔術師
+		S_HEALER,		//聖職者
 	};
 
 	//バトル中の処理
@@ -37,7 +57,9 @@ public:
 		CHAR1,			//キャラ枠1
 		CHAR2,			//キャラ枠2
 		CHAR3,			//キャラ枠3
-		CHOICETIME,		//スキルによる選択
+		CHOICETIME_SHIELD,//スキルによる選択(同じところでしたらif文を通り抜けてタッチをしてしまうから分けておく)
+		CHOICETIME_MAGIC,
+		CHOICETIME_HEALER,
 	};
 
 	//PL1の状態
@@ -45,6 +67,8 @@ public:
 		PL1NON,			//何もしない
 		PL1ATTACK,		//攻撃
 		PL1SKILL,		//スキル
+		PL1DEFENCE,		//防御
+		PL1ITEM,		//アイテム
 		PL1DEATH,		//死亡状態
 	};
 	//PL2の状態
@@ -52,6 +76,8 @@ public:
 		PL2NON,			
 		PL2ATTACK,
 		PL2SKILL,
+		PL2DEFENCE,	
+		PL2ITEM,		
 		PL2DEATH,
 	};
 	//PL3の状態
@@ -59,6 +85,8 @@ public:
 		PL3NON,			
 		PL3ATTACK,
 		PL3SKILL,
+		PL3DEFENCE,		
+		PL3ITEM,		
 		PL3DEATH,
 	};
 
@@ -176,79 +204,19 @@ public:
 		bool deathflag = false;	//死亡したかどうか
 	};
 
-	//スキル効果ターン
+	//スキルの効果とターン
 	struct BUFFTURN {
-		//単体バフ
-		int buffupefect1 = 0;	//スキルの効果で上がったステータス(後で上がったステータスから引くためのもの)
-		int buffupefect2 = 0;	//スキルの効果で上がったステータス(後で上がったステータスから引くためのもの)
-		int buffupefect3 = 0;	//スキルの効果で上がったステータス(後で上がったステータスから引くためのもの)
-		int buffupefect4 = 0;	//スキルの効果で上がったステータス(後で上がったステータスから引くためのもの)
-		int buffupefect5 = 0;	//スキルの効果で上がったステータス(後で上がったステータスから引くためのもの)
-		int buffupefect6 = 0;	//スキルの効果で上がったステータス(後で上がったステータスから引くためのもの)
-		int buffdownefect1 = 0;	//スキルの効果で下がったステータス(後で下がったステータスから足すためのもの)
-		int buffdownefect2 = 0;	//スキルの効果で下がったステータス(後で下がったステータスから足すためのもの)
-		int buffdownefect3 = 0;;//スキルの効果で下がったステータス(後で下がったステータスから足すためのもの)
-		int buffdownefect4 = 0;	//スキルの効果で下がったステータス(後で下がったステータスから足すためのもの)
-		int buffdownefect5 = 0;	//スキルの効果で下がったステータス(後で下がったステータスから足すためのもの)
-		int buffdownefect6 = 0;	//スキルの効果で下がったステータス(後で下がったステータスから足すためのもの)
-		//全体バフ
-		//剣士
-		int attackeratkbuff1 = 0;	//スキルの効果で上がったステ(剣士、攻撃力)
-		int attackerdefbuff1 = 0;	//スキルの効果で上がったステ(剣士、防御力)
-		int attackeratkbuff2 = 0;	//スキルの効果で上がったステ(剣士、攻撃力)
-		int attackerdefbuff2 = 0;	//スキルの効果で上がったステ(剣士、防御力)
-		int attackeratkbuff3 = 0;	//スキルの効果で上がったステ(剣士、攻撃力)
-		int attackerdefbuff3 = 0;	//スキルの効果で上がったステ(剣士、防御力)
-		int attackeratkbuff4 = 0;	//スキルの効果で上がったステ(剣士、攻撃力)
-		int attackerdefbuff4 = 0;	//スキルの効果で上がったステ(剣士、防御力)
-		int attackeratkbuff5 = 0;	//スキルの効果で上がったステ(剣士、攻撃力)
-		int attackerdefbuff5 = 0;	//スキルの効果で上がったステ(剣士、防御力)
-		//騎士
-		int shieldatkbuff1 = 0;	//スキルの効果で上がったステ(騎士、攻撃力)
-		int shielddefbuff1 = 0;	//スキルの効果で上がったステ(騎士、防御力)
-		int shieldatkbuff2 = 0;	//スキルの効果で上がったステ(騎士、攻撃力)
-		int shielddefbuff2 = 0;	//スキルの効果で上がったステ(騎士、防御力)
-		int shieldatkbuff3 = 0;	//スキルの効果で上がったステ(騎士、攻撃力)
-		int shielddefbuff3 = 0;	//スキルの効果で上がったステ(騎士、防御力)
-		int shieldatkbuff4 = 0;	//スキルの効果で上がったステ(騎士、攻撃力)
-		int shielddefbuff4 = 0;	//スキルの効果で上がったステ(騎士、防御力)
-		int shieldatkbuff5 = 0;	//スキルの効果で上がったステ(騎士、攻撃力)
-		int shielddefbuff5 = 0;	//スキルの効果で上がったステ(騎士、防御力)
-		//魔術師
-		int magicatkbuff1 = 0;	//スキルの効果で上がったステ(魔術師、攻撃力)
-		int magicdefbuff1 = 0;	//スキルの効果で上がったステ(魔術師、防御力)
-		int magicatkbuff2 = 0;	//スキルの効果で上がったステ(魔術師、攻撃力)
-		int magicdefbuff2 = 0;	//スキルの効果で上がったステ(魔術師、防御力)
-		int magicatkbuff3 = 0;	//スキルの効果で上がったステ(魔術師、攻撃力)
-		int magicdefbuff3 = 0;	//スキルの効果で上がったステ(魔術師、防御力)
-		int magicatkbuff4 = 0;	//スキルの効果で上がったステ(魔術師、攻撃力)
-		int magicdefbuff4 = 0;	//スキルの効果で上がったステ(魔術師、防御力)
-		int magicatkbuff5 = 0;	//スキルの効果で上がったステ(魔術師、攻撃力)
-		int magicdefbuff5 = 0;	//スキルの効果で上がったステ(魔術師、防御力)
-		//聖職者
-		int healeratkbuff1 = 0;	//スキルの効果で上がったステ(聖職者、攻撃力)
-		int healerdefbuff1 = 0;	//スキルの効果で上がったステ(聖職者、防御力)
-		int healeratkbuff2 = 0;	//スキルの効果で上がったステ(聖職者、攻撃力)
-		int healerdefbuff2 = 0;	//スキルの効果で上がったステ(聖職者、防御力)
-		int healeratkbuff3 = 0;	//スキルの効果で上がったステ(聖職者、攻撃力)
-		int healerdefbuff3 = 0;	//スキルの効果で上がったステ(聖職者、防御力)
-		int healeratkbuff4 = 0;	//スキルの効果で上がったステ(聖職者、攻撃力)
-		int healerdefbuff4 = 0;	//スキルの効果で上がったステ(聖職者、防御力)
-		int healeratkbuff5 = 0;	//スキルの効果で上がったステ(聖職者、攻撃力)
-		int healerdefbuff5 = 0;	//スキルの効果で上がったステ(聖職者、防御力)
 		//共通
-		int buffturn1 = 0;	//スキルの効果が続くターン数
-		int buffturn2 = 0;	//スキルの効果が続くターン数
-		int buffturn3 = 0;	//スキルの効果が続くターン数
-		int buffturn4 = 0;	//スキルの効果が続くターン数
-		int buffturn5 = 0;	//スキルの効果が続くターン数
-		int buffturn6 = 0;	//スキルの効果が続くターン数
-		bool buffendflag1 = false;	//スキルのあれこれが終わったか調べる
-		bool buffendflag2 = false;	//スキルのあれこれが終わったか調べる
-		bool buffendflag3 = false;	//スキルのあれこれが終わったか調べる
-		bool buffendflag4 = false;	//スキルのあれこれが終わったか調べる
-		bool buffendflag5 = false;	//スキルのあれこれが終わったか調べる
-		bool buffendflag6 = false;	//スキルのあれこれが終わったか調べる
+		int buffturn[SKILL_RECORD_TURN];
+		bool buffendflag[SKILL_RECORD_FLAG];
+		//単体スキルのバフ
+		int buffupefect[SIMPLESUBSTANCESKILL_BUFFUP_NUMBER][SIMPLESUBSTANCESKILL_RECORD_TURN];	//スキルの効果で上がったステータス(後で上がったステータスから引くためのもの)
+		int buffdownefect[SIMPLESUBSTANCESKILL_BUFFDOWN_NUMBER][SIMPLESUBSTANCESKILL_RECORD_TURN];	//スキルの効果で下がったステータス(後で下がったステータスから足すためのもの)
+		//全体スキルのバフ
+		int attackerbuff[ALLSKILL_BUFF_NUMBER][ALLSKILL_RECORD_TURN];	//スキルの効果で上がったステ(剣士)
+		int shieldbuff[ALLSKILL_BUFF_NUMBER][ALLSKILL_RECORD_TURN];		//スキルの効果で上がったステ(騎士)
+		int magicbuff[ALLSKILL_BUFF_NUMBER][ALLSKILL_RECORD_TURN];		//スキルの効果で上がったステ(魔術師)
+		int healerbuff[ALLSKILL_BUFF_NUMBER][ALLSKILL_RECORD_TURN];		//スキルの効果で上がったステ(聖職者)
 	};
 
 	//タグ(定数)
@@ -288,16 +256,16 @@ public:
 	const int bossturnI = 100;			//BSTURN(画像)※消す予定
 
 	//パーセント計算(定数)
-	const int tenpercent = 10;			//1割(10)
-	const int twentypercent = 20;		//2割(20)
-	const int thirtypercent = 30;		//3割(30)
-	const int fortypercent = 40;		//4割(40)
-	const int fiftypercent = 50;		//5割(50)
-	const int sixtypercent = 60;		//6割(60)
-	const int seventypercent = 70;		//7割(70)
-	const int eightypercent = 80;		//8割(80)
-	const int ninetypercent = 90;		//9割(90)
-	const int hundredpercent = 100;		//10割(100)
+	const int tenpercent = 10;			//1割(10%)
+	const int twentypercent = 20;		//2割(20%)
+	const int thirtypercent = 30;		//3割(30%)
+	const int fortypercent = 40;		//4割(40%)
+	const int fiftypercent = 50;		//5割(50%)
+	const int sixtypercent = 60;		//6割(60%)
+	const int seventypercent = 70;		//7割(70%)
+	const int eightypercent = 80;		//8割(80%)
+	const int ninetypercent = 90;		//9割(90%)
+	const int hundredpercent = 100;		//10割(100%)
 
 	//定数
 	const int backdepth = 1;		//奥行(後ろ)
@@ -305,14 +273,14 @@ public:
 	const int prevdepth = 3;		//奥行(前)
 	const int onece = 4;			//一番手前
 	const int manarecovery = 5;		//聖職者スキル１のマナを渡す量
-	const int continuity1 = 3;		//揺らす回数1
-	const int continuity2 = 6;		//揺らす回数2
+	const int continuity_few = 3;	//揺らすが少ないほう(揺れが少ない)
+	const int continuity_many = 6;	//揺らすが多いほう(揺れが大きい)
 	const int moverange = 20;		//移動させる値
 	const int fontsizeS = 20;		//文字の大きさ(Sサイズ)
 	const int fontsizeM = 30;		//文字の大きさ(Mサイズ)
 	const int fontsizeL = 40;		//文字の大きさ(Lサイズ)
 	const int fontsizeXL = 50;		//文字の大きさ(XLサイズ)
-	const int flame0 = 0;			//ふれーむが0
+	const int flamemin = 0;			//フレームの最小値
 	const int flame15 = 15;			//フレームが15
 	const int flame30 = 30;			//フレームが15
 	const int flame50 = 50;			//フレームが50
@@ -352,30 +320,24 @@ public:
 	const float skillupmedium = 1.2f;	//スキル倍率中(1.2倍)
 	const float skilluplarge = 1.5f;	//スキル倍率大(1.5倍)
 	const float buffuplittle = 0.05f;	//ステータスアップ倍率小(0.05倍)
-	const float buffdownlittle = 0.25f;	//ステ―タスダウン倍率小(0.2倍)
+	const float buffdownlittle = 0.25f;	//ステ―タスダウン倍率小(0.25倍)
 	const float buffdownlarge = 0.5f;	//ステ―タスダウン倍率大(0.5倍)
 	const float recoveryattackerskill = 0.3f;//剣士のスキルの回復倍率小(0.3倍)
 	const float recoverymedium = 0.4f;	//回復倍率中(0.4倍)
-
-
-
+	
 	//変数
+	int buffup_value[BUFFUP_RECORD_VALUE_NUMBER];		//ステータス上昇(atkとmatkまたはdefとmdef)
+	int buffdown_value[BUFFDOWN_RECORD_VALUE_NUMBER];	//ステータス下降(atkとmatkまたはdefとmdef)
+	int attackerbuffup[ALLSKILL_BUFF_VALUE_NUMBER];		//バフの計算をした後に数値を入れるところ(剣士)
+	int shieldbuffup[ALLSKILL_BUFF_VALUE_NUMBER];		//バフの計算をした後に数値を入れるところ(騎士)
+	int magicbuffup[ALLSKILL_BUFF_VALUE_NUMBER];		//バフの計算をした後に数値を入れるところ(魔術師)
+	int healerbuffup[ALLSKILL_BUFF_VALUE_NUMBER];		//バフの計算をした後に数値を入れるところ(聖職者)
 	int battleturn = 0;			//ターン数
 	int actcnt = 0;				//ボスの動く回数
 	int bsskillrecovery = 0;	//ボススキル4の回復の量
 	int hpcut = 0;				//計算した後のダメージ
-	int buffup = 0;				//ステータス上昇
-	int buffdown = 0;			//ステータス下降
 	int	recovery = 0;			//回復量
 	int opacity = 255;			//透明度
-	int attackeratkbuffup = 0;	//バフの計算をした後に数値を入れるところ(剣士、攻撃力)
-	int attackerdefbuffup = 0;	//バフの計算をした後に数値を入れるところ(剣士、防御力)
-	int shieldatkbuffup = 0;	//バフの計算をした後に数値を入れるところ(騎士、攻撃力)
-	int shielddefbuffup = 0;	//バフの計算をした後に数値を入れるところ(騎士、防御力)
-	int magicatkbuffup = 0;		//バフの計算をした後に数値を入れるところ(魔術師、攻撃力)
-	int magicdefbuffup = 0;		//バフの計算をした後に数値を入れるところ(魔術師、防御力)
-	int healeratkbuffup = 0;	//バフの計算をした後に数値を入れるところ(聖職者、攻撃力)
-	int healerdefbuffup = 0;	//バフの計算をした後に数値を入れるところ(聖職者、防御力)
 	int rnd = random();			//最大値までの乱数を取得
 	int act_rnd = rndmin;		//指定した範囲内の乱数を取得(ボスの動く回数)
 	int pick_rnd = rndmin;		//指定した範囲内の乱数を取得(プレイヤーのキャラを選択)
@@ -383,21 +345,25 @@ public:
 	int decide_rnd = rndmin;	//指定した範囲内の乱数を取得(ボスの動き)
 	int recovery_rnd = rndmin;	//指定した範囲内の乱数を取得(回復する値)
 	float movecnt = 0.05f;		//画像を動かす時間
-	float attackerhpgaugewidth = 0.0f;	//剣士HPゲージの横のサイズ
-	float attackermngaugewidth = 0.0f;	//剣士MNゲージの横のサイズ
-	float shieldhpgaugewidth = 0.0f;	//騎士HPゲージの横のサイズ
-	float shieldmngaugewidth = 0.0f;	//騎士MNゲージの横のサイズ
-	float healerhpgaugewidth = 0.0f;	//魔術師HPゲージの横のサイズ
-	float healermngaugewidth = 0.0f;	//魔術師MNゲージの横のサイズ
-	float magichpgaugewidth = 0.0f;		//聖職者HPゲージの横のサイズ
-	float magicmngaugewidth = 0.0f;		//聖職者MNゲージの横のサイズ
-	float bosshpgaugewidth = 0.0f;		//ボスHPゲージの横のサイズ
+	float attacker_hpgauge_width = 0.0f;	//剣士HPゲージの横のサイズ
+	float attacker_mngauge_width = 0.0f;	//剣士MNゲージの横のサイズ
+	float shield_hpgauge_width = 0.0f;		//騎士HPゲージの横のサイズ
+	float shield_mngauge_width = 0.0f;		//騎士MNゲージの横のサイズ
+	float magic_hpgauge_width = 0.0f;		//魔術師HPゲージの横のサイズ
+	float magic_mngauge_width = 0.0f;		//魔術師MNゲージの横のサイズ
+	float healer_hpgauge_width = 0.0f;		//聖職者HPゲージの横のサイズ
+	float healer_mngauge_width = 0.0f;		//聖職者MNゲージの横のサイズ
+	float boss_hpgauge_width = 0.0f;		//ボスHPゲージの横のサイズ
+	bool coverflag[2];						//ボスのたげ集中
+	bool attacker_defenceflag = false;		//防御しているかどうか(剣士)
+	bool shield_defenceflag = false;		//防御しているかどうか(騎士)
+	bool magic_defenceflag = false;			//防御しているかどうか(魔術師)
+	bool healer_defenceflag = false;		//防御しているかどうか(聖職者)
 	bool flag = false;						//ボスの状態
 	bool state = false;						//プレイヤーの状態
+	bool push_buttonflag = false;			//ボタンが押せるかどうか
 	bool insteadflag = false;				//騎士のスキルで身代わり状態かどうか
 	bool allinsteadflag = false;			//騎士スキルで全員の身代わり状態かどうか
-	bool coverflag1 = false;				//騎士のスキルでタゲ集中状態かどうか
-	bool coverflag2= false;					//騎士のスキルでタゲ集中状態かどうか
 	bool resurrectionflag = false;			//騎士復活フラグ
 	bool counter_attackflag = false;		//騎士カウンターフラグ
 	bool attackendflag = false;				//攻撃が終わったかどうか
@@ -409,13 +375,14 @@ public:
 	bool shield_choice_skillflag = false;	//選択系スキルの時ほかの職業の選択スキルと交わらない様にすためのもの(騎士)
 	bool magic_choice_skillflag = false;	//選択系スキルの時ほかの職業の選択スキルと交わらない様にすためのもの(魔術師)
 	bool healer_choice_skillflag = false;	//選択系スキルの時ほかの職業の選択スキルと交わらない様にすためのもの(聖職者)
+	bool allchoice_endflag = false;			//すべての選択を終えたかどうかを
 	long gameflame = 0;						//それぞれのターンの時間
 	long skillflame = 0;					//それぞれのスキルの時間
 	long choicetime = 0;					//ボタンを連続して押さないようにする処理
 
 	//スキル関連
-	bool askill2allworkendflag = false;//剣士のスキル2の処理が全部終わったか調べる処理
-	bool askill4allworkendflag = false;//剣士のスキル4の処理が全部終わったか調べる処理
+	bool askill2_allworkendflag = false;//剣士のスキル2の処理が全部終わったか調べる処理
+	bool askill4_allworkendflag = false;//剣士のスキル4の処理が全部終わったか調べる処理
 	bool askill7allworkendflag = false;//剣士のスキル7の処理が全部終わったか調べる処理
 	bool askill8allworkendflag = false;//剣士のスキル8の処理が全部終わったか調べる処理
 	bool sskill2allworkendflag = false;//騎士のスキル2の処理が全部終わったか調べる処理
@@ -491,8 +458,13 @@ public:
 	CCSprite *emturn;						//BSTURN文字(抹消予定)
 	CCSprite *UI_PUSH_BEFORE_ATTACKBUTTON;	//攻撃コマンド
 	CCSprite *UI_PUSH_AFTER_ATTACKBUTTON;	//攻撃コマンド(押しているとき)
-	CCSprite *SkillButton1;					//スキルコマンド
-	CCSprite *SkillButton2;					//スキルコマンド(押しているとき)
+	CCSprite *UI_PUSH_BEFORE_SKILLBUTTON;	//スキルコマンド
+	CCSprite *UI_PUSH_AFTER_SKILLBUTTON;	//スキルコマンド(押しているとき)
+	CCSprite *UI_PUSH_BEFORE_DEFENCEBUTTON;	//防御コマンド
+	CCSprite *UI_PUSH_AFTER_DEFENCEBUTTON;	//防御コマンド(押しているとき)
+	CCSprite *UI_PUSH_BEFORE_ITEMBUTTON;	//アイテムコマンド
+	CCSprite *UI_PUSH_AFTER_ITEMBUTTON;		//アイテムコマンド(押されているとき)
+	CCSprite *TARGET;						//ターゲット
 	LabelTTF *lo;							//剣士はどうする
 	LabelTTF *ls;							//騎士はどうする
 	LabelTTF *lw;							//魔術師は以下略
@@ -543,7 +515,7 @@ public:
 	CCFadeOut *healerfadeout;				//聖職者ダメージ表示フェードアウトの時間
 	CCSequence *healerfdoutmov;				//聖職者ダメージ表示フェードアウト時の動き
 	//ボスのUI
-	CCSprite *BOSS_VALKYRIE;				//ボス
+	CCSprite *BOSS_VALKYRIE;				//ヴァルキュリ－
 	CCSprite *Efect;						//パーティクル
 	CCSprite *UI_BOSS_HPBAR;				//ボスのhp
 	CCSprite *UI_BOSS_BACK_HPBAR;			//ボスのhpの後ろ
@@ -558,18 +530,20 @@ public:
 	Repeat* healaer_repeat_smallquake[7];	//聖職者のUIを揺らす処理(揺らす幅が大きい)	
 	Repeat* healaer_repeat_bigquake[7];		//聖職者のUIを揺らす処理(揺らす幅が小さい)	
 
+	Size winSize = Director::getInstance()->getWinSize();
 
 	static Scene *createScene();
 	ValueVector BossScene::split(const std::string &str, const std::string &delim);
 	virtual bool init();				//初期化
 	virtual void update(float flame);	//メイン
-	virtual void PLturn();				//プレイヤーのターン
-	virtual void Plattacks();			//プレイヤーの通常攻撃
-	virtual void Plskills();			//プレイヤーのスキル
-	virtual void BSturn();				//ボスのターン
-	virtual void Damage();				//ダメージを受けた時の処理
-	virtual void Skillturn();			//スキルの効果が切れたかどうかを判断するための処理
-	void Pick();						//狙うプレイヤーを決める関数
+	void PLturn();				//プレイヤーのターン
+	void Plattacks();			//プレイヤーの通常攻撃
+	void Plskills();			//プレイヤーのスキル
+	void Pldefence();			//プレイヤーの防御
+	void BSturn();				//ボスのターン
+	void DamageSway();			//ダメージを受けた時に揺らす関数
+	void Skillturn();			//スキルの効果が切れたかどうかを判断するための関数
+	void Pick();				//狙うプレイヤーを決める関数
 	virtual bool onTouchBegan(cocos2d::Touch* touch, cocos2d::Event* event);	//タッチ開始
 	virtual void onTouchMove(cocos2d::Touch* touch, cocos2d::Event* event);		//スワイプ
 	virtual void onTouchEnded(cocos2d::Touch* touch, cocos2d::Event* event);	//タッチ終了

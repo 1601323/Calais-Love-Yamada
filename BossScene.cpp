@@ -1,11 +1,15 @@
 #include "BossScene.h"
 #include "GameClear.h"
 #include "Geometry.h"
-#include <ui/CocosGUI.h>
+#include "SimpleAudioEngine.h"
+#include "ui/UIVideoPlayer.h"
+#include "ui/CocosGUI.h"
 #pragma execution_character_set("utf-8")
 
-using namespace ui;
+using namespace CocosDenshion;
 using namespace std; // String*
+using namespace cocos2d::ui;
+//using namespace cocos2d::experimental::ui;
 
 Scene *BossScene::createScene()
 {
@@ -44,7 +48,7 @@ bool BossScene::init()
 	pl2frame.hpmax = pl2frame.hp;		//HPMAX
 	pl2frame.mana = 75;					//MP
 	pl2frame.manamax = pl2frame.mana;	//MPMAX
-	pl2frame.atk = 61;					//ATK
+	pl2frame.atk = 74;					//ATK
 	pl2frame.atkmax = pl2frame.atk;		//ATKMAX
 	pl2frame.def = 90;					//DEF
 	pl2frame.defmax = pl2frame.def;		//DEFMAX
@@ -74,13 +78,13 @@ bool BossScene::init()
 	valkyrie.hpmax = valkyrie.hp;		//HPMAX
 	valkyrie.mana = 10;					//MP
 	valkyrie.manamax = valkyrie.mana;	//MPMAX
-	valkyrie.atk = 96;					//ATK
+	valkyrie.atk = 72;					//ATK
 	valkyrie.atkmax = valkyrie.atk;		//ATKMAX
-	valkyrie.def = 128;					//DEF
+	valkyrie.def = 40;					//DEF
 	valkyrie.defmax = valkyrie.def;		//DEFMAX
-	valkyrie.matk = 70;					//MATK
+	valkyrie.matk = 67;					//MATK
 	valkyrie.matkmax = valkyrie.matk;	//MATKMAX
-	valkyrie.mdef = 88;					//MDEF
+	valkyrie.mdef = 40;					//MDEF
 	valkyrie.mdefmax = valkyrie.mdef;	//MDEFMAX
 
 	//剣士
@@ -315,35 +319,6 @@ void BossScene::update(float flame)
 		case BossScene::START: {
 
 			skillflame++;
-
-			// 死亡設定
-			//剣士のキャラのHPが0になったら
-			if (pl1frame.choicejob == ATTACKER || pl2frame.choicejob == ATTACKER || pl3frame.choicejob == ATTACKER) {
-				if (attacker.hp == 0) {
-					attacker.deathflag = true;
-				}
-			}
-			//騎士のキャラのHPが0になったら
-			if (pl1frame.choicejob == SHIELD || pl2frame.choicejob == SHIELD || pl3frame.choicejob == SHIELD) {
-				if (shield.hp == 0) {
-					shield.deathflag = true;
-					coverflag1 = false;
-					coverflag2 = false;
-				}
-			}
-			//魔術師のキャラのHPが0になったら
-			if (pl1frame.choicejob == MAGIC || pl2frame.choicejob == MAGIC || pl3frame.choicejob == MAGIC) {
-				if (magic.hp == 0) {
-					magic.deathflag = true;
-				}
-			}
-			//聖職者のキャラのHPが0になったら
-			if (pl1frame.choicejob == HEALER || pl2frame.choicejob == HEALER || pl3frame.choicejob == HEALER) {
-				if (healer.hp == 0) {
-					healer.deathflag = true;
-				}
-			}
-
 			//前準備
 			//PL1
 			if (pl1frame.choicejob == ATTACKER && attacker.hp == 0) {
@@ -410,6 +385,12 @@ void BossScene::update(float flame)
 				TransitionFade *transition = TransitionFade::create(1.0, pScene);	// 0.6秒かけて次画面に遷移(時間,遷移先,色(オプション))
 				Director::getInstance()->replaceScene(transition);					// 遷移実行 アニメーション
 			}
+			//ボスが死んだとき
+			if (valkyrie.deathflag == true) {
+				Scene *pScene = GameClear::createScene();							// 遷移策の画面をｲﾝｽﾀﾝｽ
+				TransitionFade *transition = TransitionFade::create(1.0, pScene);	// 0.6秒かけて次画面に遷移(時間,遷移先,色(オプション))
+				Director::getInstance()->replaceScene(transition);
+			}
 
 			battle = WAIT;
 			state = false;
@@ -431,28 +412,22 @@ void BossScene::update(float flame)
 				bufft = ASKILL2T;			//最初に戻す
 				gameflame = 0;				//時間を初期値に戻す
 				skillflame = 0;				//スキルの時間を初期値に
+				attacker_defenceflag = false;
+				shield_defenceflag = false;
+				magic_defenceflag = false;
+				healer_defenceflag = false;
 				allworkendflag = false;		//元に戻しておく
+				if (choicetime == 0)this->scheduleUpdate();
 
-
-				//攻撃コマンドボタン
-				UI_PUSH_BEFORE_ATTACKBUTTON = CCSprite::create("UI/Command/UI_Button_Attack01.png");	 //画像指定
-				UI_PUSH_BEFORE_ATTACKBUTTON->setPosition(rightSize.width / 3, rightSize.height / 2.1f);//配置場所
-				this->addChild(UI_PUSH_BEFORE_ATTACKBUTTON, middledepth, attackbuttonaI);				//追加		
-
-				//攻撃コマンドボタン(押されているとき)
-				UI_PUSH_AFTER_ATTACKBUTTON = CCSprite::create("UI/Command/UI_Button_Attack02.png");	 //画像指定
-				UI_PUSH_AFTER_ATTACKBUTTON->setPosition(rightSize.width / 3, rightSize.height / 2.1f);//配置場所
-				this->addChild(UI_PUSH_AFTER_ATTACKBUTTON, backdepth, attackbuttonbI);				//追加
-
-				//スキルコマンドボタン
-				SkillButton1 = CCSprite::create("UI/Command/UI_Button_Skill01.png");	//画像指定
-				SkillButton1->setPosition(rightSize.width / 3, rightSize.height / 2.7f);//配置場所
-				this->addChild(SkillButton1, middledepth, skillbuttonaI);				//追加
-
-				//スキルコマンドボタン(押されているとき)
-				SkillButton2 = CCSprite::create("UI/Command/UI_Button_Skill02.png");	//画像指定
-				SkillButton2->setPosition(rightSize.width / 3, rightSize.height / 2.7f);//配置場所
-				this->addChild(SkillButton2, backdepth, skillbuttonbI);						//追加
+				//コマンドボタンをみえるようにする
+				UI_PUSH_BEFORE_ATTACKBUTTON->setVisible(true);
+				UI_PUSH_AFTER_ATTACKBUTTON->setVisible(true);
+				UI_PUSH_BEFORE_SKILLBUTTON->setVisible(true);
+				UI_PUSH_AFTER_SKILLBUTTON->setVisible(true);
+				UI_PUSH_BEFORE_DEFENCEBUTTON->setVisible(true);
+				UI_PUSH_AFTER_DEFENCEBUTTON->setVisible(true);
+				UI_PUSH_BEFORE_ITEMBUTTON->setVisible(true);
+				UI_PUSH_AFTER_ITEMBUTTON->setVisible(true);
 
 				//PLTURN(右上)															
 				plturn = CCSprite::create("Description/PL.png");						//配置文字
@@ -466,8 +441,9 @@ void BossScene::update(float flame)
 			// 画面サイズ取得。
 			Size visibleSize = Director::getInstance()->getVisibleSize();
 			//タッチイベント取得
-			auto Atouchget = EventListenerTouchOneByOne::create();	//アタックボタン
-			auto S1touchget = EventListenerTouchOneByOne::create();	//スキルボタン
+			auto Attack_touchget = EventListenerTouchOneByOne::create();	//アタックボタン
+			auto Skill_touchget = EventListenerTouchOneByOne::create();	//スキルボタン
+			auto Defence_touchget = EventListenerTouchOneByOne::create();	//スキルボタン
 
 			choicetime++;			//ボタンが連続で押されないようにするための処理
 			
@@ -475,15 +451,15 @@ void BossScene::update(float flame)
 			if (choicetime == flame30)this->unscheduleUpdate();
 				
 			//タッチ処理
-			auto Abutton = UI_PUSH_BEFORE_ATTACKBUTTON;
-			auto Sbutton = SkillButton1;
+			auto Attack_button = UI_PUSH_BEFORE_ATTACKBUTTON;
+			auto Skill_button = UI_PUSH_BEFORE_SKILLBUTTON;
+			auto Defence_button = UI_PUSH_BEFORE_DEFENCEBUTTON;
 
 			//アタックボタン
-			Atouchget->onTouchBegan = [this, visibleSize, Abutton](Touch* touch, Event* event) {
+			Attack_touchget->onTouchBegan = [this, visibleSize, Attack_button](Touch* touch, Event* event) {
 					Vec2 point1 = touch->getLocation();					//タッチしたポイント。
-					Rect rectButton1 = Abutton->getBoundingBox();		//ボタン画像の範囲。
+					Rect rectButton1 = Attack_button->getBoundingBox();		//ボタン画像の範囲。
 					switch (choices) {
-						//キャラ1
 					case BossScene::CHAR1: {
 						if (!(pl1 == PL1DEATH)) {
 							if (choicetime > flame15) {
@@ -512,7 +488,6 @@ void BossScene::update(float flame)
 						}
 						break;
 					}
-					 //キャラ2
 					case BossScene::CHAR2: {
 						if (!(pl2 == PL2DEATH)) {
 							if (choicetime > flame15) {
@@ -541,26 +516,16 @@ void BossScene::update(float flame)
 						}
 						break;
 					}
-										   //キャラ3
 					case BossScene::CHAR3: {
 						if (!(pl3 == PL3DEATH)) {
 							if (choicetime > flame15) {
 								//ボタン画像の範囲内をタッチした場合
 								if (rectButton1.containsPoint(point1)) {
-									pick_rnd = random(rndmin, rndmax);		//指定した範囲内の乱数を取得(プレイヤーのキャラを選択)
-									act_rnd = random(rndmin, rndmax);		//指定した範囲内の乱数を取得(ボスの動く回数)
-									decide_rnd = random(rndmin, rndmax);	//指定した範囲内の乱数を取得(ボスの動き)
-									skill_rnd = random(rndmin, rndmax);		//指定した範囲内の乱数を取得(スキル)
+									UI_PUSH_BEFORE_ATTACKBUTTON->setVisible(false);	//上のボタンを消す//指定した範囲内の乱数を取得(スキル)
 									state = true;							//動ける状態にする
-									Abutton->removeFromParentAndCleanup(true);//コマンドボタン(attack)を消す
-									this->removeChildByTag(attackbuttonbI);
-									this->removeChildByTag(skillbuttonaI);
-									this->removeChildByTag(skillbuttonbI);
-									this->removeChildByTag(choiceS);
 									pl3 = PL3ATTACK;						//アタックにする
+									allchoice_endflag = true;
 									choicetime = 0;
-									battle = ACTION;						//エフェクトなど
-									choices = CHAR1;
 									if (choicetime == 0)this->scheduleUpdate();
 									return true;
 								}
@@ -576,11 +541,6 @@ void BossScene::update(float flame)
 							decide_rnd = random(rndmin, rndmax);	//指定した範囲内の乱数を取得(ボスの動き)
 							skill_rnd = random(rndmin, rndmax);		//指定した範囲内の乱数を取得(スキル)
 							state = true;							//動ける状態にする
-							Abutton->removeFromParentAndCleanup(true);//コマンドボタン(attack)を消す
-							this->removeChildByTag(attackbuttonbI);
-							this->removeChildByTag(skillbuttonaI);
-							this->removeChildByTag(skillbuttonbI);
-							this->removeChildByTag(choiceS);
 							choicetime = 0;
 							battle = ACTION;						//エフェクトなど
 							choices = CHAR1;
@@ -594,17 +554,16 @@ void BossScene::update(float flame)
 					return true;
 				};
 			//スキルボタン
-			S1touchget->onTouchBegan = [this, visibleSize, Sbutton](Touch* touch, Event* event) {
+			Skill_touchget->onTouchBegan = [this, visibleSize, Skill_button](Touch* touch, Event* event) {
 				Vec2 point2 = touch->getLocation();								//タッチしたポイント。
-				Rect rectButton1 = Sbutton->getBoundingBox();					//ボタン画像の範囲。
+				Rect rectButton2 = Skill_button->getBoundingBox();					//ボタン画像の範囲。
 				switch (choices) {
-				//キャラ1
 				case BossScene::CHAR1: {
 					if (!(pl1 == PL1DEATH)) {
 						if (choicetime > flame15) {
 							//ボタン画像の範囲内をタッチした場合。
-							if (rectButton1.containsPoint(point2)) {
-								SkillButton1->setVisible(false);					//上のボタンを消す
+							if (rectButton2.containsPoint(point2)) {
+								UI_PUSH_BEFORE_SKILLBUTTON->setVisible(false);					//上のボタンを消す
 								pl1 = PL1SKILL;										//スキルを使う
 								//PL1の職業にあったスキルを使う
 								if (pl1frame.choicejob == ATTACKER)askill = ASKILL5;//剣士のスキル
@@ -616,7 +575,7 @@ void BossScene::update(float flame)
 								//騎士の選択系スキルだった場合
 								if (pl1frame.choicejob == SHIELD) {
 									if (sskill == SSKILL4) {
-										choices = CHOICETIME;
+										choices = CHOICETIME_SHIELD;
 										choicetime = 0;
 										this->removeChildByTag(choiceS);
 										shield_choice_skillflag = true;
@@ -626,7 +585,7 @@ void BossScene::update(float flame)
 								//魔術師の選択系スキルの場合
 								if (pl1frame.choicejob == MAGIC) {
 									if (mskill == MSKILL7) {
-										choices = CHOICETIME;
+										choices = CHOICETIME_MAGIC;
 										choicetime = 0;
 										this->removeChildByTag(choiceS);
 										magic_choice_skillflag = true;
@@ -648,7 +607,7 @@ void BossScene::update(float flame)
 									//聖職者の単体選択系スキルだった場合、回復する相手を選ぶ
 									if (hskill == HSKILL1 || hskill == HSKILL4
 										|| hskill == HSKILL5 || hskill == HSKILL8) {
-										choices = CHOICETIME;
+										choices = CHOICETIME_HEALER;
 										choicetime = 0;
 										this->removeChildByTag(choiceS);
 										healer_choice_skillflag = true;
@@ -656,16 +615,15 @@ void BossScene::update(float flame)
 									}
 								}
 								//単体選択系のスキルじゃない場合
-								if (!(pl1frame.choicejob == HEALER && hskill == HSKILL1 || hskill == HSKILL4 || hskill == HSKILL5 || hskill == HSKILL8)) {
-									if (!(pl1frame.choicejob == SHIELD && sskill == SSKILL4)) {
-										if (!(pl1frame.choicejob == MAGIC && mskill == MSKILL7)) {
-											choices = CHAR2;
-											choicetime = 0;
-											choiceendflag = false;
-											this->removeChildByTag(choiceS);
-											if (choicetime == 0)this->scheduleUpdate();
-										}
-									}
+								if ((pl1frame.choicejob == HEALER && hskill != HSKILL1 && hskill != HSKILL4 && hskill != HSKILL5 && hskill != HSKILL8)
+									|| (pl1frame.choicejob == SHIELD && sskill != SSKILL4)
+									|| (pl1frame.choicejob == MAGIC && mskill != MSKILL7)
+									|| (pl1frame.choicejob == ATTACKER)) {
+									choices = CHAR2;
+									choicetime = 0;
+									choiceendflag = false;
+									this->removeChildByTag(choiceS);
+									if (choicetime == 0)this->scheduleUpdate();
 								}
 								return true;
 							}
@@ -684,24 +642,23 @@ void BossScene::update(float flame)
 					}
 					break;
 				}
-				//キャラ2
 				case BossScene::CHAR2: {
 					if (!(pl2 == PL2DEATH)) {
 						if (choicetime > flame15) {
 							//ボタン画像の範囲内をタッチした場合。
-							if (rectButton1.containsPoint(point2)) {
-								SkillButton1->setVisible(false);					//上のボタンを消す
+							if (rectButton2.containsPoint(point2)) {
+								UI_PUSH_BEFORE_SKILLBUTTON->setVisible(false);					//上のボタンを消す
 								pl2 = PL2SKILL;										//スキル使う
 								//PL2の職業にあったスキルを使う
 								if (pl2frame.choicejob == ATTACKER)askill = ASKILL2;//剣士のスキル
-								if (pl2frame.choicejob == SHIELD)sskill = SSKILL2;	//騎士のスキル
+								if (pl2frame.choicejob == SHIELD)sskill = SSKILL4;	//騎士のスキル
 								if (pl2frame.choicejob == MAGIC)mskill = MSKILL7;	//魔術師のスキル
 								if (pl2frame.choicejob == HEALER)hskill = HSKILL4;	//聖職者のスキル
 
 								//騎士の選択系スキルだった場合
 								if (pl2frame.choicejob == SHIELD) {
 									if (sskill == SSKILL4) {
-										choices = CHOICETIME;
+										choices = CHOICETIME_SHIELD;
 										choicetime = 0;
 										this->removeChildByTag(choiceS);
 										shield_choice_skillflag = true;
@@ -712,7 +669,7 @@ void BossScene::update(float flame)
 								//魔術師の選択系スキルの場合
 								if (pl2frame.choicejob == MAGIC) {
 									if (mskill == MSKILL7) {
-										choices = CHOICETIME;
+										choices = CHOICETIME_MAGIC;
 										choicetime = 0;
 										this->removeChildByTag(choiceS);
 										magic_choice_skillflag = true;
@@ -735,24 +692,22 @@ void BossScene::update(float flame)
 									//聖職者の単体選択系スキルだった場合、回復する相手を選ぶ
 									if (hskill == HSKILL1 || hskill == HSKILL4
 										|| hskill == HSKILL5 || hskill == HSKILL8) {
-										choices = CHOICETIME;
+										choices = CHOICETIME_HEALER;
 										choicetime = 0;
 										this->removeChildByTag(choiceS);
 										healer_choice_skillflag = true;
 										if (choicetime == 0)this->scheduleUpdate();
 									}
 								}
-								//単体選択系のスキルじゃない場合
-								if (!(pl2frame.choicejob == HEALER && hskill == HSKILL1 || hskill == HSKILL4 || hskill == HSKILL5 || hskill == HSKILL8)) {
-									if (!(pl2frame.choicejob == SHIELD && sskill == SSKILL4)) {
-										if (!(pl2frame.choicejob == MAGIC && mskill == MSKILL7)) {
-											choices = CHAR3;			//次のキャラへ
-											choicetime = 0;
-											choiceendflag = false;
-											this->removeChildByTag(choiceS);
-											if (choicetime == 0)this->scheduleUpdate();
-										}
-									}
+								if ((pl2frame.choicejob == HEALER && hskill != HSKILL1 && hskill != HSKILL4 && hskill != HSKILL5 && hskill != HSKILL8)
+									|| (pl2frame.choicejob == SHIELD && sskill != SSKILL4)
+									|| (pl2frame.choicejob == MAGIC && mskill != MSKILL7)
+									|| (pl2frame.choicejob == ATTACKER)) {
+									choices = CHAR3;			//次のキャラへ
+									choicetime = 0;
+									choiceendflag = false;
+									this->removeChildByTag(choiceS);
+									if (choicetime == 0)this->scheduleUpdate();
 								}
 								if (choicetime == 0)this->scheduleUpdate();
 								return true;
@@ -771,31 +726,22 @@ void BossScene::update(float flame)
 					}
 					break;
 				}
-				//キャラ3
 				case BossScene::CHAR3: {
 					if (!(pl3 == PL3DEATH)) {
 						if (choicetime > flame15) {
 							//ボタン画像の範囲内をタッチした場合。
-							if (rectButton1.containsPoint(point2)) {
-								pick_rnd = random(rndmin, rndmax);			//指定した範囲内の乱数を取得(プレイヤーのキャラを選択)
-								act_rnd = random(rndmin, rndmax);			//指定した範囲内の乱数を取得(ボスの動く回数)
-								decide_rnd = random(rndmin, rndmax);		//指定した範囲内の乱数を取得(ボスの動き)
-								skill_rnd = random(rndmin, rndmax);			//指定した範囲内の乱数を取得(スキル)
+							if (rectButton2.containsPoint(point2)) {
 								state = true;								//動ける状態にする
-								Sbutton->removeFromParentAndCleanup(true);	//コマンドボタン(attack)を消す
-								this->removeChildByTag(attackbuttonaI);
-								this->removeChildByTag(attackbuttonbI);
-								this->removeChildByTag(skillbuttonbI);
-								pl3 = PL3SKILL;										//スキルにする
+								pl3 = PL3SKILL;								//スキルにする
 								//PL3の職業にあったスキルを使う
 								if (pl3frame.choicejob == ATTACKER)askill = ASKILL1;//剣士のスキル
 								if (pl3frame.choicejob == SHIELD)sskill = SSKILL3;	//騎士のスキル
 								if (pl3frame.choicejob == MAGIC)mskill = MSKILL1;	//魔術師のスキル
-								if (pl3frame.choicejob == HEALER)hskill = HSKILL6;	//聖職者のスキル
+								if (pl3frame.choicejob == HEALER)hskill = HSKILL4;	//聖職者のスキル
 
 								//騎士の選択系スキルだった場合
 								if (pl3frame.choicejob == SHIELD && sskill == SSKILL4) {
-									choices = CHOICETIME;
+									choices = CHOICETIME_SHIELD;
 									choicetime = 0;
 									this->removeChildByTag(choiceS);
 									shield_choice_skillflag = true;
@@ -803,7 +749,7 @@ void BossScene::update(float flame)
 								//魔術師の選択系スキルの場合
 								if (pl3frame.choicejob == MAGIC) {
 									if (mskill == MSKILL7) {
-										choices = CHOICETIME;
+										choices = CHOICETIME_MAGIC;
 										choicetime = 0;
 										this->removeChildByTag(choiceS);
 										magic_choice_skillflag = true;
@@ -824,23 +770,17 @@ void BossScene::update(float flame)
 									//聖職者の単体選択系スキルだった場合、回復する相手を選ぶ
 									if (hskill == HSKILL1 || hskill == HSKILL4
 										|| hskill == HSKILL5 || hskill == HSKILL8) {
-										choices = CHOICETIME;
+										choices = CHOICETIME_HEALER;
 										choicetime = 0;
 										this->removeChildByTag(choiceS);
 										healer_choice_skillflag = true;
 									}
 								}
-								//単体選択系のスキルじゃない場合
-								if (!(pl3frame.choicejob == HEALER && hskill == HSKILL1 || hskill == HSKILL4 || hskill == HSKILL5 || hskill == HSKILL8)) {
-									if (!(pl3frame.choicejob == SHIELD && sskill == SSKILL4)) {
-										if (!(pl3frame.choicejob == MAGIC && mskill == MSKILL7)) {
-											choicetime = 0;										//タイムを0
-											battle = ACTION;									//エフェクトなどを担当
-											choices = CHAR1;
-											choiceendflag = false;
-											this->removeChildByTag(choiceS);
-										}
-									}
+								if ((pl3frame.choicejob == HEALER && hskill != HSKILL1 && hskill != HSKILL4 && hskill != HSKILL5 && hskill != HSKILL8)
+									|| (pl3frame.choicejob == SHIELD && sskill != SSKILL4)
+									|| (pl3frame.choicejob == MAGIC && mskill != MSKILL7)
+									|| (pl3frame.choicejob == ATTACKER)) {
+									allchoice_endflag = true;
 								}
 								if (choicetime == 0)this->scheduleUpdate();
 								return true;
@@ -852,16 +792,12 @@ void BossScene::update(float flame)
 						}
 					}
 					if (pl3 == PL3DEATH) {
-						choicetime = 0;										//タイムを0
-						battle = ACTION;									//エフェクトなどを担当
-						choices = CHAR1;
-						choiceendflag = false;
-						this->removeChildByTag(choiceS);
+						allchoice_endflag = true;
 					}
 					break;
 				}
-				//スキルなどでキャラを選択する所
-				case BossScene::CHOICETIME: {
+				//スキルなどでキャラを選択する所(騎士)
+				case BossScene::CHOICETIME_SHIELD: {
 					//騎士の場合
 					if (shield_choice_skillflag == true) {
 						if (pl1frame.choicejob == SHIELD || pl2frame.choicejob == SHIELD || pl3frame.choicejob == SHIELD) {
@@ -873,7 +809,7 @@ void BossScene::update(float flame)
 
 								//タッチ処理
 								auto attackerbutton = UI_PL_ATTACKER_STATUSPLATE;	//剣士
-								auto magicbutton =  UI_PL_MAGIC_STATUSPLATE;			//魔術師
+								auto magicbutton =  UI_PL_MAGIC_STATUSPLATE;		//魔術師
 								auto healerbutton = UI_PL_HEALER_STATUSPLATE;		//聖職者
 
 								//剣士をタッチした場合
@@ -881,35 +817,32 @@ void BossScene::update(float flame)
 									Vec2 attackerpoint = touch->getLocation();					//タッチしたポイント。
 									Rect attackerrectButton = attackerbutton->getBoundingBox();	//ボタン画像の範囲。
 									if (attackerrectButton.containsPoint(attackerpoint)) {
-										//PL1が騎士の場合
+										sskillchoice = ATTACKER;
+										choicetime = 0;
+										if (choicetime == 0)this->scheduleUpdate();
+										this->removeChildByTag(choiceplS);
+										shield_choice_skillflag = false;
 										if (pl1frame.choicejob == SHIELD) {
-											sskillchoice = ATTACKER;
-											choicetime = 0;
-											if (choicetime == 0)this->scheduleUpdate();
-											choices = CHAR2;
-
-											this->removeChildByTag(choiceplS);
-											shield_choice_skillflag = false;
+											if (pl2 != PL2DEATH && pl3 != PL3DEATH) {
+												choices = CHAR2;
+											}
+											else if (pl2 == PL2DEATH && pl3 != PL3DEATH) {
+												choices = CHAR3;
+											}
+											else if (pl2 == PL2DEATH && pl3 == PL3DEATH) {
+												allchoice_endflag = true;
+											}
 										}
-										//PL2が騎士の場合
 										else if (pl2frame.choicejob == SHIELD) {
-											sskillchoice = ATTACKER;
-											choices = CHAR3;
-											choicetime = 0;
-											this->removeChildByTag(choiceplS);
-											shield_choice_skillflag = false;
-											if (choicetime == 0)this->scheduleUpdate();
+											if (pl3 != PL3DEATH) {
+												choices = CHAR3;
+											}
+											else if (pl3 == PL3DEATH) {
+												allchoice_endflag = true;
+											}
 										}
-										//PL3が騎士の場合
 										else if (pl3frame.choicejob == SHIELD) {
-											sskillchoice = ATTACKER;
-											battle = ACTION;			//エフェクトなどを担当
-											choicetime = 0;				//タイムを0
-											choices = CHAR1;
-											choiceendflag = false;
-											this->removeChildByTag(choiceplS);
-											shield_choice_skillflag = false;
-											if (choicetime == 0)this->scheduleUpdate();
+											allchoice_endflag = true;
 										}
 									}
 									return true;
@@ -919,31 +852,32 @@ void BossScene::update(float flame)
 									Vec2 magicpoint = touch->getLocation();					//タッチしたポイント。
 									Rect magicrectButton = magicbutton->getBoundingBox();	//ボタン画像の範囲。
 									if (magicrectButton.containsPoint(magicpoint)) {
+										sskillchoice = MAGIC;
+										choicetime = 0;
+										if (choicetime == 0)this->scheduleUpdate();
+										this->removeChildByTag(choiceplS);
+										shield_choice_skillflag = false;
 										if (pl1frame.choicejob == SHIELD) {
-											sskillchoice = MAGIC;
-											choices = CHAR2;
-											choicetime = 0;
-											this->removeChildByTag(choiceplS);
-											shield_choice_skillflag = false;
-											if (choicetime == 0)this->scheduleUpdate();
+											if (pl2 != PL2DEATH && pl3 != PL3DEATH) {
+												choices = CHAR2;
+											}
+											else if (pl2 == PL2DEATH && pl3 != PL3DEATH) {
+												choices = CHAR3;
+											}
+											else if (pl2 == PL2DEATH && pl3 == PL3DEATH) {
+												allchoice_endflag = true;
+											}
 										}
 										else if (pl2frame.choicejob == SHIELD) {
-											sskillchoice = MAGIC;
-											choices = CHAR3;
-											choicetime = 0;
-											this->removeChildByTag(choiceplS);
-											shield_choice_skillflag = false;
-											if (choicetime == 0)this->scheduleUpdate();
+											if (pl3 != PL3DEATH) {
+												choices = CHAR3;
+											}
+											else if (pl3 == PL3DEATH) {
+												allchoice_endflag = true;
+											}
 										}
 										else if (pl3frame.choicejob == SHIELD) {
-											sskillchoice = MAGIC;
-											battle = ACTION;			//エフェクトなどを担当
-											choicetime = 0;				//タイムを0
-											choices = CHAR1;
-											choiceendflag = false;
-											this->removeChildByTag(choiceplS);
-											shield_choice_skillflag = false;
-											if (choicetime == 0)this->scheduleUpdate();
+											allchoice_endflag = true;
 										}
 									}
 									return true;
@@ -953,31 +887,32 @@ void BossScene::update(float flame)
 									Vec2 healerpoint = touch->getLocation();					//タッチしたポイント。
 									Rect healerrectButton = healerbutton->getBoundingBox();	//ボタン画像の範囲。
 									if (healerrectButton.containsPoint(healerpoint)) {
+										sskillchoice = HEALER;
+										choicetime = 0;
+										if (choicetime == 0)this->scheduleUpdate();
+										this->removeChildByTag(choiceplS);
+										shield_choice_skillflag = false;
 										if (pl1frame.choicejob == SHIELD) {
-											sskillchoice = HEALER;
-											choices = CHAR2;
-											choicetime = 0;
-											this->removeChildByTag(choiceplS);
-											shield_choice_skillflag = false;
-											if (choicetime == 0)this->scheduleUpdate();
+											if (pl2 != PL2DEATH && pl3 != PL3DEATH) {
+												choices = CHAR2;
+											}
+											else if (pl2 == PL2DEATH && pl3 != PL3DEATH) {
+												choices = CHAR3;
+											}
+											else if (pl2 == PL2DEATH && pl3 == PL3DEATH) {
+												allchoice_endflag = true;
+											}
 										}
 										else if (pl2frame.choicejob == SHIELD) {
-											sskillchoice = HEALER;
-											choices = CHAR3;
-											choicetime = 0;
-											this->removeChildByTag(choiceplS);
-											shield_choice_skillflag = false;
-											if (choicetime == 0)this->scheduleUpdate();
+											if (pl3 != PL3DEATH) {
+												choices = CHAR3;
+											}
+											else if (pl3 == PL3DEATH) {
+												allchoice_endflag = true;
+											}
 										}
 										else if (pl3frame.choicejob == SHIELD) {
-											sskillchoice = HEALER;
-											battle = ACTION;			//エフェクトなどを担当
-											choicetime = 0;				//タイムを0
-											choices = CHAR1;
-											choiceendflag = false;
-											this->removeChildByTag(choiceplS);
-											shield_choice_skillflag = false;
-											if (choicetime == 0)this->scheduleUpdate();
+											allchoice_endflag = true;
 										}
 									}
 									return true;
@@ -996,19 +931,72 @@ void BossScene::update(float flame)
 						}
 					}
 
+					//選択中は色をもどす
+					if (!(hskill == HSKILL8)) {
+						if (attacker.deathflag == false) {
+							UI_PL_ATTACKER_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
+						}
+						if (shield.deathflag == false && shield_choice_skillflag == false) {
+							UI_PL_SHIELD_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
+						}
+						else if (shield.deathflag == false && shield_choice_skillflag == true) {
+							UI_PL_SHIELD_STATUSPLATE->setColor(ccc3(colordown, colordown, colordown));
+						}
+						if (magic.deathflag == false) {
+							 UI_PL_MAGIC_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
+						}
+						if (healer.deathflag == false) {
+							UI_PL_HEALER_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
+						}
+					}
+					else if (hskill == HSKILL8) {
+						//剣士
+						if (attacker.deathflag == true) {
+							UI_PL_ATTACKER_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
+						}
+						else if (attacker.deathflag == false) {
+							UI_PL_ATTACKER_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
+						}
+						//騎士
+						if (shield.deathflag == true) {
+							UI_PL_SHIELD_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
+						}
+						else if (shield.deathflag == false) {
+							UI_PL_SHIELD_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
+						}
+						//魔術師
+						if (magic.deathflag == true) {
+							 UI_PL_MAGIC_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
+						}
+						else if (magic.deathflag == false) {
+							UI_PL_MAGIC_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
+						}
+						//聖職者
+						if (healer.deathflag == true) {
+							UI_PL_HEALER_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
+						}
+						else if (healer.deathflag == false) {
+							UI_PL_HEALER_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
+						}					
+					}
+
+					break;
+				}
+				//スキルなどでキャラを選択する所(魔術師)
+				case BossScene::CHOICETIME_MAGIC: {
 					//魔術師の場合
 					if (magic_choice_skillflag == true) {
 						if (pl1frame.choicejob == MAGIC || pl2frame.choicejob == MAGIC || pl3frame.choicejob == MAGIC) {
 							if (mskill == MSKILL7) {
 								//タッチイベント取得
-								auto attackerframetouch = EventListenerTouchOneByOne::create();	
-								auto shieldframetouch = EventListenerTouchOneByOne::create();	
-								auto healerframetouch = EventListenerTouchOneByOne::create();	
+								auto attackerframetouch = EventListenerTouchOneByOne::create();
+								auto shieldframetouch = EventListenerTouchOneByOne::create();
+								auto healerframetouch = EventListenerTouchOneByOne::create();
 
 								//タッチ処理
-								auto attackerbutton = UI_PL_ATTACKER_STATUSPLATE;	
-								auto shieldbutton = UI_PL_SHIELD_STATUSPLATE;		
-								auto healerbutton = UI_PL_HEALER_STATUSPLATE;		
+								auto attackerbutton = UI_PL_ATTACKER_STATUSPLATE;
+								auto shieldbutton = UI_PL_SHIELD_STATUSPLATE;
+								auto healerbutton = UI_PL_HEALER_STATUSPLATE;
 
 								//剣士をタッチした場合
 								attackerframetouch->onTouchBegan = [this, visibleSize, attackerbutton](Touch* touch, Event* event) {
@@ -1055,7 +1043,7 @@ void BossScene::update(float flame)
 											choices = CHAR3;
 										}
 										else if (pl3frame.choicejob == MAGIC) {
-											battle = ACTION;										
+											battle = ACTION;
 											choices = CHAR1;
 											choiceendflag = false;
 										}
@@ -1111,6 +1099,59 @@ void BossScene::update(float flame)
 						}
 					}
 
+					//選択中は色をもどす
+					if (!(hskill == HSKILL8)) {
+						if (attacker.deathflag == false) {
+							UI_PL_ATTACKER_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
+						}
+						if (shield.deathflag == false && shield_choice_skillflag == false) {
+							UI_PL_SHIELD_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
+						}
+						else if (shield.deathflag == false && shield_choice_skillflag == true) {
+							UI_PL_SHIELD_STATUSPLATE->setColor(ccc3(colordown, colordown, colordown));
+						}
+						if (magic.deathflag == false) {
+							UI_PL_MAGIC_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
+						}
+						if (healer.deathflag == false) {
+							UI_PL_HEALER_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
+						}
+					}
+					else if (hskill == HSKILL8) {
+						//剣士
+						if (attacker.deathflag == true) {
+							UI_PL_ATTACKER_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
+						}
+						else if (attacker.deathflag == false) {
+							UI_PL_ATTACKER_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
+						}
+						//騎士
+						if (shield.deathflag == true) {
+							UI_PL_SHIELD_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
+						}
+						else if (shield.deathflag == false) {
+							UI_PL_SHIELD_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
+						}
+						//魔術師
+						if (magic.deathflag == true) {
+							UI_PL_MAGIC_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
+						}
+						else if (magic.deathflag == false) {
+							UI_PL_MAGIC_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
+						}
+						//聖職者
+						if (healer.deathflag == true) {
+							UI_PL_HEALER_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
+						}
+						else if (healer.deathflag == false) {
+							UI_PL_HEALER_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
+						}
+					}
+
+					break;
+				}
+				//スキルなどでキャラを選択する所(聖職者)
+				case BossScene::CHOICETIME_HEALER: {
 					//聖職者の場合
 					if (healer_choice_skillflag == true) {
 						if (pl1frame.choicejob == HEALER || pl2frame.choicejob == HEALER || pl3frame.choicejob == HEALER) {
@@ -1121,10 +1162,10 @@ void BossScene::update(float flame)
 								auto magicframetouch = EventListenerTouchOneByOne::create();	//魔術師タッチ
 								auto healerframetouch = EventListenerTouchOneByOne::create();	//聖職者タッチ
 
-								//タッチ処理
+																								//タッチ処理
 								auto attackerbutton = UI_PL_ATTACKER_STATUSPLATE;	//剣士
 								auto shieldbutton = UI_PL_SHIELD_STATUSPLATE;		//騎士
-								auto magicbutton =  UI_PL_MAGIC_STATUSPLATE;		//魔術師
+								auto magicbutton = UI_PL_MAGIC_STATUSPLATE;			//魔術師
 								auto healerbutton = UI_PL_HEALER_STATUSPLATE;		//聖職者
 
 								//剣士をタッチした場合
@@ -1146,25 +1187,19 @@ void BossScene::update(float flame)
 													choices = CHAR3;
 												}
 												else if (pl2 == PL2DEATH && pl3 == PL3DEATH) {
-													battle = ACTION;			//エフェクトなどを担当
-													choices = CHAR1;
-													choiceendflag = false;
+													allchoice_endflag = true;
 												}
 											}
 											else if (pl2frame.choicejob == HEALER) {
-												if ((!pl3 == PL3DEATH)) {
+												if (pl3 != PL3DEATH) {
 													choices = CHAR3;
 												}
 												else if (pl3 == PL3DEATH) {
-													battle = ACTION;			//エフェクトなどを担当
-													choices = CHAR1;
-													choiceendflag = false;
+													allchoice_endflag = true;
 												}
 											}
 											else if (pl3frame.choicejob == HEALER) {
-												battle = ACTION;			//エフェクトなどを担当
-												choices = CHAR1;
-												choiceendflag = false;
+												allchoice_endflag = true;
 											}
 										}
 										return true;
@@ -1189,25 +1224,19 @@ void BossScene::update(float flame)
 													choices = CHAR3;
 												}
 												else if (pl2 == PL2DEATH && pl3 == PL3DEATH) {
-													battle = ACTION;			//エフェクトなどを担当
-													choices = CHAR1;
-													choiceendflag = false;
+													allchoice_endflag = true;
 												}
 											}
 											else if (pl2frame.choicejob == HEALER) {
-												if ((!pl3 == PL3DEATH)) {
+												if (pl3 != PL3DEATH) {
 													choices = CHAR3;
 												}
 												else if (pl3 == PL3DEATH) {
-													battle = ACTION;			//エフェクトなどを担当
-													choices = CHAR1;
-													choiceendflag = false;
+													allchoice_endflag = true;
 												}
 											}
 											else if (pl3frame.choicejob == HEALER) {
-												battle = ACTION;			//エフェクトなどを担当
-												choices = CHAR1;
-												choiceendflag = false;
+												allchoice_endflag = true;
 											}
 										}
 										return true;
@@ -1233,25 +1262,19 @@ void BossScene::update(float flame)
 													choices = CHAR3;
 												}
 												else if (pl2 == PL2DEATH && pl3 == PL3DEATH) {
-													battle = ACTION;			//エフェクトなどを担当
-													choices = CHAR1;
-													choiceendflag = false;
+													allchoice_endflag = true;
 												}
 											}
 											else if (pl2frame.choicejob == HEALER) {
-												if ((!pl3 == PL3DEATH)) {
+												if (pl3 != PL3DEATH) {
 													choices = CHAR3;
 												}
 												else if (pl3 == PL3DEATH) {
-													battle = ACTION;			//エフェクトなどを担当
-													choices = CHAR1;
-													choiceendflag = false;
+													allchoice_endflag = true;
 												}
 											}
 											else if (pl3frame.choicejob == HEALER) {
-												battle = ACTION;			//エフェクトなどを担当
-												choices = CHAR1;
-												choiceendflag = false;
+												allchoice_endflag = true;
 											}
 										}
 										return true;
@@ -1264,7 +1287,6 @@ void BossScene::update(float flame)
 										Rect healerrectButton = healerbutton->getBoundingBox();	//ボタン画像の範囲。
 										if (healerrectButton.containsPoint(healerpoint)) {
 											hskillchoice = HEALER;
-											hskillchoice = ATTACKER;
 											choicetime = 0;
 											healer_choice_skillflag = false;
 											this->removeChildByTag(choiceplS);
@@ -1277,25 +1299,19 @@ void BossScene::update(float flame)
 													choices = CHAR3;
 												}
 												else if (pl2 == PL2DEATH && pl3 == PL3DEATH) {
-													battle = ACTION;			//エフェクトなどを担当
-													choices = CHAR1;
-													choiceendflag = false;
+													allchoice_endflag = true;
 												}
 											}
 											else if (pl2frame.choicejob == HEALER) {
-												if ((!pl3 == PL3DEATH)) {
+												if (pl3 != PL3DEATH) {
 													choices = CHAR3;
 												}
 												else if (pl3 == PL3DEATH) {
-													battle = ACTION;			//エフェクトなどを担当
-													choices = CHAR1;
-													choiceendflag = false;
+													allchoice_endflag = true;
 												}
 											}
 											else if (pl3frame.choicejob == HEALER) {
-												battle = ACTION;			//エフェクトなどを担当
-												choices = CHAR1;
-												choiceendflag = false;
+												allchoice_endflag = true;
 											}
 										}
 										return true;
@@ -1323,11 +1339,14 @@ void BossScene::update(float flame)
 						if (attacker.deathflag == false) {
 							UI_PL_ATTACKER_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
 						}
-						if (shield.deathflag == false) {
+						if (shield.deathflag == false && shield_choice_skillflag == false) {
 							UI_PL_SHIELD_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
 						}
+						else if (shield.deathflag == false && shield_choice_skillflag == true) {
+							UI_PL_SHIELD_STATUSPLATE->setColor(ccc3(colordown, colordown, colordown));
+						}
 						if (magic.deathflag == false) {
-							 UI_PL_MAGIC_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
+							UI_PL_MAGIC_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
 						}
 						if (healer.deathflag == false) {
 							UI_PL_HEALER_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
@@ -1350,7 +1369,7 @@ void BossScene::update(float flame)
 						}
 						//魔術師
 						if (magic.deathflag == true) {
-							 UI_PL_MAGIC_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
+							UI_PL_MAGIC_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
 						}
 						else if (magic.deathflag == false) {
 							UI_PL_MAGIC_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
@@ -1361,17 +1380,94 @@ void BossScene::update(float flame)
 						}
 						else if (healer.deathflag == false) {
 							UI_PL_HEALER_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
-						}					
+						}
 					}
 
 					break;
 				}
+
+
 				default: {
 					break;
 				}
 				}
 				return true;
 			};
+			//ディフェンスボタン
+			Defence_touchget->onTouchBegan = [this, visibleSize, Defence_button](Touch* touch, Event* event) {
+				Vec2 point3 = touch->getLocation();							//タッチしたポイント。
+				Rect rectButton3 = Defence_button->getBoundingBox();		//ボタン画像の範囲。
+				switch (choices)
+				{
+				case BossScene::CHAR1: {
+					if (choicetime > flame15) {
+						if (rectButton3.containsPoint(point3)) {
+							UI_PUSH_BEFORE_DEFENCEBUTTON->setVisible(false);		//上のボタンを消す
+							pl1 = PL1DEFENCE;
+							this->removeChildByTag(choiceS);
+							choicetime = 0;
+							choices = CHAR2;
+							if (choicetime == 0)this->scheduleUpdate();
+							break;
+						}
+					}
+				}
+				case BossScene::CHAR2: {
+					if (rectButton3.containsPoint(point3)) {
+						if (choicetime > flame15) {
+							UI_PUSH_BEFORE_DEFENCEBUTTON->setVisible(false);		//上のボタンを消す
+							pl2 = PL2DEFENCE;
+							this->removeChildByTag(choiceS);
+							choicetime = 0;
+							choices = CHAR3;
+							if (choicetime == 0)this->scheduleUpdate();
+							break;
+						}
+					}
+				}
+				case BossScene::CHAR3: {
+					if (rectButton3.containsPoint(point3)) {
+						if (choicetime > flame15) {
+							UI_PUSH_BEFORE_DEFENCEBUTTON->setVisible(false);	//上のボタンを消す//指定した範囲内の乱数を取得(スキル)
+							state = true;							//動ける状態にする
+							pl3 = PL3DEFENCE;						//アタックにする
+							allchoice_endflag = true;
+							choicetime = 0;
+							if (choicetime == 0)this->scheduleUpdate();
+							break;
+						}
+					}
+				}
+				default: {
+					break;
+				}
+				}
+
+				return true;
+			};
+
+			//すべての処理が終了したら
+			if (allchoice_endflag == true) {
+				choicetime = 0;				//タイムを0
+				battle = ACTION;			//エフェクトなどを担当
+				choices = CHAR1;
+				choiceendflag = false;
+				pick_rnd = random(rndmin, rndmax);		//指定した範囲内の乱数を取得(プレイヤーのキャラを選択)
+				act_rnd = random(rndmin, rndmax);		//指定した範囲内の乱数を取得(ボスの動く回数)
+				decide_rnd = random(rndmin, rndmax);	//指定した範囲内の乱数を取得(ボスの動き)
+				skill_rnd = random(rndmin, rndmax);
+				this->removeChildByTag(choiceS);
+				UI_PUSH_BEFORE_ATTACKBUTTON->setVisible(false);
+				UI_PUSH_AFTER_ATTACKBUTTON->setVisible(false);
+				UI_PUSH_BEFORE_SKILLBUTTON->setVisible(false);
+				UI_PUSH_AFTER_SKILLBUTTON->setVisible(false);
+				UI_PUSH_BEFORE_DEFENCEBUTTON->setVisible(false);
+				UI_PUSH_AFTER_DEFENCEBUTTON->setVisible(false);
+				UI_PUSH_BEFORE_ITEMBUTTON->setVisible(false);
+				UI_PUSH_AFTER_ITEMBUTTON->setVisible(false);
+				allchoice_endflag = false;
+				if (choicetime == 0)this->scheduleUpdate();
+			}
 			//選択するときに出る文字
 			if (choicetime == flame15) {
 				//初期化
@@ -1431,7 +1527,7 @@ void BossScene::update(float flame)
 						this->addChild(ll, backdepth, choiceS);
 					}
 				}
-				else if (choices == CHOICETIME) {
+				else if (choices == CHOICETIME_SHIELD || choices == CHOICETIME_MAGIC || choices == CHOICETIME_HEALER) {
 					cho = CCLabelTTF::create("どのキャラを選択しますか", "HGRSGU.TTC", fontsizeL);
 					cho->setPosition(rightSize.width / 2, rightSize.height / 1.15f);
 					this->addChild(cho, backdepth, choiceplS);
@@ -1531,10 +1627,13 @@ void BossScene::update(float flame)
 			}
 			
 			// touchget, buttonをイベント登録する。
-			auto director = Director::getInstance();
-			director->getEventDispatcher()->addEventListenerWithSceneGraphPriority(Atouchget, Abutton);
-			auto director2 = Director::getInstance();
-			director2->getEventDispatcher()->addEventListenerWithSceneGraphPriority(S1touchget, Sbutton);
+			auto attackbutton_director = Director::getInstance();
+			attackbutton_director->getEventDispatcher()->addEventListenerWithSceneGraphPriority(Attack_touchget, Attack_button);
+			auto skillbutton_director = Director::getInstance();
+			skillbutton_director->getEventDispatcher()->addEventListenerWithSceneGraphPriority(Skill_touchget, Skill_button);
+			auto defencebutton_director = Director::getInstance();
+			defencebutton_director->getEventDispatcher()->addEventListenerWithSceneGraphPriority(Defence_touchget, Defence_button);
+			
 			break;
 		}
 		//プレイヤーのアクション(エフェクトなど)
@@ -1558,7 +1657,7 @@ void BossScene::update(float flame)
 				gameflame++;							//カウント開始
 				skillflame++;							//スキルカウント開始
 				PLturn();								//主な処理
-				if (gameflame == flame0) {
+				if (gameflame == flamemin) {
 					this->removeChildByTag(choiceS);
 				}
 			}
@@ -1703,6 +1802,34 @@ void BossScene::update(float flame)
 		flag = false;									//フラグをfalseに
 		gameflame++;									//カウント開始
 		BSturn();										//主な処理
+
+		// 死亡設定
+		//剣士のキャラのHPが0になったら
+		if (pl1frame.choicejob == ATTACKER || pl2frame.choicejob == ATTACKER || pl3frame.choicejob == ATTACKER) {
+			if (attacker.hp == 0) {
+				attacker.deathflag = true;
+			}
+		}
+		//騎士のキャラのHPが0になったら
+		if (pl1frame.choicejob == SHIELD || pl2frame.choicejob == SHIELD || pl3frame.choicejob == SHIELD) {
+			if (shield.hp == 0) {
+				shield.deathflag = true;
+				coverflag[0] = false;
+				coverflag[1] = false;
+			}
+		}
+		//魔術師のキャラのHPが0になったら
+		if (pl1frame.choicejob == MAGIC || pl2frame.choicejob == MAGIC || pl3frame.choicejob == MAGIC) {
+			if (magic.hp == 0) {
+				magic.deathflag = true;
+			}
+		}
+		//聖職者のキャラのHPが0になったら
+		if (pl1frame.choicejob == HEALER || pl2frame.choicejob == HEALER || pl3frame.choicejob == HEALER) {
+			if (healer.hp == 0) {
+				healer.deathflag = true;
+			}
+		}
 		
 		if (gameflame == flame170) {
 			//文字を消す
@@ -1779,39 +1906,39 @@ void BossScene::update(float flame)
 
 	//剣士のHPゲージを減らす
 	UI_PL_ATTACKER_HPBAR->setTextureRect(Rect(HPbar.x, HPbar.y,
-		attackerhpgaugewidth * attacker.hp / attacker.hpmax,
+		attacker_hpgauge_width * attacker.hp / attacker.hpmax,
 		UI_PL_ATTACKER_HPBAR->getContentSize().height));
 	//剣士のMANAゲージに変化をつける
 	UI_PL_ATTACKER_MANABAR->setTextureRect(Rect(MNbar.x, MNbar.y,
-		attackermngaugewidth * attacker.mana / attacker.manamax,
+		attacker_mngauge_width * attacker.mana / attacker.manamax,
 		UI_PL_ATTACKER_MANABAR->getContentSize().height));
 	//騎士のHPゲージを減らす
 	UI_PL_SHIELD_HPBAR->setTextureRect(Rect(HPbar.x, HPbar.y,
-		shieldhpgaugewidth * shield.hp / shield.hpmax,
+		shield_hpgauge_width * shield.hp / shield.hpmax,
 		UI_PL_SHIELD_HPBAR->getContentSize().height));
 	//騎士のMANAゲージに変化をつける
 	UI_PL_SHIELD_MANABAR->setTextureRect(Rect(MNbar.x, MNbar.y,
-		shieldmngaugewidth * shield.mana / shield.manamax,
+		shield_mngauge_width * shield.mana / shield.manamax,
 		UI_PL_SHIELD_MANABAR->getContentSize().height));
 	//魔術師のHPゲージを減らす
 	UI_PL_MAGIC_HPBAR->setTextureRect(Rect(HPbar.x, HPbar.y,
-		healerhpgaugewidth * magic.hp / magic.hpmax,
+		healer_hpgauge_width * magic.hp / magic.hpmax,
 		UI_PL_MAGIC_HPBAR->getContentSize().height));
 	//魔術師のMANAゲージに変化をつける
 	UI_PL_MAGIC_MANABAR->setTextureRect(Rect(MNbar.x, MNbar.y,
-		healermngaugewidth * magic.mana / magic.manamax,
+		healer_mngauge_width * magic.mana / magic.manamax,
 		UI_PL_MAGIC_MANABAR->getContentSize().height));
 	//聖職者のHPゲージを減らす
 	UI_PL_HEALER_HPBAR->setTextureRect(Rect(HPbar.x, HPbar.y,
-		healerhpgaugewidth * healer.hp / healer.hpmax,
+		healer_hpgauge_width * healer.hp / healer.hpmax,
 		UI_PL_HEALER_HPBAR->getContentSize().height));
 	//聖職者のMANAゲージに変化をつける
 	UI_PL_HEALER_MANABAR->setTextureRect(Rect(MNbar.x, MNbar.y,
-		healermngaugewidth * healer.mana / healer.manamax,
+		healer_mngauge_width * healer.mana / healer.manamax,
 		UI_PL_HEALER_MANABAR->getContentSize().height));
 	//ボスのHPゲージに変化をつける
 	UI_BOSS_HPBAR->setTextureRect(Rect(HPbar.x, HPbar.y,
-		bosshpgaugewidth * valkyrie.hp / valkyrie.hpmax,
+		boss_hpgauge_width * valkyrie.hp / valkyrie.hpmax,
 		UI_BOSS_HPBAR->getContentSize().height));
 
 	//それぞれのキャラのHP、MANAがMAX以上の時MAXにする
@@ -1970,6 +2097,14 @@ void BossScene::PLturn()
 		if (pl1 == PL1SKILL) {
 			Plskills();
 		}
+		//プレイヤー防御
+		if (pl1 == PL1DEFENCE) {
+			if (pl1frame.choicejob == ATTACKER) attacker_defenceflag = true;
+			if (pl1frame.choicejob == SHIELD) shield_defenceflag = true;
+			if (pl1frame.choicejob == MAGIC) magic_defenceflag = true;
+			if (pl1frame.choicejob == HEALER) healer_defenceflag = true;
+			Pldefence();
+		}
 		//攻撃・スキルが終わったら
 		if (!(pl1 == PL1DEATH)) {
 			if (attackendflag == true || skillendflag == true) {
@@ -1981,7 +2116,7 @@ void BossScene::PLturn()
 				attackendflag = false;							//フラグを戻す
 			}
 		}
-		if (pl1 == PL1DEATH || pl1 == PL1NON) {
+		if (pl1 == PL1DEATH) {
 			choices = CHAR2;								//次のキャラへ
 			gameflame = 0;									//時間を初期値に戻す
 			skillflame = 0;									//スキルの時間を初期値に
@@ -2012,6 +2147,14 @@ void BossScene::PLturn()
 		if (pl2 == PL2SKILL) {
 			Plskills();
 		}
+		//プレイヤー防御
+		if(pl2 == PL2DEFENCE){
+			if (pl2frame.choicejob == ATTACKER) attacker_defenceflag = true;
+			if (pl2frame.choicejob == SHIELD) shield_defenceflag = true;
+			if (pl2frame.choicejob == MAGIC) magic_defenceflag = true;
+			if (pl2frame.choicejob == HEALER) healer_defenceflag = true;
+			Pldefence();
+		}
 		if (!(pl2 == PL2DEATH)) {
 			if (attackendflag == true || skillendflag == true) {
 				choices = CHAR3;
@@ -2022,7 +2165,7 @@ void BossScene::PLturn()
 				attackendflag = false;							//フラグを戻す
 			}
 		}
-		if (pl2 == PL2DEATH || pl2 == PL2NON) {
+		if (pl2 == PL2DEATH) {
 			choices = CHAR3;
 			gameflame = 0;									//時間を初期値に戻す
 			skillflame = 0;									//スキルの時間を初期値に
@@ -2053,48 +2196,56 @@ void BossScene::PLturn()
 		if (pl3 == PL3SKILL) {
 			Plskills();
 		}
-		if (!(pl3 == PL3DEATH)) {
-			if (attackendflag == true || skillendflag == true) {
+		//プレイヤー防御
+		if (pl3 == PL3DEFENCE) {
+			if (pl3frame.choicejob == ATTACKER) attacker_defenceflag = true;
+			if (pl3frame.choicejob == SHIELD) shield_defenceflag = true;
+			if (pl3frame.choicejob == MAGIC) magic_defenceflag = true;
+			if (pl3frame.choicejob == HEALER) healer_defenceflag = true;
+			Pldefence();
+		}
+		if (valkyrie.deathflag == false) {
+			if (!(pl3 == PL3DEATH)) {
+				if (attackendflag == true || skillendflag == true) {
+					turn = BOSS;								//ボスのターンにする
+					bsact = PICK;								//ボスの動きを初期化
+					choices = CHAR1;							//選択を最初からに戻す
+					pl3 == PL3NON;
+					this->removeChildByTag(playertrunI);		//PLTURNを消す1
+					gameflame = 0;								//時間を初期値に戻す
+					skillflame = 0;								//スキルの時間を初期値に
+					skillendflag = false;						//フラグ初期値に戻す
+					attackendflag = false;						//フラグを戻す
+
+					//BSTURN文字表示
+					emturn = CCSprite::create("Description/BS.png");							// 配置文字
+					emturn->setPosition(rightSize.width / 1.13, rightSize.height / 1.25f);		// 配置場所
+					this->addChild(emturn, backdepth, bossturnI);								// 追加
+				}
+			}
+			if (pl3 == PL3DEATH) {
 				turn = BOSS;								//ボスのターンにする
 				bsact = PICK;								//ボスの動きを初期化
 				choices = CHAR1;							//選択を最初からに戻す
-				pl3 == PL3NON;
-				this->removeChildByTag(playertrunI);		//PLTURNを消す1
+				this->removeChildByTag(playertrunI);		//PLTURNを消す
 				gameflame = 0;								//時間を初期値に戻す
 				skillflame = 0;								//スキルの時間を初期値に
 				skillendflag = false;						//フラグ初期値に戻す
 				attackendflag = false;						//フラグを戻す
-
-				//BSTURN文字表示
-				emturn = CCSprite::create("Description/BS.png");							// 配置文字
-				emturn->setPosition(rightSize.width / 1.13, rightSize.height / 1.25f);		// 配置場所
-				this->addChild(emturn, backdepth, bossturnI);								// 追加
 			}
 		}
-		if (pl3 == PL3DEATH || pl2 == PL3DEATH) {
-			turn = BOSS;								//ボスのターンにする
-			bsact = PICK;								//ボスの動きを初期化
-			choices = CHAR1;							//選択を最初からに戻す
-			this->removeChildByTag(playertrunI);		//PLTURNを消す
-			gameflame = 0;								//時間を初期値に戻す
-			skillflame = 0;								//スキルの時間を初期値に
-			skillendflag = false;						//フラグ初期値に戻す
-			attackendflag = false;						//フラグを戻す
+		//ボスのHPが0になったら
+		if (valkyrie.hp <= 0) {
+			valkyrie.deathflag = true;
+			turn = PLAYER;
+			battle = START;
 		}
+		
 		break;
 	}
 	default: {
 		break;
 	}
-	}
-	//HPが0になったら
-	if (valkyrie.hp <= 0) {
-		// 遷移策の画面をｲﾝｽﾀﾝｽ
-		Scene *pScene = GameClear::createScene();
-		// 0.6秒かけて次画面に遷移(時間,遷移先,色(オプション))
-		TransitionFade *transition = TransitionFade::create(1.0, pScene);
-		// 遷移実行 アニメーション
-		Director::getInstance()->replaceScene(transition);
 	}
 }
 
@@ -2105,13 +2256,10 @@ void BossScene::Plattacks()
 		if (gameflame == flame50) {
 			//通常攻撃
 			//ボスのHPを減らす
-			Damage();
+			DamageSway();
 			BOSS_VALKYRIE->runAction(bossrepeat);
-			hpcut = (attacker.atk - valkyrie.def);
-			//もし減らすHPが1以下の場合減らすHPを1にする
-			if (hpcut <= 1) {
-				hpcut = 1;
-			}
+			hpcut = (attacker.atk / 2 - valkyrie.def / 4);
+			hpcut = max(1, hpcut);
 			valkyrie.hp -= hpcut;
 			//ダメージ表記
 			String *attackeratk = String::createWithFormat("剣士は%iダメージ与えた", hpcut);
@@ -2131,11 +2279,8 @@ void BossScene::Plattacks()
 		if (gameflame == flame50) {
 			//通常攻撃
 			//ボスのHPを減らす
-			hpcut = (shield.atk - valkyrie.def);
-			//もし減らすHPが1以下の場合減らすHPを1にする
-			if (hpcut <= 1) {
-				hpcut = 1;
-			}
+			hpcut = (shield.atk / 2 - valkyrie.def / 4);
+			hpcut = max(1, hpcut);						
 			valkyrie.hp -= hpcut;
 			//ダメージ表記
 			String *shieldatk = String::createWithFormat("騎士は%iダメージ与えた", hpcut);
@@ -2155,11 +2300,8 @@ void BossScene::Plattacks()
 		if (gameflame == flame50) {
 			//通常攻撃
 			//ボスのHPを減らす
-			hpcut = (magic.atk - valkyrie.def);
-			//もし減らすHPが1以下の場合減らすHPを1にする
-			if (hpcut <= 1) {
-				hpcut = 1;
-			}
+			hpcut = (magic.atk / 2 - valkyrie.def / 4);
+			hpcut = max(1, hpcut);
 			valkyrie.hp -= hpcut;
 			//ダメージ表記
 			String *magicatk = String::createWithFormat("魔術師は%iダメージ与えた", hpcut);
@@ -2180,11 +2322,8 @@ void BossScene::Plattacks()
 		if (gameflame == flame50) {
 			//通常攻撃
 			//ボスのHPを減らす
-			hpcut = (healer.atk - valkyrie.def);
-			//もし減らすHPが1以下の場合減らすHPを1にする
-			if (hpcut <= 1) {
-				hpcut = 1;
-			}
+			hpcut = (healer.atk / 2 - valkyrie.def / 4);
+			hpcut = max(1, hpcut);
 			valkyrie.hp -= hpcut;
 			//ダメージ表記
 			String *healeratk = String::createWithFormat("聖職者は%iダメージ与えた", hpcut);
@@ -2215,10 +2354,7 @@ void BossScene::Plskills()
 				attackermnal->setString(std::to_string(attacker.mana));
 				//ボスのHPを減らす
 				hpcut = attacker.atk * skilluplittle - valkyrie.def;
-				//もし減らすHPが1以下の場合減らすHPを1にする
-				if (hpcut <= 1) {
-					hpcut = 1;
-				}
+				hpcut = max(1, hpcut);	//もし減らすHPが1以下の場合1にする
 				//効果処理
 				valkyrie.hp -= hpcut;
 				//ダメージ表記
@@ -2262,26 +2398,28 @@ void BossScene::Plskills()
 				hpcut = (attacker.atk - valkyrie.def);
 				//敵のステータス(防御力)を下げる値を決める
 				//今の防御力の2割減らす
-				buffdown = valkyrie.def * buffdownlittle;
-				//もし減らすHPが1以下の場合減らすHPを1にする
-				if (hpcut <= 1) {
-					hpcut = 1;
-				}
+				buffdown_value[0] = valkyrie.def * buffdownlittle;
+				buffdown_value[1] = valkyrie.mdef * buffdownlittle;
+				hpcut = max(1, hpcut);	//もし減らすHPが1以下の場合1にする
 				//効果処理
 				valkyrie.hp -= hpcut;
-				valkyrie.def -= buffdown;
+				valkyrie.def -= buffdown_value[0];
+				valkyrie.mdef -= buffdown_value[1];
 				//スキル効果ターンによる処理
-				if (askill2.buffturn1 == 0) {
-					askill2.buffturn1 = 1;
-					askill2.buffdownefect1 = buffdown;
+				if (askill2.buffturn[0] == 0) {
+					askill2.buffturn[0] = 1;
+					askill2.buffdownefect[0][0] = buffdown_value[0];
+					askill2.buffdownefect[1][0] = buffdown_value[1];
 				}
-				else if (askill2.buffturn2 == 0) {
-					askill2.buffturn2 = 1;
-					askill2.buffdownefect2 = buffdown;
+				else if (askill2.buffturn[1] == 0) {
+					askill2.buffturn[1] = 1;
+					askill2.buffdownefect[0][1] = buffdown_value[0];
+					askill2.buffdownefect[1][1] = buffdown_value[1];
 				}
-				else if (askill2.buffturn3 == 0) {
-					askill2.buffturn3 = 1;
-					askill2.buffdownefect3 = buffdown;
+				else if (askill2.buffturn[2] == 0) {
+					askill2.buffturn[2] = 1;
+					askill2.buffdownefect[0][2] = buffdown_value[0];
+					askill2.buffdownefect[1][2] = buffdown_value[1];
 				}
 				//ダメージ表記
 				String *attackerskl = String::createWithFormat("剣士は%iダメージ与えた", hpcut);
@@ -2315,10 +2453,7 @@ void BossScene::Plskills()
 				//ボスのHPを減らす
 				hpcut = (attacker.atk - valkyrie.def);
 				//回復する値を決める
-				//もし減らすHPが1以下の場合減らすHPを1にする
-				if (hpcut <= 1) {
-					hpcut = 1;
-				}
+				hpcut = max(1, hpcut);	//もし減らすHPが1以下の場合1にする
 				//今のHPの2割回復
 				recovery = hpcut * buffdownlittle;
 				//効果処理
@@ -2351,26 +2486,28 @@ void BossScene::Plskills()
 				hpcut = (attacker.atk - valkyrie.def);
 				//敵のステータス(攻撃力)を下げる値を決める
 				//今の攻撃力の2割減らす
-				buffdown = valkyrie.atk * buffdownlittle;
-				//もし減らすHPが1以下の場合減らすHPを1にする
-				if (hpcut <= 1) {
-					hpcut = 1;
-				}
+				buffdown_value[0] = valkyrie.atk * buffdownlittle;
+				buffdown_value[1] = valkyrie.matk * buffdownlittle;
+				hpcut = max(1, hpcut);	//もし減らすHPが1以下の場合1にする
 				//効果処理
 				valkyrie.hp -= hpcut;
-				valkyrie.atk -= buffdown;
+				valkyrie.atk -= buffdown_value[0];
+				valkyrie.matk -= buffdown_value[1];
 				//スキル効果ターンによる処理
-				if (askill4.buffturn1 == 0) {
-					askill4.buffturn1 = 1;
-					askill4.buffdownefect1 = buffdown;
+				if (askill4.buffturn[0] == 0) {
+					askill4.buffturn[0] = 1;
+					askill4.buffdownefect[0][0] = buffdown_value[0];
+					askill4.buffdownefect[1][0] = buffdown_value[1];
 				}
-				else if (askill4.buffturn2 == 0) {
-					askill4.buffturn2 = 1;
-					askill4.buffdownefect2 = buffdown;
+				else if (askill4.buffturn[1] == 0) {
+					askill4.buffturn[1] = 1;
+					askill4.buffdownefect[0][1] = buffdown_value[0];
+					askill4.buffdownefect[1][1] = buffdown_value[1];
 				}
-				else if (askill4.buffturn3 == 0) {
-					askill4.buffturn3 = 1;
-					askill4.buffdownefect3 = buffdown;
+				else if (askill4.buffturn[2] == 0) {
+					askill4.buffturn[2] = 1;
+					askill4.buffdownefect[0][2] = buffdown_value[0];
+					askill4.buffdownefect[1][2] = buffdown_value[1];
 				}
 				//ダメージ表記
 				String *attackerskl = String::createWithFormat("剣士は%iダメージ与えた", hpcut);
@@ -2441,10 +2578,7 @@ void BossScene::Plskills()
 				//ボスのHPを減らす
 				//今の攻撃力の倍のダメージを与える
 				hpcut = (attacker.atk * skilluplarge) - valkyrie.def;
-				//もし減らすHPが1以下の場合減らすHPを1にする
-				if (hpcut <= 1) {
-					hpcut = 1;
-				}
+				hpcut = max(1, hpcut);	//もし減らすHPが1以下の場合1にする
 				//効果処理
 				valkyrie.hp -= hpcut;
 				//ダメージ表記
@@ -2470,28 +2604,33 @@ void BossScene::Plskills()
 				//MANAの数値を変える
 				attackermnal->setString(std::to_string(attacker.mana));
 				//アタッカーの元の攻撃力の2割ほど攻撃力を上げる
-				buffup = attacker.atkmax * buffdownlittle;
+				buffup_value[0] = attacker.atkmax * buffdownlittle;
+				buffup_value[1] = attacker.matkmax * buffdownlittle;
 				//効果処理
-				attacker.atk += buffup;
+				attacker.atk += buffup_value[0];
 				//スキル効果ターンによる処理
-				if (askill7.buffturn1 == 0) {
-					askill7.buffturn1 = 4;
-					askill7.buffupefect1 = buffup;
+				if (askill7.buffturn[0] == 0) {
+					askill7.buffturn[0] = 4;
+					askill7.buffupefect[0][0] = buffup_value[0];
+					askill7.buffupefect[1][0] = buffup_value[1];
 				}
-				else if (askill7.buffturn2 == 0) {
-					askill7.buffturn2 = 4;
-					askill7.buffupefect2 = buffup;
+				else if (askill7.buffturn[1] == 0) {
+					askill7.buffturn[1] = 4;
+					askill7.buffupefect[0][1] = buffup_value[0];
+					askill7.buffupefect[1][1] = buffup_value[1];
 				}
-				else if (askill7.buffturn3 == 0) {
-					askill7.buffturn3 = 4;
-					askill7.buffupefect3 = buffup;
+				else if (askill7.buffturn[2] == 0) {
+					askill7.buffturn[2] = 4;
+					askill7.buffupefect[0][2] = buffup_value[0];
+					askill7.buffupefect[1][2] = buffup_value[1];
 				}
-				else if (askill7.buffturn4 == 0) {
-					askill7.buffturn4 = 4;
-					askill7.buffupefect4 = buffup;
+				else if (askill7.buffturn[3] == 0) {
+					askill7.buffturn[3] = 4;
+					askill7.buffupefect[0][3] = buffup_value[0];
+					askill7.buffupefect[1][3] = buffup_value[1];
 				}
 				//ダメージ表記
-				String *attackerbuff = String::createWithFormat("剣士は%i攻撃力が少しアップした", buffup);
+				String *attackerbuff = String::createWithFormat("剣士は%i攻撃力が少しアップした", buffup_value);
 				string _attackerbuff = attackerbuff->getCString();
 				auto attackerslabel = Label::createWithSystemFont(_attackerbuff, "HGRSGU.TTC", fontsizeL);
 				attackerslabel->setPosition(rightSize.width / 2, rightSize.height / 1.15f);
@@ -2513,36 +2652,48 @@ void BossScene::Plskills()
 				attackermnal->setString(std::to_string(attacker.mana));
 				//アタッカーの攻撃力を上げる
 				//アタッカーの元の攻撃力ぶん攻撃力を上げる
-				buffup = attacker.atkmax;
+				buffup_value[0] = attacker.atkmax;
+				buffup_value[1] = attacker.matkmax;
 				//アタッカーの防御力を下げる
-				buffdown = attacker.def * buffdownlarge;
+				buffdown_value[0] = attacker.def * buffdownlittle;
+				buffdown_value[1] = attacker.mdef * buffdownlittle;
 				//効果処理
-				attacker.atk += buffup;
-				attacker.def -= buffdown;
+				attacker.atk += buffup_value[0];
+				attacker.matk += buffup_value[1];
+				attacker.def -= buffdown_value[0];
+				attacker.mdef -= buffdown_value[1];
 				//スキル効果ターンによる処理
-				if (askill8.buffturn1 == 0) {
-					askill8.buffturn1 = 5;				//持続するターン
-					askill8.buffupefect1 = buffup;		//上がった分のステータスを記憶
-					askill8.buffdownefect1 = buffdown;	//下がった分のステータスを記憶
+				if (askill8.buffturn[0] == 0) {
+					askill8.buffturn[0] = 5;					//持続するターン
+					askill8.buffupefect[0][0] = buffup_value[0];		//上がった分のステータスを記憶
+					askill8.buffupefect[1][0] = buffup_value[1];
+					askill8.buffdownefect[0][0] = buffdown_value[0];	//下がった分のステータスを記憶
+					askill8.buffdownefect[1][0] = buffdown_value[1];
 				}
-				else if (askill8.buffturn2 == 0) {
-					askill8.buffturn2 = 5;
-					askill8.buffupefect2 = buffup;
-					askill8.buffdownefect2 = buffdown;
+				else if (askill8.buffturn[1] == 0) {
+					askill8.buffturn[1] = 5;
+					askill8.buffupefect[0][1] = buffup_value[0];		//上がった分のステータスを記憶
+					askill8.buffupefect[1][1] = buffup_value[1];
+					askill8.buffdownefect[0][1] = buffdown_value[0];	//下がった分のステータスを記憶
+					askill8.buffdownefect[1][1] = buffdown_value[1];
 				}
-				else if (askill8.buffturn3 == 0) {
-					askill8.buffturn3 = 5;
-					askill8.buffupefect3 = buffup;
-					askill8.buffdownefect3 = buffdown;
+				else if (askill8.buffturn[2] == 0) {
+					askill8.buffturn[2] = 5;
+					askill8.buffupefect[0][2] = buffup_value[0];		//上がった分のステータスを記憶
+					askill8.buffupefect[1][2] = buffup_value[1];
+					askill8.buffdownefect[0][2] = buffdown_value[0];	//下がった分のステータスを記憶
+					askill8.buffdownefect[1][2] = buffdown_value[1];
 				}
-				else if (askill8.buffturn4 == 0) {
-					askill8.buffturn4 = 5;
-					askill8.buffupefect4 = buffup;
-					askill8.buffdownefect4 = buffdown;
+				else if (askill8.buffturn[3] == 0) {
+					askill8.buffturn[3] = 5;
+					askill8.buffupefect[0][3] = buffup_value[0];		//上がった分のステータスを記憶
+					askill8.buffupefect[1][3] = buffup_value[1];
+					askill8.buffdownefect[0][3] = buffdown_value[0];	//下がった分のステータスを記憶
+					askill8.buffdownefect[1][3] = buffdown_value[1];
 				}
 
 				//ダメージ表記
-				String *attackerbuf = String::createWithFormat("剣士は攻撃力が大幅にアップした", buffup);
+				String *attackerbuf = String::createWithFormat("剣士は攻撃力が大幅にアップした", buffup_value);
 				string _attackerbuf = attackerbuf->getCString();
 				auto attackerslabel = Label::createWithSystemFont(_attackerbuf, "HGRSGU.TTC", fontsizeL);
 				attackerslabel->setPosition(rightSize.width / 2, rightSize.height / 1.15f);
@@ -2574,11 +2725,8 @@ void BossScene::Plskills()
 				//MANAの数値を変える
 				attackermnal->setString(std::to_string(attacker.mana));
 				//ボスのHPを減らす
-				hpcut = attacker.atk * skilluplittle - valkyrie.def;
-				//もし減らすHPが1以下の場合減らすHPを1にする
-				if (hpcut <= 1) {
-					hpcut = 1;
-				}
+				hpcut = shield.atk * skilluplittle - valkyrie.def;
+				hpcut = max(1, hpcut);	//もし減らすHPが1以下の場合1にする
 				//効果処理
 				valkyrie.hp -= hpcut;
 				//ダメージ表記
@@ -2619,8 +2767,8 @@ void BossScene::Plskills()
 				shieldmnal->setString(std::to_string(shield.mana));
 
 				// スキル効果ターンによる処理
-				if (sskill2.buffturn1 == 0) {
-					sskill2.buffturn1 = 1;	//スキルの効果が発揮するターンを決める
+				if (sskill2.buffturn[0] == 0) {
+					sskill2.buffturn[0] = 1;	//スキルの効果が発揮するターンを決める
 					counter_attackflag = true;		//身代わりフラグをオンにする
 				}
 				//効果表記
@@ -2644,13 +2792,13 @@ void BossScene::Plskills()
 				shieldmnal->setString(std::to_string(shield.mana));
 
 				// スキル効果ターンによる処理
-					if (sskill3.buffturn1 == 0) {
-						sskill3.buffturn1 = 2;	//スキルの効果が発揮するターンを決める
-						coverflag1 = true;		//タゲ集中フラグをオンにする
+					if (sskill3.buffturn[0] == 0) {
+						sskill3.buffturn[0] = 2;	//スキルの効果が発揮するターンを決める
+						coverflag[0] = true;		//タゲ集中フラグをオンにする
 					}
-					else if (sskill3.buffturn3 == 0) {
-						sskill3.buffturn2= 2;	//スキルの効果が発揮するターンを決める
-						coverflag2= true;		//タゲ集中フラグをオンにする
+					else if (sskill3.buffturn[2] == 0) {
+						sskill3.buffturn[1]= 2;	//スキルの効果が発揮するターンを決める
+						coverflag[1]= true;		//タゲ集中フラグをオンにする
 					}
 
 				//効果表記
@@ -2674,8 +2822,8 @@ void BossScene::Plskills()
 				shieldmnal->setString(std::to_string(shield.mana));
 
 				// スキル効果ターンによる処理
-				if (sskill4.buffturn1 == 0) {
-					sskill4.buffturn1 = 1;	//スキルの効果が発揮するターンを決める
+				if (sskill4.buffturn[0] == 0) {
+					sskill4.buffturn[0] = 1;	//スキルの効果が発揮するターンを決める
 					insteadflag = true;		//身代わりフラグをオンにする
 				}
 
@@ -2714,8 +2862,8 @@ void BossScene::Plskills()
 				shieldmnal->setString(std::to_string(shield.mana));
 
 				// スキル効果ターンによる処理
-				if (sskill5.buffturn1 == 0) {
-					sskill5.buffturn1 = 1;	//スキルの効果が発揮するターンを決める
+				if (sskill5.buffturn[0] == 0) {
+					sskill5.buffturn[0] = 1;	//スキルの効果が発揮するターンを決める
 					allinsteadflag = true;		//身代わりフラグをオンにする
 				}
 
@@ -2739,8 +2887,8 @@ void BossScene::Plskills()
 					shieldmnal->setString(std::to_string(shield.mana));
 
 					// スキル効果ターンによる処理
-					if (sskill6.buffturn1 == 0) {
-						sskill6.buffturn1 = 1;		//スキルの効果が発揮するターンを決める
+					if (sskill6.buffturn[0] == 0) {
+						sskill6.buffturn[0] = 1;		//スキルの効果が発揮するターンを決める
 						resurrectionflag = true;	//復活フラグを立てる
 					}
 					//効果表記
@@ -2763,33 +2911,40 @@ void BossScene::Plskills()
 
 				//MANAの数値を変える
 				shieldmnal->setString(std::to_string(shield.mana));
-				//アタッカーの元の攻撃力の2割ほど攻撃力を上げる
-				buffup = shield.defmax * buffdownlittle;
+				//騎士の元の攻撃力の2割ほど攻撃力を上げる
+				buffup_value[0] = shield.defmax * buffdownlittle;
+				buffup_value[1] = shield.mdefmax * buffdownlittle;
 				//効果処理
-				shield.atk += buffup;
+				shield.def += buffup_value[0];
+				shield.mdef += buffup_value[1];
 				//スキル効果ターンによる処理
-				if (sskill7.buffturn1 == 0) {
-					sskill7.buffturn1 = 5;
-					sskill7.buffupefect1 = buffup;
+				if (sskill7.buffturn[0] == 0) {
+					sskill7.buffturn[0] = 5;
+					sskill7.buffupefect[0][0] = buffup_value[0];
+					sskill7.buffupefect[1][0] = buffup_value[1];
 				}
-				else if (sskill7.buffturn2 == 0) {
-					sskill7.buffturn2 = 5;
-					sskill7.buffupefect2 = buffup;
+				else if (sskill7.buffturn[1] == 0) {
+					sskill7.buffturn[1] = 5;
+					sskill7.buffupefect[0][1] = buffup_value[0];
+					sskill7.buffupefect[1][1] = buffup_value[1];
 				}
-				else if (sskill7.buffturn3 == 0) {
-					sskill7.buffturn3 = 5;
-					sskill7.buffupefect3 = buffup;
+				else if (sskill7.buffturn[2] == 0) {
+					sskill7.buffturn[2] = 5;
+					sskill7.buffupefect[0][2] = buffup_value[0];
+					sskill7.buffupefect[1][2] = buffup_value[1];
 				}
-				else if (sskill7.buffturn4 == 0) {
-					sskill7.buffturn4 = 5;
-					sskill7.buffupefect4 = buffup;
+				else if (sskill7.buffturn[3] == 0) {
+					sskill7.buffturn[3] = 5;
+					sskill7.buffupefect[0][3] = buffup_value[0];
+					sskill7.buffupefect[1][3] = buffup_value[1];
 				}
-				else if (sskill7.buffturn5 == 0) {
-					sskill7.buffturn5 = 5;
-					sskill7.buffupefect5 = buffup;
+				else if (sskill7.buffturn[4] == 0) {
+					sskill7.buffturn[4] = 5;
+					sskill7.buffupefect[0][4] = buffup_value[0];
+					sskill7.buffupefect[1][4] = buffup_value[1];
 				}
 				//ダメージ表記
-				String *shieldbuff = String::createWithFormat("騎士は%i防御力が少しアップした", buffup);
+				String *shieldbuff = String::createWithFormat("騎士は%i防御力が少しアップした", buffup_value);
 				string _shieldbuff = shieldbuff->getCString();
 				auto shieldslabel = Label::createWithSystemFont(_shieldbuff, "HGRSGU.TTC", fontsizeL);
 				shieldslabel->setPosition(rightSize.width / 2, rightSize.height / 1.15f);
@@ -2810,35 +2965,47 @@ void BossScene::Plskills()
 
 				//MANAの数値を変える
 				shieldmnal->setString(std::to_string(shield.mana));
-				//騎士の元の防御力の2割ほど攻撃力を上げる
-				buffup = shield.defmax;
-				buffdown = shield.atk * buffdownlarge;
+				//騎士の元の防御力の2倍ほど防御力を上げて攻撃力を下げる
+				buffup_value[0] = shield.defmax;
+				buffup_value[1] = shield.mdefmax;
+				buffdown_value[0] = shield.atk * buffdownlittle;
+				buffdown_value[1] = shield.matk * buffdownlittle;
 				//効果処理
-				shield.def += buffup;
-				shield.atk -= buffdown;
+				shield.def += buffup_value[0];
+				shield.mdef += buffup_value[1];
+				shield.atk -= buffdown_value[0];
+				shield.matk -= buffdown_value[1];
 				//スキル効果ターンによる処理
-				if (sskill8.buffturn1 == 0) {
-					sskill8.buffturn1 = 4;
-					sskill8.buffupefect1 = buffup;
-					sskill8.buffdownefect1 = buffdown;
+				if (sskill8.buffturn[0] == 0) {
+					sskill8.buffturn[0] = 4;
+					sskill8.buffupefect[0][0] = buffup_value[0];
+					sskill8.buffupefect[1][0] = buffup_value[1];
+					sskill8.buffdownefect[0][0] = buffdown_value[0];
+					sskill8.buffdownefect[1][0] = buffdown_value[1];
 				}
-				else if (sskill8.buffturn2 == 0) {
-					sskill8.buffturn2 = 4;
-					sskill8.buffupefect2 = buffup;
-					sskill8.buffdownefect1 = buffdown;
+				else if (sskill8.buffturn[1] == 0) {
+					sskill8.buffturn[1] = 4;
+					sskill8.buffupefect[0][1] = buffup_value[0];
+					sskill8.buffupefect[1][1] = buffup_value[1];
+					sskill8.buffdownefect[0][1] = buffdown_value[0];
+					sskill8.buffdownefect[1][1] = buffdown_value[1];
 				}
-				else if (sskill8.buffturn3 == 0) {
-					sskill8.buffturn3 = 4;
-					sskill8.buffupefect3 = buffup;
-					sskill8.buffdownefect1 = buffdown;
+				else if (sskill8.buffturn[2] == 0) {
+					sskill8.buffturn[2] = 4;
+					sskill8.buffupefect[0][2] = buffup_value[0];
+					sskill8.buffupefect[1][2] = buffup_value[1];
+					sskill8.buffdownefect[0][2] = buffdown_value[0];
+					sskill8.buffdownefect[1][2] = buffdown_value[1];
 				}
-				else if (sskill8.buffturn4 == 0) {
-					sskill8.buffturn4 = 4;
-					sskill8.buffupefect4 = buffup;
-					sskill8.buffdownefect1 = buffdown;
+				else if (sskill8.buffturn[3] == 0) {
+					sskill8.buffturn[3] = 4;
+					sskill8.buffupefect[0][3] = buffup_value[0];
+					sskill8.buffupefect[1][3] = buffup_value[1];
+					sskill8.buffdownefect[0][3] = buffdown_value[0];
+					sskill8.buffdownefect[1][3] = buffdown_value[1];
 				}
 				//ステータス変化表記
-				String *shieldbuff = String::createWithFormat("騎士は防御力が大幅にアップした", buffup);
+				String *shieldbuff = String::createWithFormat("騎士は防御力が大幅にアップした", buffup_value);
 				string _shieldbuff = shieldbuff->getCString();
 				auto shieldslabel = Label::createWithSystemFont(_shieldbuff, "HGRSGU.TTC", fontsizeL);
 				shieldslabel->setPosition(rightSize.width / 2, rightSize.height / 1.15f);
@@ -2880,10 +3047,7 @@ void BossScene::Plskills()
 				magicmnal->setString(std::to_string(magic.mana));
 				//ボスのHPを減らす
 				hpcut = (magic.matk - valkyrie.mdef);
-				//もし減らすHPが1以下の場合減らすHPを1にする
-				if (hpcut <= 1) {
-					hpcut = 1;
-				}
+				hpcut = max(1, hpcut);	//もし減らすHPが1以下の場合1にする
 				valkyrie.hp -= hpcut;
 				//ダメージ表記
 				String *p3skl = String::createWithFormat("魔術師は%iダメージ与えた", hpcut);
@@ -2909,24 +3073,26 @@ void BossScene::Plskills()
 				magicmnal->setString(std::to_string(magic.mana));
 				//ボスのHPを減らす
 				hpcut = (magic.matk - valkyrie.mdef);
-				buffup = magic.def / skilluplarge;
-				//もし減らすHPが1以下の場合減らすHPを1にする
-				if (hpcut <= 1) {
-					hpcut = 1;
-				}
 				valkyrie.hp -= hpcut;
-				magic.def += buffup;
+				hpcut = max(1, hpcut);	//もし減らすHPが1以下の場合1にする
+				//防御力を計算
+				buffup_value[0] = magic.def * buffdownlittle;
+				buffup_value[1] = magic.mdef * buffdownlittle;
+				//防御力を足す
+				magic.def += buffup_value[0];
+				magic.mdef += buffup_value[1];
 				//スキル効果ターンによる処理
-				if (mskill2.buffturn1 == 0) {
-					mskill2.buffturn1 = 1;
-					mskill2.buffupefect1 = buffup;
+				if (mskill2.buffturn[0] == 0) {
+					mskill2.buffturn[0] = 1;
+					mskill2.buffupefect[0][0] = buffup_value[0];
+					mskill2.buffupefect[1][0] = buffup_value[1];
 				}
-				else if (mskill2.buffturn2 == 0) {
-					mskill2.buffturn2 = 1;
-					mskill2.buffupefect2 = buffup;
+				else if (mskill2.buffturn[1] == 0) {
+					mskill2.buffturn[1] = 1;
+					mskill2.buffupefect[0][1] = buffup_value[0];
+					mskill2.buffupefect[1][1] = buffup_value[1];
 				}
 				
-
 				//ダメージ表記
 				String *p3skl = String::createWithFormat("魔術師は%iダメージ与えた", hpcut);
 				string _p3skl = p3skl->getCString();
@@ -2957,26 +3123,28 @@ void BossScene::Plskills()
 				magicmnal->setString(std::to_string(magic.mana));
 				//ボスのHPを減らす
 				hpcut = (magic.matk * skillupmedium) - valkyrie.mdef;
-				//魔術師の今の攻撃力の５割の攻撃力を下げる
-				buffdown = valkyrie.atk * buffdownlittle;
-				//もし減らすHPが1以下の場合減らすHPを1にする
-				if (hpcut <= 1) {
-					hpcut = 1;
-				}
+				hpcut = max(1, hpcut);	//もし減らすHPが1以下の場合1にする
 				valkyrie.hp -= hpcut;
-				valkyrie.atk -= buffdown;
+				//魔術師の今の攻撃力の2.5割の攻撃力を下げる
+				buffdown_value[0] = valkyrie.atk * buffdownlittle;
+				buffdown_value[1] = valkyrie.matk * buffdownlittle;
+				//攻撃力を引く
+				valkyrie.atk -= buffdown_value[0];
+				valkyrie.matk -= buffdown_value[1];
 				//スキル効果ターンによる処理
-				if (mskill3.buffturn1 == 0) {
-					mskill3.buffturn1 = 1;
-					mskill3.buffdownefect1 = buffdown;
+				if (mskill3.buffturn[0] == 0) {
+					mskill3.buffturn[0] = 1;
+					mskill3.buffdownefect[0][0] = buffdown_value[0];
+					mskill3.buffdownefect[1][0] = buffdown_value[1];
 				}
-				else if (mskill3.buffturn2 == 0) {
-					mskill3.buffturn2 = 1;
-					mskill3.buffdownefect2 = buffdown;
+				else if (mskill3.buffturn[1] == 0) {
+					mskill3.buffturn[1] = 1;
+					mskill3.buffdownefect[0][1] = buffdown_value[0];
+					mskill3.buffdownefect[1][1] = buffdown_value[1];
 				}
 
 				//ダメージ表記
-				String *p3skl = String::createWithFormat("魔術師は%iダメージ与えた", buffdown);
+				String *p3skl = String::createWithFormat("魔術師は%iダメージ与えた", buffdown_value);
 				string _p3skl = p3skl->getCString();
 				auto p3slabel = Label::createWithSystemFont(_p3skl, "HGRSGU.TTC", fontsizeL);
 				p3slabel->setPosition(rightSize.width / 2, rightSize.height / 1.15f);
@@ -3005,10 +3173,7 @@ void BossScene::Plskills()
 				magicmnal->setString(std::to_string(magic.mana));
 				//ボスのHPを減らす
 				hpcut = (magic.matk * skilluplarge) - valkyrie.mdef;
-				//もし減らすHPが1以下の場合減らすHPを1にする
-				if (hpcut <= 1) {
-					hpcut = 1;
-				}
+				hpcut = max(1, hpcut);	//もし減らすHPが1以下の場合1にする
 				valkyrie.hp -= hpcut;
 				//ダメージ表記
 				String *p3skl = String::createWithFormat("魔術師は%iダメージ与えた", hpcut);
@@ -3033,73 +3198,120 @@ void BossScene::Plskills()
 				//MANAの数値を変える
 				magicmnal->setString(std::to_string(magic.mana));
 				//味方全員のステータスを上げる
-				//剣士の攻撃と防御を上げる
-				attackeratkbuffup = attacker.atk * buffuplittle;
-				attackerdefbuffup = attacker.def * buffuplittle;
-				attacker.atk += attackeratkbuffup;
-				attacker.def += attackerdefbuffup;
+				//剣士の攻撃と防御の上げるバフ効果を計算して足す
+				attackerbuffup[0] = attacker.atk * buffuplittle;
+				attackerbuffup[1] = attacker.matk * buffuplittle;
+				attackerbuffup[2] = attacker.def * buffuplittle;
+				attackerbuffup[3] = attacker.mdef * buffuplittle;
+				attacker.atk += attackerbuffup[0];
+				attacker.matk += attackerbuffup[1];
+				attacker.def += attackerbuffup[2];
+				attacker.mdef += attackerbuffup[3];
 				//騎士のry
-				shieldatkbuffup = shield.atk * buffuplittle;
-				shielddefbuffup = shield.def * buffuplittle;
-				shield.atk += shieldatkbuffup;
-				shield.def += shielddefbuffup;
+				shieldbuffup[0] = shield.atk * buffuplittle;
+				shieldbuffup[1] = shield.matk * buffuplittle;
+				shieldbuffup[2] = shield.def * buffuplittle;
+				shieldbuffup[3] = shield.mdef * buffuplittle;
+				shield.atk += shieldbuffup[0];
+				shield.matk += shieldbuffup[1];
+				shield.def += shieldbuffup[2];
+				shield.mdef += shieldbuffup[3];
 				//魔術師のry
-				magicatkbuffup = magic.atk * buffuplittle;
-				magicdefbuffup = magic.def * buffuplittle;
-				magic.atk += magicatkbuffup;
-				magic.def += magicdefbuffup;
+				magicbuffup[0] = magic.atk * buffuplittle;
+				magicbuffup[1] = magic.matk * buffuplittle;
+				magicbuffup[2] = magic.def * buffuplittle;
+				magicbuffup[3] = magic.mdef * buffuplittle;
+				magic.atk += magicbuffup[0];
+				magic.matk += magicbuffup[1];
+				magic.def += magicbuffup[2];
+				magic.mdef += magicbuffup[3];
 				//聖職者のry
-				healeratkbuffup = healer.atk * buffuplittle;
-				healerdefbuffup = healer.def * buffuplittle;
-				healer.atk += healeratkbuffup;
-				healer.def += healerdefbuffup;
+				healerbuffup[0] = healer.atk * buffuplittle;
+				healerbuffup[1] = healer.matk * buffuplittle;
+				healerbuffup[2] = healer.def * buffuplittle;
+				healerbuffup[3] = healer.mdef * buffuplittle;
+				healer.atk += healerbuffup[0];
+				healer.matk += healerbuffup[1];
+				healer.def += healerbuffup[2];
+				healer.mdef += healerbuffup[3];
 
 				//スキル効果ターンによる処理
-				if (mskill5.buffturn1 == 0) {
-					mskill5.buffturn1 = 4;							//持続するターン
-					mskill5.attackeratkbuff1 = attackeratkbuffup;	//上がった分のステータスを記憶(剣士)
-					mskill5.attackerdefbuff1 = attackerdefbuffup;	//上がった分のステータスを記憶(剣士)
-					mskill5.shieldatkbuff1 = shieldatkbuffup;		//上がった分のステータスを記憶(騎士)
-					mskill5.shielddefbuff1 = shielddefbuffup;		//上がった分のステータスを記憶(騎士)
-					mskill5.magicatkbuff1 = magicatkbuffup;			//上がった分のステータスを記憶(魔術師)
-					mskill5.magicdefbuff1 = magicdefbuffup;			//上がった分のステータスを記憶(魔術師)
-					mskill5.healeratkbuff1 = healeratkbuffup;		//上がった分のステータスを記憶(聖職者)
-					mskill5.healerdefbuff1 = healerdefbuffup;		//上がった分のステータスを記憶(聖職者)
+				if (mskill5.buffturn[0] == 0) {
+					mskill5.buffturn[0] = 4;						//持続するターン
+					mskill5.attackerbuff[0][0] = attackerbuffup[0];	//上がった分のステータスを記憶(剣士)
+					mskill5.attackerbuff[1][0] = attackerbuffup[1];
+					mskill5.attackerbuff[2][0] = attackerbuffup[2];
+					mskill5.attackerbuff[3][0] = attackerbuffup[3];
+					mskill5.shieldbuff[0][0] = shieldbuffup[0];		//上がった分のステータスを記憶(騎士)
+					mskill5.shieldbuff[1][0] = shieldbuffup[1];
+					mskill5.shieldbuff[2][0] = shieldbuffup[2];
+					mskill5.shieldbuff[3][0] = shieldbuffup[3];
+					mskill5.magicbuff[0][0] = magicbuffup[0];		//上がった分のステータスを記憶(魔術師)
+					mskill5.magicbuff[1][0] = magicbuffup[1];
+					mskill5.magicbuff[2][0] = magicbuffup[2];
+					mskill5.magicbuff[3][0] = magicbuffup[3];
+					mskill5.healerbuff[0][0] = healerbuffup[0];		//上がった分のステータスを記憶(聖職者)
+					mskill5.healerbuff[1][0] = healerbuffup[1];
+					mskill5.healerbuff[2][0] = healerbuffup[2];
+					mskill5.healerbuff[3][0] = healerbuffup[3];
 				}
-				else if (mskill5.buffturn2 == 0) {
-					mskill5.buffturn2 = 4;
-					mskill5.attackeratkbuff2 = attackeratkbuffup;	//上がった分のステータスを記憶(剣士)
-					mskill5.attackerdefbuff2 = attackerdefbuffup;	//上がった分のステータスを記憶(剣士)
-					mskill5.shieldatkbuff2 = shieldatkbuffup;		//上がった分のステータスを記憶(騎士)
-					mskill5.shielddefbuff2 = shielddefbuffup;		//上がった分のステータスを記憶(騎士)
-					mskill5.magicatkbuff2 = magicatkbuffup;			//上がった分のステータスを記憶(魔術師)
-					mskill5.magicdefbuff2 = magicdefbuffup;			//上がった分のステータスを記憶(魔術師)
-					mskill5.healeratkbuff2 = healeratkbuffup;		//上がった分のステータスを記憶(聖職者)
-					mskill5.healerdefbuff2 = healerdefbuffup;		//上がった分のステータスを記憶(聖職者)
+				else if (mskill5.buffturn[1] == 0) {
+					mskill5.buffturn[1] = 4;
+					mskill5.attackerbuff[0][1] = attackerbuffup[0];	//上がった分のステータスを記憶(剣士)
+					mskill5.attackerbuff[1][1] = attackerbuffup[1];
+					mskill5.attackerbuff[2][1] = attackerbuffup[2];
+					mskill5.attackerbuff[3][1] = attackerbuffup[3];
+					mskill5.shieldbuff[0][1] = shieldbuffup[0];		//上がった分のステータスを記憶(騎士)
+					mskill5.shieldbuff[1][1] = shieldbuffup[1];
+					mskill5.shieldbuff[2][1] = shieldbuffup[2];
+					mskill5.shieldbuff[3][1] = shieldbuffup[3];
+					mskill5.magicbuff[0][1] = magicbuffup[0];		//上がった分のステータスを記憶(魔術師)
+					mskill5.magicbuff[1][1] = magicbuffup[1];
+					mskill5.magicbuff[2][1] = magicbuffup[2];
+					mskill5.magicbuff[3][1] = magicbuffup[3];
+					mskill5.healerbuff[0][1] = healerbuffup[0];		//上がった分のステータスを記憶(聖職者)
+					mskill5.healerbuff[1][1] = healerbuffup[1];
+					mskill5.healerbuff[2][1] = healerbuffup[2];
+					mskill5.healerbuff[3][1] = healerbuffup[3];
 				}
-				else if (mskill5.buffturn3 == 0) {
-					mskill5.buffturn3 = 4;
-					mskill5.attackeratkbuff3 = attackeratkbuffup;	//上がった分のステータスを記憶(剣士)
-					mskill5.attackerdefbuff3 = attackerdefbuffup;	//上がった分のステータスを記憶(剣士)
-					mskill5.shieldatkbuff3 = shieldatkbuffup;		//上がった分のステータスを記憶(騎士)
-					mskill5.shielddefbuff3 = shielddefbuffup;		//上がった分のステータスを記憶(騎士)
-					mskill5.magicatkbuff3 = magicatkbuffup;			//上がった分のステータスを記憶(魔術師)
-					mskill5.magicdefbuff3 = magicdefbuffup;			//上がった分のステータスを記憶(魔術師)
-					mskill5.healeratkbuff3 = healeratkbuffup;		//上がった分のステータスを記憶(聖職者)
-					mskill5.healerdefbuff3 = healerdefbuffup;		//上がった分のステータスを記憶(聖職者)
+				else if (mskill5.buffturn[2] == 0) {
+					mskill5.buffturn[2] = 4;
+					mskill5.attackerbuff[0][2] = attackerbuffup[0];	//上がった分のステータスを記憶(剣士)
+					mskill5.attackerbuff[1][2] = attackerbuffup[1];
+					mskill5.attackerbuff[2][2] = attackerbuffup[2];
+					mskill5.attackerbuff[3][2] = attackerbuffup[3];
+					mskill5.shieldbuff[0][2] = shieldbuffup[0];		//上がった分のステータスを記憶(騎士)
+					mskill5.shieldbuff[1][2] = shieldbuffup[1];
+					mskill5.shieldbuff[2][2] = shieldbuffup[2];
+					mskill5.shieldbuff[3][2] = shieldbuffup[3];
+					mskill5.magicbuff[0][2] = magicbuffup[0];		//上がった分のステータスを記憶(魔術師)
+					mskill5.magicbuff[1][2] = magicbuffup[1];
+					mskill5.magicbuff[2][2] = magicbuffup[2];
+					mskill5.magicbuff[3][2] = magicbuffup[3];
+					mskill5.healerbuff[0][2] = healerbuffup[0];		//上がった分のステータスを記憶(聖職者)
+					mskill5.healerbuff[1][2] = healerbuffup[1];
+					mskill5.healerbuff[2][2] = healerbuffup[2];
+					mskill5.healerbuff[3][2] = healerbuffup[3];
 				}
-				else if (mskill5.buffturn4 == 0) {
-					mskill5.buffturn4 = 4;
-					mskill5.attackeratkbuff4 = attackeratkbuffup;	//上がった分のステータスを記憶(剣士)
-					mskill5.attackerdefbuff4 = attackerdefbuffup;	//上がった分のステータスを記憶(剣士)
-					mskill5.shieldatkbuff4 = shieldatkbuffup;		//上がった分のステータスを記憶(騎士)
-					mskill5.shielddefbuff4 = shielddefbuffup;		//上がった分のステータスを記憶(騎士)
-					mskill5.magicatkbuff4 = magicatkbuffup;			//上がった分のステータスを記憶(魔術師)
-					mskill5.magicdefbuff4 = magicdefbuffup;			//上がった分のステータスを記憶(魔術師)
-					mskill5.healeratkbuff4 = healeratkbuffup;		//上がった分のステータスを記憶(聖職者)
-					mskill5.healerdefbuff4 = healerdefbuffup;		//上がった分のステータスを記憶(聖職者)
+				else if (mskill5.buffturn[3] == 0) {
+					mskill5.buffturn[3] = 4;
+					mskill5.attackerbuff[0][4] = attackerbuffup[0];	//上がった分のステータスを記憶(剣士)
+					mskill5.attackerbuff[1][4] = attackerbuffup[1];
+					mskill5.attackerbuff[2][4] = attackerbuffup[2];
+					mskill5.attackerbuff[3][4] = attackerbuffup[3];
+					mskill5.shieldbuff[0][4] = shieldbuffup[0];		//上がった分のステータスを記憶(騎士)
+					mskill5.shieldbuff[1][4] = shieldbuffup[1];
+					mskill5.shieldbuff[2][4] = shieldbuffup[2];
+					mskill5.shieldbuff[3][4] = shieldbuffup[3];
+					mskill5.magicbuff[0][4] = magicbuffup[0];		//上がった分のステータスを記憶(魔術師)
+					mskill5.magicbuff[1][4] = magicbuffup[1];
+					mskill5.magicbuff[2][4] = magicbuffup[2];
+					mskill5.magicbuff[3][4] = magicbuffup[3];
+					mskill5.healerbuff[0][4] = healerbuffup[0];		//上がった分のステータスを記憶(聖職者)
+					mskill5.healerbuff[1][4] = healerbuffup[1];
+					mskill5.healerbuff[2][4] = healerbuffup[2];
+					mskill5.healerbuff[3][4] = healerbuffup[3];
 				}
-				
 				//ステータスアップ表記
 				auto pl3buffup = CCLabelTTF::create("味方の攻撃力と防御力が少し上がった", "HGRSGU.TTC", fontsizeM);
 				pl3buffup->setPosition(rightSize.width / 2, rightSize.height / 1.15f);
@@ -3122,71 +3334,119 @@ void BossScene::Plskills()
 				//MANAの数値を変える
 				magicmnal->setString(std::to_string(magic.mana));
 				//味方全員のステータスを上げる
-				//剣士の攻撃と防御を上げる
-				attackeratkbuffup = attacker.atkmax;
-				attackerdefbuffup = attacker.defmax;
-				attacker.atk += attackeratkbuffup;
-				attacker.def += attackerdefbuffup;
+				//剣士の攻撃と防御の上げるバフ効果を計算して足す
+				attackerbuffup[0] = attacker.atkmax;
+				attackerbuffup[1] = attacker.matkmax;
+				attackerbuffup[2] = attacker.defmax;
+				attackerbuffup[3] = attacker.mdefmax;
+				attacker.atk += attackerbuffup[0];
+				attacker.matk += attackerbuffup[1];
+				attacker.def += attackerbuffup[2];
+				attacker.mdef += attackerbuffup[3];
 				//騎士のry
-				shieldatkbuffup = shield.atkmax;
-				shielddefbuffup = shield.defmax;
-				shield.atk += shieldatkbuffup;
-				shield.def += shielddefbuffup;
+				shieldbuffup[0] = shield.atkmax;
+				shieldbuffup[1] = shield.matkmax;
+				shieldbuffup[2] = shield.defmax;
+				shieldbuffup[3] = shield.mdefmax;
+				shield.atk += shieldbuffup[0];
+				shield.matk += shieldbuffup[1];
+				shield.def += shieldbuffup[2];
+				shield.mdef += shieldbuffup[3];
 				//魔術師のry
-				magicatkbuffup = magic.atkmax;
-				magicdefbuffup = magic.defmax;
-				magic.atk += magicatkbuffup;
-				magic.def += magicdefbuffup;
+				magicbuffup[0] = magic.atkmax;
+				magicbuffup[1] = magic.matkmax;
+				magicbuffup[2] = magic.defmax;
+				magicbuffup[3] = magic.mdefmax;
+				magic.atk += magicbuffup[0];
+				magic.matk += magicbuffup[1];
+				magic.def += magicbuffup[2];
+				magic.mdef += magicbuffup[3];
 				//聖職者のry
-				healeratkbuffup = healer.atkmax;
-				healerdefbuffup = healer.defmax;
-				healer.atk += healeratkbuffup;
-				healer.def += healerdefbuffup;
+				healerbuffup[0] = healer.atkmax;
+				healerbuffup[1] = healer.matkmax;
+				healerbuffup[2] = healer.defmax;
+				healerbuffup[3] = healer.mdefmax;
+				healer.atk += healerbuffup[0];
+				healer.matk += healerbuffup[1];
+				healer.def += healerbuffup[2];
+				healer.mdef += healerbuffup[3];
 
 				//スキル効果ターンによる処理
-				if (mskill6.buffturn1 == 0) {
-					mskill6.buffturn1 = 3;							//持続するターン
-					mskill6.attackeratkbuff1 = attackeratkbuffup;	//上がった分のステータスを記憶(剣士)
-					mskill6.attackerdefbuff1 = attackerdefbuffup;	//上がった分のステータスを記憶(剣士)
-					mskill6.shieldatkbuff1 = shieldatkbuffup;		//上がった分のステータスを記憶(騎士)
-					mskill6.shielddefbuff1 = shielddefbuffup;		//上がった分のステータスを記憶(騎士)
-					mskill6.magicatkbuff1 = magicatkbuffup;			//上がった分のステータスを記憶(魔術師)
-					mskill6.magicdefbuff1 = magicdefbuffup;			//上がった分のステータスを記憶(魔術師)
-					mskill6.healeratkbuff1 = healeratkbuffup;		//上がった分のステータスを記憶(聖職者)
-					mskill6.healerdefbuff1 = healerdefbuffup;		//上がった分のステータスを記憶(聖職者)
+				if (mskill6.buffturn[0] == 0) {
+					mskill6.buffturn[0] = 4;						//持続するターン
+					mskill6.attackerbuff[0][0] = attackerbuffup[0];	//上がった分のステータスを記憶(剣士)
+					mskill6.attackerbuff[1][0] = attackerbuffup[1];
+					mskill6.attackerbuff[2][0] = attackerbuffup[2];
+					mskill6.attackerbuff[3][0] = attackerbuffup[3];
+					mskill6.shieldbuff[0][0] = shieldbuffup[0];		//上がった分のステータスを記憶(騎士)
+					mskill6.shieldbuff[1][0] = shieldbuffup[1];
+					mskill6.shieldbuff[2][0] = shieldbuffup[2];
+					mskill6.shieldbuff[3][0] = shieldbuffup[3];
+					mskill6.magicbuff[0][0] = magicbuffup[0];		//上がった分のステータスを記憶(魔術師)
+					mskill6.magicbuff[1][0] = magicbuffup[1];
+					mskill6.magicbuff[2][0] = magicbuffup[2];
+					mskill6.magicbuff[3][0] = magicbuffup[3];
+					mskill6.healerbuff[0][0] = healerbuffup[0];		//上がった分のステータスを記憶(聖職者)
+					mskill6.healerbuff[1][0] = healerbuffup[1];
+					mskill6.healerbuff[2][0] = healerbuffup[2];
+					mskill6.healerbuff[3][0] = healerbuffup[3];
 				}
-				else if (mskill6.buffturn2 == 0) {
-					mskill6.buffturn2 = 3;
-					mskill6.attackeratkbuff2 = attackeratkbuffup;	//上がった分のステータスを記憶(剣士)
-					mskill6.attackerdefbuff2 = attackerdefbuffup;	//上がった分のステータスを記憶(剣士)
-					mskill6.shieldatkbuff2 = shieldatkbuffup;		//上がった分のステータスを記憶(騎士)
-					mskill6.shielddefbuff2 = shielddefbuffup;		//上がった分のステータスを記憶(騎士)
-					mskill6.magicatkbuff2 = magicatkbuffup;			//上がった分のステータスを記憶(魔術師)
-					mskill6.magicdefbuff2 = magicdefbuffup;			//上がった分のステータスを記憶(魔術師)
-					mskill6.healeratkbuff2 = healeratkbuffup;		//上がった分のステータスを記憶(聖職者)
-					mskill6.healerdefbuff2 = healerdefbuffup;		//上がった分のステータスを記憶(聖職者)
+				else if (mskill6.buffturn[1] == 0) {
+					mskill6.buffturn[1] = 4;
+					mskill6.attackerbuff[0][1] = attackerbuffup[0];	//上がった分のステータスを記憶(剣士)
+					mskill6.attackerbuff[1][1] = attackerbuffup[1];
+					mskill6.attackerbuff[2][1] = attackerbuffup[2];
+					mskill6.attackerbuff[3][1] = attackerbuffup[3];
+					mskill6.shieldbuff[0][1] = shieldbuffup[0];		//上がった分のステータスを記憶(騎士)
+					mskill6.shieldbuff[1][1] = shieldbuffup[1];
+					mskill6.shieldbuff[2][1] = shieldbuffup[2];
+					mskill6.shieldbuff[3][1] = shieldbuffup[3];
+					mskill6.magicbuff[0][1] = magicbuffup[0];		//上がった分のステータスを記憶(魔術師)
+					mskill6.magicbuff[1][1] = magicbuffup[1];
+					mskill6.magicbuff[2][1] = magicbuffup[2];
+					mskill6.magicbuff[3][1] = magicbuffup[3];
+					mskill6.healerbuff[0][1] = healerbuffup[0];		//上がった分のステータスを記憶(聖職者)
+					mskill6.healerbuff[1][1] = healerbuffup[1];
+					mskill6.healerbuff[2][1] = healerbuffup[2];
+					mskill6.healerbuff[3][1] = healerbuffup[3];
 				}
-				else if (mskill6.buffturn3 == 0) {
-					mskill6.buffturn3 = 3;
-					mskill6.attackeratkbuff3 = attackeratkbuffup;	//上がった分のステータスを記憶(剣士)
-					mskill6.attackerdefbuff3 = attackerdefbuffup;	//上がった分のステータスを記憶(剣士)
-					mskill6.shieldatkbuff3 = shieldatkbuffup;		//上がった分のステータスを記憶(騎士)
-					mskill6.shielddefbuff3 = shielddefbuffup;		//上がった分のステータスを記憶(騎士)
-					mskill6.magicatkbuff3 = magicatkbuffup;			//上がった分のステータスを記憶(魔術師)
-					mskill6.magicdefbuff3 = magicdefbuffup;			//上がった分のステータスを記憶(魔術師)
-					mskill6.healeratkbuff3 = healeratkbuffup;		//上がった分のステータスを記憶(聖職者)
-					mskill6.healerdefbuff3 = healerdefbuffup;		//上がった分のステータスを記憶(聖職者)
+				else if (mskill6.buffturn[2] == 0) {
+					mskill6.buffturn[2] = 4;
+					mskill6.attackerbuff[0][2] = attackerbuffup[0];	//上がった分のステータスを記憶(剣士)
+					mskill6.attackerbuff[1][2] = attackerbuffup[1];
+					mskill6.attackerbuff[2][2] = attackerbuffup[2];
+					mskill6.attackerbuff[3][2] = attackerbuffup[3];
+					mskill6.shieldbuff[0][2] = shieldbuffup[0];		//上がった分のステータスを記憶(騎士)
+					mskill6.shieldbuff[1][2] = shieldbuffup[1];
+					mskill6.shieldbuff[2][2] = shieldbuffup[2];
+					mskill6.shieldbuff[3][2] = shieldbuffup[3];
+					mskill6.magicbuff[0][2] = magicbuffup[0];		//上がった分のステータスを記憶(魔術師)
+					mskill6.magicbuff[1][2] = magicbuffup[1];
+					mskill6.magicbuff[2][2] = magicbuffup[2];
+					mskill6.magicbuff[3][2] = magicbuffup[3];
+					mskill6.healerbuff[0][2] = healerbuffup[0];		//上がった分のステータスを記憶(聖職者)
+					mskill6.healerbuff[1][2] = healerbuffup[1];
+					mskill6.healerbuff[2][2] = healerbuffup[2];
+					mskill6.healerbuff[3][2] = healerbuffup[3];
 				}
-				else if (mskill6.buffturn4 == 0) {
-					mskill6.buffturn4 = 3;
-					mskill6.attackeratkbuff4 = attackeratkbuffup;	//上がった分のステータスを記憶(剣士)
-					mskill6.attackerdefbuff4 = attackerdefbuffup;	//上がった分のステータスを記憶(剣士)
-					mskill6.shieldatkbuff4 = shieldatkbuffup;		//上がった分のステータスを記憶(騎士)
-					mskill6.shielddefbuff4 = shielddefbuffup;		//上がった分のステータスを記憶(騎士)
-					mskill6.magicatkbuff4 = magicatkbuffup;			//上がった分のステータスを記憶(魔術師)
-					mskill6.magicdefbuff4 = magicdefbuffup;			//上がった分のステータスを記憶(魔術師)
-					mskill6.healeratkbuff4 = healeratkbuffup;		//上がった分のステータスを記憶(聖職者)
-					mskill6.healerdefbuff4 = healerdefbuffup;		//上がった分のステータスを記憶(聖職者)
+				else if (mskill6.buffturn[3] == 0) {
+					mskill6.buffturn[3] = 4;
+					mskill6.attackerbuff[0][4] = attackerbuffup[0];	//上がった分のステータスを記憶(剣士)
+					mskill6.attackerbuff[1][4] = attackerbuffup[1];
+					mskill6.attackerbuff[2][4] = attackerbuffup[2];
+					mskill6.attackerbuff[3][4] = attackerbuffup[3];
+					mskill6.shieldbuff[0][4] = shieldbuffup[0];		//上がった分のステータスを記憶(騎士)
+					mskill6.shieldbuff[1][4] = shieldbuffup[1];
+					mskill6.shieldbuff[2][4] = shieldbuffup[2];
+					mskill6.shieldbuff[3][4] = shieldbuffup[3];
+					mskill6.magicbuff[0][4] = magicbuffup[0];		//上がった分のステータスを記憶(魔術師)
+					mskill6.magicbuff[1][4] = magicbuffup[1];
+					mskill6.magicbuff[2][4] = magicbuffup[2];
+					mskill6.magicbuff[3][4] = magicbuffup[3];
+					mskill6.healerbuff[0][4] = healerbuffup[0];		//上がった分のステータスを記憶(聖職者)
+					mskill6.healerbuff[1][4] = healerbuffup[1];
+					mskill6.healerbuff[2][4] = healerbuffup[2];
+					mskill6.healerbuff[3][4] = healerbuffup[3];
 				}
 
 				//ステータスアップ表記
@@ -3330,25 +3590,31 @@ void BossScene::Plskills()
 				//MANAの数値を変える
 				healermnal->setString(std::to_string(healer.mana));
 				//ボスの攻撃力を中ダウン
-				buffdown = valkyrie.atk * buffdownlarge;
-				valkyrie.atk = buffdown;
+				buffdown_value[0] = valkyrie.atk * buffdownlarge;
+				buffdown_value[1] = valkyrie.matk * buffdownlarge;
+				valkyrie.atk -= buffdown_value[0];
+				valkyrie.matk -= buffdown_value[1];
 
 				//スキル効果ターンによる処理
-				if (hskill2.buffturn1 == 0) {
-					hskill2.buffturn1 = 4;
-					hskill2.buffdownefect1 = buffdown;
+				if (hskill2.buffturn[0] == 0) {
+					hskill2.buffturn[0] = 4;
+					hskill2.buffdownefect[0][0] = buffdown_value[0];
+					hskill2.buffdownefect[1][0] = buffdown_value[1];
 				}
-				else if (hskill2.buffturn2 == 0) {
-					hskill2.buffturn2 = 4;
-					hskill2.buffdownefect2 = buffdown;
+				else if (hskill2.buffturn[1] == 0) {
+					hskill2.buffturn[1] = 4;
+					hskill2.buffdownefect[0][1] = buffdown_value[0];
+					hskill2.buffdownefect[1][1] = buffdown_value[1];
 				}
-				else if (hskill2.buffturn3 == 0) {
-					hskill2.buffturn3 = 4;
-					hskill2.buffdownefect3 = buffdown;
+				else if (hskill2.buffturn[2] == 0) {
+					hskill2.buffturn[2] = 4;
+					hskill2.buffdownefect[0][2] = buffdown_value[0];
+					hskill2.buffdownefect[1][2] = buffdown_value[1];
 				}
-				else if (hskill2.buffturn4 == 0) {
-					hskill2.buffturn4 = 4;
-					hskill2.buffdownefect4 = buffdown;
+				else if (hskill2.buffturn[3] == 0) {
+					hskill2.buffturn[3] = 4;
+					hskill2.buffdownefect[0][3] = buffdown_value[0];
+					hskill2.buffdownefect[1][3] = buffdown_value[1];
 				}
 
 				//ステータスアップ表記
@@ -3372,25 +3638,31 @@ void BossScene::Plskills()
 				//MANAの数値を変える
 				healermnal->setString(std::to_string(healer.mana));
 				//ボスの攻撃力を中ダウン
-				buffdown = valkyrie.def * buffdownlarge;
-				valkyrie.def = buffdown;
+				buffdown_value[0] = valkyrie.def * buffdownlarge;
+				buffdown_value[1] = valkyrie.mdef * buffdownlarge;
+				valkyrie.def -= buffdown_value[0];
+				valkyrie.mdef -= buffdown_value[1];
 
 				//スキル効果ターンによる処理
-				if (hskill3.buffturn1 == 0) {
-					hskill3.buffturn1 = 4;
-					hskill3.buffdownefect1 = buffdown;
+				if (hskill3.buffturn[0] == 0) {
+					hskill3.buffturn[0] = 4;
+					hskill3.buffdownefect[0][0] = buffdown_value[0];
+					hskill3.buffdownefect[1][0] = buffdown_value[1];
 				}
-				else if (hskill3.buffturn2 == 0) {
-					hskill3.buffturn2 = 4;
-					hskill3.buffdownefect2 = buffdown;
+				else if (hskill3.buffturn[1] == 0) {
+					hskill3.buffturn[1] = 4;
+					hskill3.buffdownefect[0][1] = buffdown_value[0];
+					hskill3.buffdownefect[1][1] = buffdown_value[1];
 				}
-				else if (hskill3.buffturn3 == 0) {
-					hskill3.buffturn3 = 4;
-					hskill3.buffdownefect3 = buffdown;
+				else if (hskill3.buffturn[2] == 0) {
+					hskill3.buffturn[2] = 4;
+					hskill3.buffdownefect[0][2] = buffdown_value[0];
+					hskill3.buffdownefect[1][2] = buffdown_value[1];
 				}
-				else if (hskill3.buffturn4 == 0) {
-					hskill3.buffturn4 = 4;
-					hskill3.buffdownefect4 = buffdown;
+				else if (hskill3.buffturn[3] == 0) {
+					hskill3.buffturn[3] = 4;
+					hskill3.buffdownefect[0][3] = buffdown_value[0];
+					hskill3.buffdownefect[1][3] = buffdown_value[1];
 				}
 
 				//ステータスアップ表記
@@ -3726,6 +3998,67 @@ void BossScene::Plskills()
 	}
 }
 
+void BossScene::Pldefence()
+{
+	//剣士
+	if (job == ATTACKER) {
+		if (gameflame == flame50) {
+			//防御表記
+			auto shieldcover = CCLabelTTF::create("剣士は身を守っている", "HGRSGU.TTC", fontsizeL);
+			shieldcover->setPosition(rightSize.width / 2, rightSize.height / 1.15f);
+			this->addChild(shieldcover, backdepth, coverS);
+		}
+		//攻撃終わり
+		if (gameflame == flame80) {
+			this->removeChildByTag(coverS);
+			attackendflag = true;
+		}
+	}
+	//騎士
+	if (job == SHIELD) {
+		if (gameflame == flame50) {
+			//防御表記
+			auto shieldcover = CCLabelTTF::create("騎士は身を守っている", "HGRSGU.TTC", fontsizeL);
+			shieldcover->setPosition(rightSize.width / 2, rightSize.height / 1.15f);
+			this->addChild(shieldcover, backdepth, coverS);
+		}
+		//攻撃終わり
+		if (gameflame == flame80) {
+			this->removeChildByTag(coverS);
+			attackendflag = true;
+		}
+	}
+	//魔術師
+	if (job == MAGIC) {
+		if (gameflame == flame50) {
+			//防御表記
+			auto shieldcover = CCLabelTTF::create("魔術師は身を守っている", "HGRSGU.TTC", fontsizeL);
+			shieldcover->setPosition(rightSize.width / 2, rightSize.height / 1.15f);
+			this->addChild(shieldcover, backdepth, coverS);
+
+		}
+		//攻撃終わり
+		if (gameflame == flame80) {
+			this->removeChildByTag(coverS);
+			attackendflag = true;
+		}
+	}
+	//聖職者
+	if (job == HEALER) {
+		if (gameflame == flame50) {
+			//防御表記
+			auto shieldcover = CCLabelTTF::create("聖職者は身を守っている", "HGRSGU.TTC", fontsizeL);
+			shieldcover->setPosition(rightSize.width / 2, rightSize.height / 1.15f);
+			this->addChild(shieldcover, backdepth, coverS);
+		}
+		//攻撃終わり
+		if (gameflame == flame80) {
+			this->removeChildByTag(coverS);
+			attackendflag = true;
+		}
+	}
+}
+
 void BossScene::BSturn()
 {
 	//狙うプレイヤーを決める
@@ -3778,18 +4111,26 @@ void BossScene::BSturn()
 			BOSS_VALKYRIE->runAction(repeat);
 
 			//ダメージを受けた時に揺らす処理
-			Damage();				
+			DamageSway();				
 
 			//騎士の単体身代わりスキルが発動していないとき
 			if (insteadflag == false) {
 				//剣士
 				if (job == ATTACKER) {
-					hpcut = (valkyrie.atk - attacker.def);									
-					hpcut = max(1, hpcut);						//もし減らすHPが1以下の場合1にする
-					attacker.hp -= hpcut;						//HPを減らす
+					if (attacker_defenceflag == false) {
+						hpcut = (valkyrie.atk - attacker.def);
+						hpcut = max(1, hpcut);						//もし減らすHPが1以下の場合1にする
+						attacker.hp -= hpcut;						//HPを減らす
+						
+					}
+					else if (attacker_defenceflag == true) {
+						hpcut = (valkyrie.atk - attacker.def) / 2;
+						hpcut = max(1, hpcut);						//もし減らすHPが1以下の場合1にする
+						attacker.hp -= hpcut;
+					}
 					UI_PL_ATTACKER_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
-					attackerhpal->setString(std::to_string(attacker.hp));		
-					attackerdmf->setString(std::to_string(hpcut));	
+					attackerhpal->setString(std::to_string(attacker.hp));
+					attackerdmf->setString(std::to_string(hpcut));
 					this->addChild(attackerdmf, onece);			//ダメージ文字を出す
 					attackerdmf->runAction(attackerfadeout);	//ダメージ文字をフェードアウトさせる
 					attackerdmf->runAction(attackerfdoutmov);	//ダメージ文字を上に動かす
@@ -3803,9 +4144,16 @@ void BossScene::BSturn()
 				}
 				//騎士
 				else if (job == SHIELD) {
-					hpcut = (valkyrie.atk - shield.def);
-					hpcut = max(1, hpcut);							//もし減らすHPが1以下の場合1にする
-					shield.hp -= hpcut;
+					if (shield_defenceflag == false) {
+						hpcut = (valkyrie.atk - shield.def);
+						hpcut = max(1, hpcut);							//もし減らすHPが1以下の場合1にする
+						shield.hp -= hpcut;
+					}
+					else if (shield_defenceflag == true) {
+						hpcut = (valkyrie.atk - shield.def) / 2;
+						hpcut = max(1, hpcut);							//もし減らすHPが1以下の場合1にする
+						shield.hp -= hpcut;
+					}
 					UI_PL_SHIELD_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
 					shieldhpal->setString(std::to_string(shield.hp));
 					shielddmf->setString(std::to_string(hpcut));	//ダメージを変化させる
@@ -3822,10 +4170,17 @@ void BossScene::BSturn()
 				}
 				//魔術師
 				else if (job == MAGIC) {
-					hpcut = (valkyrie.atk - magic.def);
-					hpcut = max(1, hpcut);							//もし減らすHPが1以下の場合1にする
-					magic.hp -= hpcut;
-					 UI_PL_MAGIC_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
+					if (magic_defenceflag == false) {
+						hpcut = (valkyrie.atk - magic.def);
+						hpcut = max(1, hpcut);							//もし減らすHPが1以下の場合1にする
+						magic.hp -= hpcut;
+					}
+					else if (magic_defenceflag == true) {
+						hpcut = (valkyrie.atk - magic.def) / 2;
+						hpcut = max(1, hpcut);							//もし減らすHPが1以下の場合1にする
+						magic.hp -= hpcut;
+					}
+					UI_PL_MAGIC_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
 					magichpal->setString(std::to_string(magic.hp));
 					magicdmf->setString(std::to_string(hpcut));		//ダメージを変化させる
 					this->addChild(magicdmf, onece);				//ダメージ文字を出す
@@ -3841,9 +4196,16 @@ void BossScene::BSturn()
 				}
 				//聖職者
 				else if (job == HEALER) {
-					hpcut = (valkyrie.atk - healer.def);
-					hpcut = max(1, hpcut);							//もし減らすHPが1以下の場合1にする
-					healer.hp -= hpcut;
+					if (healer_defenceflag == false) {
+						hpcut = (valkyrie.atk - healer.def);
+						hpcut = max(1, hpcut);							//もし減らすHPが1以下の場合1にする
+						healer.hp -= hpcut;
+					}
+					else if (healer_defenceflag == true) {
+						hpcut = (valkyrie.atk - healer.def) / 2;
+						hpcut = max(1, hpcut);							//もし減らすHPが1以下の場合1にする
+						healer.hp -= hpcut;
+					}
 					UI_PL_HEALER_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
 					healerhpal->setString(std::to_string(healer.hp));
 					healerdmf->setString(std::to_string(hpcut));	//ダメージを変化させる
@@ -3866,7 +4228,7 @@ void BossScene::BSturn()
 				if (sskillchoice == ATTACKER) {
 					//剣士
 					if (job == ATTACKER) {
-						hpcut = (valkyrie.atk * skillupmedium) - shield.def;//減らすダメージを計算
+						hpcut = (valkyrie.atk - shield.def) / 2;			//減らすダメージを計算
 						hpcut = max(1, hpcut);								//もし減らすHPが1以下の場合1にする
 						shield.hp -= hpcut;									//HPを減らす
 						shielddmf->setString(std::to_string(hpcut));		//ダメージを変化させる
@@ -3876,7 +4238,7 @@ void BossScene::BSturn()
 						shieldhpal->setString(std::to_string(shield.hp));
 						UI_PL_SHIELD_STATUSPLATE->runAction(shield_repeat_bigquake[0]);
 						UI_PL_SHIELD_HPBAR->runAction(shield_repeat_bigquake[1]);
-						UI_PL_SHIELD_HPBAR->runAction(shield_repeat_bigquake[2]);
+						UI_PL_SHIELD_MANABAR->runAction(shield_repeat_bigquake[2]);
 						shieldhpal->runAction(shield_repeat_bigquake[3]);
 						shieldhpmaxal->runAction(shield_repeat_bigquake[4]);
 						shieldmnal->runAction(shield_repeat_bigquake[5]);
@@ -3895,7 +4257,7 @@ void BossScene::BSturn()
 						shieldhpal->setString(std::to_string(shield.hp));
 						UI_PL_SHIELD_STATUSPLATE->runAction(shield_repeat_bigquake[0]);
 						UI_PL_SHIELD_HPBAR->runAction(shield_repeat_bigquake[1]);
-						UI_PL_SHIELD_HPBAR->runAction(shield_repeat_bigquake[2]);
+						UI_PL_SHIELD_MANABAR->runAction(shield_repeat_bigquake[2]);
 						shieldhpal->runAction(shield_repeat_bigquake[3]);
 						shieldhpmaxal->runAction(shield_repeat_bigquake[4]);
 						shieldmnal->runAction(shield_repeat_bigquake[5]);
@@ -3903,9 +4265,16 @@ void BossScene::BSturn()
 					}
 					//魔術師
 					if (job == MAGIC) {
-						hpcut = (valkyrie.atk - magic.def);
-						hpcut = max(1, hpcut);									//もし減らすHPが1以下の場合1にする
-						magic.hp -= hpcut;
+						if (magic_defenceflag == false) {
+							hpcut = (valkyrie.atk - magic.def);
+							hpcut = max(1, hpcut);									//もし減らすHPが1以下の場合1にする
+							magic.hp -= hpcut;
+						}
+						else if (magic_defenceflag == true) {
+							hpcut = (valkyrie.atk - magic.def) / 2;
+							hpcut = max(1, hpcut);									//もし減らすHPが1以下の場合1にする
+							magic.hp -= hpcut;
+						}
 						 UI_PL_MAGIC_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
 						magicdmf->setString(std::to_string(hpcut));				//ダメージを変化させる
 						this->addChild(magicdmf, onece);						//ダメージ文字を出す
@@ -3922,9 +4291,16 @@ void BossScene::BSturn()
 					}
 					//聖職者
 					if (job == HEALER) {
-						hpcut = (valkyrie.atk - healer.def);
-						hpcut = max(1, hpcut);										//もし減らすHPが1以下の場合1にする
-						healer.hp -= hpcut;
+						if (healer_defenceflag == false) {
+							hpcut = (valkyrie.atk - healer.def);
+							hpcut = max(1, hpcut);										//もし減らすHPが1以下の場合1にする
+							healer.hp -= hpcut;
+						}
+						else if (healer_defenceflag == true) {
+							hpcut = (valkyrie.atk - healer.def) / 2;
+							hpcut = max(1, hpcut);										//もし減らすHPが1以下の場合1にする
+							healer.hp -= hpcut;
+						}
 						UI_PL_HEALER_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
 						healerdmf->setString(std::to_string(hpcut));				//ダメージを変化させる
 						this->addChild(healerdmf, onece);							//ダメージ文字を出す
@@ -3944,9 +4320,16 @@ void BossScene::BSturn()
 				if (sskillchoice == MAGIC) {
 					//剣士
 					if (job == ATTACKER) {
-						hpcut = (valkyrie.atk * skillupmedium) - attacker.def;	//減らすダメージを計算
-						hpcut = max(1, hpcut);									//もし減らすHPが1以下の場合1にする
-						attacker.hp -= hpcut;									//HPを減らす
+						if (attacker_defenceflag == false) {
+							hpcut = (valkyrie.atk * skillupmedium) - attacker.def;	//減らすダメージを計算
+							hpcut = max(1, hpcut);									//もし減らすHPが1以下の場合1にする
+							attacker.hp -= hpcut;									//HPを減らす
+						}
+						else if (attacker_defenceflag == true) {
+							hpcut = (valkyrie.atk - attacker.def) / 2;				//減らすダメージを計算
+							hpcut = max(1, hpcut);									//もし減らすHPが1以下の場合1にする
+							attacker.hp -= hpcut;									//HPを減らす
+						}
 						attackerdmf->setString(std::to_string(hpcut));			//ダメージを変化させる
 						this->addChild(attackerdmf, onece);						//ダメージ文字を出す
 						attackerdmf->runAction(attackerfadeout);				//ダメージ文字をフェードアウトさせる
@@ -3963,17 +4346,17 @@ void BossScene::BSturn()
 					//騎士
 					if (job == SHIELD) {
 						hpcut = (valkyrie.atk - shield.def);
-						hpcut = max(1, hpcut);									//もし減らすHPが1以下の場合1にする
+						hpcut = max(1, hpcut);										//もし減らすHPが1以下の場合1にする
 						shield.hp -= hpcut;
 						UI_PL_SHIELD_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
-						shielddmf->setString(std::to_string(hpcut));			//ダメージを変化させる
-						this->addChild(shielddmf, onece);						//ダメージ文字を出す
-						shielddmf->runAction(shieldfadeout);					//ダメージ文字をフェードアウトさせる
-						shielddmf->runAction(shieldfdoutmov);					//ダメージ文字を上に動かす
+						shielddmf->setString(std::to_string(hpcut));				//ダメージを変化させる
+						this->addChild(shielddmf, onece);							//ダメージ文字を出す
+						shielddmf->runAction(shieldfadeout);						//ダメージ文字をフェードアウトさせる
+						shielddmf->runAction(shieldfdoutmov);						//ダメージ文字を上に動かす
 						shieldhpal->setString(std::to_string(shield.hp));
 						UI_PL_SHIELD_STATUSPLATE->runAction(shield_repeat_bigquake[0]);
 						UI_PL_SHIELD_HPBAR->runAction(shield_repeat_bigquake[1]);
-						UI_PL_SHIELD_HPBAR->runAction(shield_repeat_bigquake[2]);
+						UI_PL_SHIELD_MANABAR->runAction(shield_repeat_bigquake[2]);
 						shieldhpal->runAction(shield_repeat_bigquake[3]);
 						shieldhpmaxal->runAction(shield_repeat_bigquake[4]);
 						shieldmnal->runAction(shield_repeat_bigquake[5]);
@@ -3992,7 +4375,7 @@ void BossScene::BSturn()
 						magichpal->setString(std::to_string(magic.hp));
 						UI_PL_SHIELD_STATUSPLATE->runAction(shield_repeat_bigquake[0]);
 						UI_PL_SHIELD_HPBAR->runAction(shield_repeat_bigquake[1]);
-						UI_PL_SHIELD_HPBAR->runAction(shield_repeat_bigquake[2]);
+						UI_PL_SHIELD_MANABAR->runAction(shield_repeat_bigquake[2]);
 						shieldhpal->runAction(shield_repeat_bigquake[3]);
 						shieldhpmaxal->runAction(shield_repeat_bigquake[4]);
 						shieldmnal->runAction(shield_repeat_bigquake[5]);
@@ -4001,9 +4384,16 @@ void BossScene::BSturn()
 					}
 					//聖職者
 					if (job == HEALER) {
-						hpcut = (valkyrie.atk - healer.def);
-						hpcut = max(1, hpcut);										//もし減らすHPが1以下の場合1にする
-						healer.hp -= hpcut;
+						if (healer_defenceflag == false) {
+							hpcut = (valkyrie.atk - healer.def);
+							hpcut = max(1, hpcut);										//もし減らすHPが1以下の場合1にする
+							healer.hp -= hpcut;
+						}
+						else if (healer_defenceflag == true) {
+							hpcut = (valkyrie.atk - healer.def) / 2;
+							hpcut = max(1, hpcut);										//もし減らすHPが1以下の場合1にする
+							healer.hp -= hpcut;
+						}
 						UI_PL_HEALER_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
 						healerdmf->setString(std::to_string(hpcut));				//ダメージを変化させる
 						this->addChild(healerdmf, onece);							//ダメージ文字を出す
@@ -4023,9 +4413,16 @@ void BossScene::BSturn()
 				if (sskillchoice == HEALER) {
 					//剣士
 					if (job == ATTACKER) {
-						hpcut = (valkyrie.atk * skillupmedium) - attacker.def;//減らすダメージを計算
-						hpcut = max(1, hpcut);									//もし減らすHPが1以下の場合1にする
-						attacker.hp -= hpcut;									//HPを減らす
+						if (attacker_defenceflag == false) {
+							hpcut = (valkyrie.atk * skillupmedium) - attacker.def;//減らすダメージを計算
+							hpcut = max(1, hpcut);									//もし減らすHPが1以下の場合1にする
+							attacker.hp -= hpcut;									//HPを減らす
+						}
+						else if (attacker_defenceflag == true) {
+							hpcut = (valkyrie.atk - attacker.def) / 2;				//減らすダメージを計算
+							hpcut = max(1, hpcut);									//もし減らすHPが1以下の場合1にする
+							attacker.hp -= hpcut;
+						}
 						attackerdmf->setString(std::to_string(hpcut));			//ダメージを変化させる
 						this->addChild(attackerdmf, onece);						//ダメージ文字を出す
 						attackerdmf->runAction(attackerfadeout);				//ダメージ文字をフェードアウトさせる
@@ -4052,7 +4449,7 @@ void BossScene::BSturn()
 						shieldhpal->setString(std::to_string(shield.hp));
 						UI_PL_SHIELD_STATUSPLATE->runAction(shield_repeat_bigquake[0]);
 						UI_PL_SHIELD_HPBAR->runAction(shield_repeat_bigquake[1]);
-						UI_PL_SHIELD_HPBAR->runAction(shield_repeat_bigquake[2]);
+						UI_PL_SHIELD_MANABAR->runAction(shield_repeat_bigquake[2]);
 						shieldhpal->runAction(shield_repeat_bigquake[3]);
 						shieldhpmaxal->runAction(shield_repeat_bigquake[4]);
 						shieldmnal->runAction(shield_repeat_bigquake[5]);
@@ -4060,9 +4457,16 @@ void BossScene::BSturn()
 					}
 					//魔術師
 					if (job == MAGIC) {
-						hpcut = (valkyrie.atk - magic.def);
-						hpcut = max(1, hpcut);									//もし減らすHPが1以下の場合1にする
-						magic.hp -= hpcut;
+						if (magic_defenceflag == false) {
+							hpcut = (valkyrie.atk - magic.def);
+							hpcut = max(1, hpcut);									//もし減らすHPが1以下の場合1にする
+							magic.hp -= hpcut;
+						}
+						else if (magic_defenceflag == true) {
+							hpcut = (valkyrie.atk - magic.def) / 2;
+							hpcut = max(1, hpcut);									//もし減らすHPが1以下の場合1にする
+							magic.hp -= hpcut;
+						}
 						 UI_PL_MAGIC_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
 						magicdmf->setString(std::to_string(hpcut));				//ダメージを変化させる
 						this->addChild(magicdmf, onece);						//ダメージ文字を出す
@@ -4090,7 +4494,7 @@ void BossScene::BSturn()
 						shieldhpal->setString(std::to_string(shield.hp));
 						UI_PL_SHIELD_STATUSPLATE->runAction(shield_repeat_bigquake[0]);
 						UI_PL_SHIELD_HPBAR->runAction(shield_repeat_bigquake[1]);
-						UI_PL_SHIELD_HPBAR->runAction(shield_repeat_bigquake[2]);
+						UI_PL_SHIELD_MANABAR->runAction(shield_repeat_bigquake[2]);
 						shieldhpal->runAction(shield_repeat_bigquake[3]);
 						shieldhpmaxal->runAction(shield_repeat_bigquake[4]);
 						shieldmnal->runAction(shield_repeat_bigquake[5]);
@@ -4243,12 +4647,12 @@ void BossScene::BSturn()
 					NULL
 				);
 				//何回揺らすか
-				auto backrepeat = Repeat::create(backmove, continuity2);
+				auto backrepeat = Repeat::create(backmove, continuity_many);
 				//揺らす
 				BACK_GRAND_SPRITE_BOSS->runAction(backrepeat);
 
 				//揺れる処理
-				Damage();	//揺らす処理↓以下同文
+				DamageSway();
 
 				//騎士が庇うを使っていないなら
 				if (insteadflag == false && allinsteadflag == false) {
@@ -4301,12 +4705,16 @@ void BossScene::BSturn()
 					//剣士
 					if (pl1frame.choicejob == ATTACKER || pl2frame.choicejob == ATTACKER
 						|| pl3frame.choicejob == ATTACKER) {
-						hpcut = (valkyrie.atk * skillupmedium) - attacker.def;	//減らすダメージを計算
-						//もし減らすHPが1以下の場合1にする
-						if (hpcut <= 1) {
-							hpcut = 1;
+						if (attacker_defenceflag == false) {
+							hpcut = (valkyrie.atk * skillupmedium) - attacker.def;		//減らすダメージを計算
+							hpcut = max(1, hpcut);										//もし減らすHPが1以下の場合1にする
+							attacker.hp -= hpcut;										//HPを減らす
 						}
-						attacker.hp -= hpcut;							//HPを減らす
+						else if (attacker_defenceflag == true) {
+							hpcut = ((valkyrie.atk * skillupmedium) - attacker.def) / 2;//減らすダメージを計算
+							hpcut = max(1, hpcut);										//もし減らすHPが1以下の場合1にする
+							attacker.hp -= hpcut;
+						}
 						attackerdmf->setString(std::to_string(hpcut));	//ダメージを変化させる
 						this->addChild(attackerdmf, onece);				//ダメージ文字を出す
 						attackerdmf->runAction(attackerfadeout);		//フェードアウト処理
@@ -4315,12 +4723,16 @@ void BossScene::BSturn()
 					//騎士
 					if (pl1frame.choicejob == SHIELD || pl2frame.choicejob == SHIELD
 						|| pl3frame.choicejob == SHIELD) {
-						hpcut = (valkyrie.atk * skillupmedium) - shield.def;//減らすダメージを計算
-																		//もし減らすHPが1以下の場合1にする
-						if (hpcut <= 1) {
-							hpcut = 1;
+						if (shield_defenceflag == false) {
+							hpcut = (valkyrie.atk * skillupmedium) - shield.def;		//減らすダメージを計算
+							hpcut = max(1, hpcut);										//もし減らすHPが1以下の場合1にする
+							shield.hp -= hpcut;											//HPを減らす
 						}
-						shield.hp -= hpcut;								//HPを減らす
+						else if (shield_defenceflag == true) {
+							hpcut = ((valkyrie.atk * skillupmedium) - shield.def) / 2;	//減らすダメージを計算
+							hpcut = max(1, hpcut);										//もし減らすHPが1以下の場合1にする
+							shield.hp -= hpcut;											//HPを減らす
+						}
 						shielddmf->setString(std::to_string(hpcut));	//ダメージを変化させる
 						this->addChild(shielddmf, onece);				//ダメージ文字を出す
 						shielddmf->runAction(shieldfadeout);			//ダメージ文字をフェードアウトさせる
@@ -4329,12 +4741,16 @@ void BossScene::BSturn()
 					//魔術師
 					if (pl1frame.choicejob == MAGIC || pl2frame.choicejob == MAGIC
 						|| pl3frame.choicejob == MAGIC) {
-						hpcut = (valkyrie.atk * skillupmedium) - magic.def;	//減らすダメージを計算
-						//もし減らすHPが1以下の場合1にする
-						if (hpcut <= 1) {
-							hpcut = 1;
+						if (magic_defenceflag == false) {
+							hpcut = (valkyrie.atk * skillupmedium) - magic.def;			//減らすダメージを計算
+							hpcut = max(1, hpcut);										//もし減らすHPが1以下の場合1にする
+							magic.hp -= hpcut;											//HPを減らす
 						}
-						magic.hp -= hpcut;								//HPを減らす
+						else if (magic_defenceflag == true) {
+							hpcut = ((valkyrie.atk * skillupmedium) - magic.def) / 2;	//減らすダメージを計算
+							hpcut = max(1, hpcut);										//もし減らすHPが1以下の場合1にする
+							magic.hp -= hpcut;
+						}
 						magicdmf->setString(std::to_string(hpcut));		//ダメージを変化させる
 						this->addChild(magicdmf, onece);				//ダメージ文字を出す
 						magicdmf->runAction(magicfadeout);				//ダメージ文字をフェードアウトさせる
@@ -4343,12 +4759,16 @@ void BossScene::BSturn()
 					//聖職者
 					if (pl1frame.choicejob == HEALER || pl2frame.choicejob == HEALER
 						|| pl3frame.choicejob == HEALER) {
-						hpcut = (valkyrie.atk * skillupmedium) - healer.def;//減らすダメージを計算
-																			//もし減らすHPが1以下の場合1にする
-						if (hpcut <= 1) {
-							hpcut = 1;
+						if (healer_defenceflag == false) {
+							hpcut = (valkyrie.atk * skillupmedium) - healer.def;		//減らすダメージを計算
+							hpcut = max(1, hpcut);										//もし減らすHPが1以下の場合1にする
+							healer.hp -= hpcut;											//HPを減らす
 						}
-						healer.hp -= hpcut;									//HPを減らす
+						else if (healer_defenceflag == true) {
+							hpcut = ((valkyrie.atk * skillupmedium) - healer.def) / 2;	//減らすダメージを計算
+							hpcut = max(1, hpcut);										//もし減らすHPが1以下の場合1にする
+							healer.hp -= hpcut;											//HPを減らす
+						}
 						healerdmf->setString(std::to_string(hpcut));		//ダメージを変化させる
 						this->addChild(healerdmf, onece);					//ダメージ文字を出す
 						healerdmf->runAction(healerfadeout);				//ダメージ文字をフェードアウトさせる
@@ -4381,12 +4801,17 @@ void BossScene::BSturn()
 						//魔術師
 						if (pl1frame.choicejob == MAGIC || pl2frame.choicejob == MAGIC
 							|| pl3frame.choicejob == MAGIC) {
-							hpcut = (valkyrie.atk * skillupmedium) - magic.def;	//減らすダメージを計算
-							hpcut = max(1, hpcut);							//もし減らすHPが1以下の場合1にする
-							magic.hp -= hpcut;								//HPを減らす
+							if (magic_defenceflag == false) {
+								hpcut = (valkyrie.atk * skillupmedium) - magic.def;			//減らすダメージを計算
+								hpcut = max(1, hpcut);										//もし減らすHPが1以下の場合1にする
+								magic.hp -= hpcut;											//HPを減らす
+							}
+							else if (magic_defenceflag == true) {
+								hpcut = ((valkyrie.atk * skillupmedium) - magic.def) / 2;	//減らすダメージを計算
+								hpcut = max(1, hpcut);										//もし減らすHPが1以下の場合1にする
+								magic.hp -= hpcut;
+							}
 							magicdmf->setString(std::to_string(hpcut));		//ダメージを変化させる
-
-							//ダメージ文字アクション
 							this->addChild(magicdmf, onece);				//ダメージ文字を出す
 							magicdmf->runAction(magicfadeout);				//ダメージ文字をフェードアウトさせる
 							magicdmf->runAction(magicfdoutmov);				//ダメージ文字を上に動かす
@@ -4401,9 +4826,16 @@ void BossScene::BSturn()
 						//聖職者
 						if (pl1frame.choicejob == HEALER || pl2frame.choicejob == HEALER
 							|| pl3frame.choicejob == HEALER) {
-							hpcut = (valkyrie.atk * skillupmedium) - healer.def;//減らすダメージを計算
-							hpcut = max(1, hpcut);							//もし減らすHPが1以下の場合1にする
-							healer.hp -= hpcut;								//HPを減らす
+							if (healer_defenceflag == false) {
+								hpcut = (valkyrie.atk * skillupmedium) - healer.def;		//減らすダメージを計算
+								hpcut = max(1, hpcut);										//もし減らすHPが1以下の場合1にする
+								healer.hp -= hpcut;											//HPを減らす
+							}
+							else if (healer_defenceflag == true) {
+								hpcut = ((valkyrie.atk * skillupmedium) - healer.def) / 2;	//減らすダメージを計算
+								hpcut = max(1, hpcut);										//もし減らすHPが1以下の場合1にする
+								healer.hp -= hpcut;
+							}
 							healerdmf->setString(std::to_string(hpcut));	//ダメージを変化させる
 							this->addChild(healerdmf, onece);				//ダメージ文字を出す
 							healerdmf->runAction(healerfadeout);			//ダメージ文字をフェードアウトさせる
@@ -4422,9 +4854,16 @@ void BossScene::BSturn()
 						//剣士
 						if (pl1frame.choicejob == ATTACKER || pl2frame.choicejob == ATTACKER
 							|| pl3frame.choicejob == ATTACKER) {
-							hpcut = (valkyrie.atk * skillupmedium) - attacker.def;//減らすダメージを計算
-							hpcut = max(1, hpcut);							//もし減らすHPが1以下の場合1にする
-							attacker.hp -= hpcut;							//HPを減らす
+							if (attacker_defenceflag == false) {
+								hpcut = (valkyrie.atk * skillupmedium) - attacker.def;	//減らすダメージを計算
+								hpcut = max(1, hpcut);									//もし減らすHPが1以下の場合1にする
+								attacker.hp -= hpcut;									//HPを減らす
+							}
+							else if (attacker_defenceflag == true) {
+								hpcut = ((valkyrie.atk * skillupmedium) - attacker.def) / 2;//減らすダメージを計算
+								hpcut = max(1, hpcut);										//もし減らすHPが1以下の場合1にする
+								attacker.hp -= hpcut;										//HPを減らす
+							}
 							attackerdmf->setString(std::to_string(hpcut));	//ダメージを変化させる
 							this->addChild(attackerdmf, onece);				//ダメージ文字を出す
 							attackerdmf->runAction(attackerfadeout);		//ダメージ文字をフェードアウトさせる
@@ -4458,9 +4897,16 @@ void BossScene::BSturn()
 						//聖職者
 						if (pl1frame.choicejob == HEALER || pl2frame.choicejob == HEALER
 							|| pl3frame.choicejob == HEALER) {
-							hpcut = (valkyrie.atk * skillupmedium) - healer.def;//減らすダメージを計算
-							hpcut = max(1, hpcut);							//もし減らすHPが1以下の場合1にする
-							healer.hp -= hpcut;								//HPを減らす
+							if (healer_defenceflag == false) {
+								hpcut = (valkyrie.atk * skillupmedium) - healer.def;	//減らすダメージを計算
+								hpcut = max(1, hpcut);									//もし減らすHPが1以下の場合1にする
+								healer.hp -= hpcut;										//HPを減らす
+							}
+							else if (healer_defenceflag == true) {
+								hpcut = ((valkyrie.atk * skillupmedium) - healer.def) / 2;	//減らすダメージを計算
+								hpcut = max(1, hpcut);										//もし減らすHPが1以下の場合1にする
+								healer.hp -= hpcut;											//HPを減らす
+							}
 							healerdmf->setString(std::to_string(hpcut));	//ダメージを変化させる
 							this->addChild(healerdmf, onece);				//ダメージ文字を出す
 							healerdmf->runAction(healerfadeout);			//ダメージ文字をフェードアウトさせる
@@ -4479,9 +4925,16 @@ void BossScene::BSturn()
 						//剣士
 						if (pl1frame.choicejob == ATTACKER || pl2frame.choicejob == ATTACKER
 							|| pl3frame.choicejob == ATTACKER) {
-							hpcut = (valkyrie.atk * skillupmedium) - attacker.def;//減らすダメージを計算
-							hpcut = max(1, hpcut);							//もし減らすHPが1以下の場合1にする
-							attacker.hp -= hpcut;							//HPを減らす
+							if (attacker_defenceflag == false) {
+								hpcut = (valkyrie.atk * skillupmedium) - attacker.def;	//減らすダメージを計算
+								hpcut = max(1, hpcut);									//もし減らすHPが1以下の場合1にする
+								attacker.hp -= hpcut;									//HPを減らす
+							}
+							else if (attacker_defenceflag == true) {
+								hpcut = ((valkyrie.atk * skillupmedium) - attacker.def) / 2;//減らすダメージを計算
+								hpcut = max(1, hpcut);										//もし減らすHPが1以下の場合1にする
+								attacker.hp -= hpcut;										//HPを減らす
+							}					//HPを減らす
 							attackerdmf->setString(std::to_string(hpcut));	//ダメージを変化させる
 							this->addChild(attackerdmf, onece);				//ダメージ文字を出す
 							attackerdmf->runAction(attackerfadeout);		//ダメージ文字をフェードアウトさせる
@@ -4497,9 +4950,16 @@ void BossScene::BSturn()
 						//魔術師
 						if (pl1frame.choicejob == MAGIC || pl2frame.choicejob == MAGIC
 							|| pl3frame.choicejob == MAGIC) {
-							hpcut = (valkyrie.atk * skillupmedium) - magic.def;	//減らすダメージを計算
-							hpcut = max(1, hpcut);							//もし減らすHPが1以下の場合1にする
-							magic.hp -= hpcut;								//HPを減らす
+							if (magic_defenceflag == false) {
+								hpcut = (valkyrie.atk * skillupmedium) - magic.def;			//減らすダメージを計算
+								hpcut = max(1, hpcut);										//もし減らすHPが1以下の場合1にする
+								magic.hp -= hpcut;											//HPを減らす
+							}
+							else if (magic_defenceflag == true) {
+								hpcut = ((valkyrie.atk * skillupmedium) - magic.def) / 2;	//減らすダメージを計算
+								hpcut = max(1, hpcut);										//もし減らすHPが1以下の場合1にする
+								magic.hp -= hpcut;
+							}							//HPを減らす
 							magicdmf->setString(std::to_string(hpcut));		//ダメージを変化させる
 							this->addChild(magicdmf, onece);				//ダメージ文字を出す
 							magicdmf->runAction(magicfadeout);				//ダメージ文字をフェードアウトさせる
@@ -4582,10 +5042,7 @@ void BossScene::BSturn()
 						if (pl1frame.choicejob == ATTACKER || pl2frame.choicejob == ATTACKER
 							|| pl3frame.choicejob == ATTACKER) {
 							hpcut = (valkyrie.atk * skillupmedium) - attacker.def;	//減らすダメージを計算
-																					//もし減らすHPが1以下の場合1にする
-							if (hpcut <= 1) {
-								hpcut = 1;
-							}
+							hpcut = max(1, hpcut);							//もし減らすHPが1以下の場合1にする
 							attacker.hp -= hpcut;							//HPを減らす
 							attackerdmf->setString(std::to_string(hpcut));	//ダメージを変化させる
 							this->addChild(attackerdmf, onece);				//ダメージ文字を出す
@@ -4596,10 +5053,7 @@ void BossScene::BSturn()
 						if (pl1frame.choicejob == SHIELD || pl2frame.choicejob == SHIELD
 							|| pl3frame.choicejob == SHIELD) {
 							hpcut = (valkyrie.atk * skillupmedium) - shield.def;//減らすダメージを計算
-																				//もし減らすHPが1以下の場合1にする
-							if (hpcut <= 1) {
-								hpcut = 1;
-							}
+							hpcut = max(1, hpcut);							//もし減らすHPが1以下の場合1にする
 							shield.hp -= hpcut;								//HPを減らす
 							shielddmf->setString(std::to_string(hpcut));	//ダメージを変化させる
 							this->addChild(shielddmf, onece);				//ダメージ文字を出す
@@ -4610,10 +5064,7 @@ void BossScene::BSturn()
 						if (pl1frame.choicejob == MAGIC || pl2frame.choicejob == MAGIC
 							|| pl3frame.choicejob == MAGIC) {
 							hpcut = (valkyrie.atk * skillupmedium) - magic.def;	//減らすダメージを計算
-																				//もし減らすHPが1以下の場合1にする
-							if (hpcut <= 1) {
-								hpcut = 1;
-							}
+							hpcut = max(1, hpcut);							//もし減らすHPが1以下の場合1にする
 							magic.hp -= hpcut;								//HPを減らす
 							magicdmf->setString(std::to_string(hpcut));		//ダメージを変化させる
 							this->addChild(magicdmf, onece);				//ダメージ文字を出す
@@ -4624,10 +5075,7 @@ void BossScene::BSturn()
 						if (pl1frame.choicejob == HEALER || pl2frame.choicejob == HEALER
 							|| pl3frame.choicejob == HEALER) {
 							hpcut = (valkyrie.atk * skillupmedium) - healer.def;//減らすダメージを計算
-																				//もし減らすHPが1以下の場合1にする
-							if (hpcut <= 1) {
-								hpcut = 1;
-							}
+							hpcut = max(1, hpcut);								//もし減らすHPが1以下の場合1にする
 							healer.hp -= hpcut;									//HPを減らす
 							healerdmf->setString(std::to_string(hpcut));		//ダメージを変化させる
 							this->addChild(healerdmf, onece);					//ダメージ文字を出す
@@ -4641,10 +5089,7 @@ void BossScene::BSturn()
 				//騎士が全体庇うを使っている時
 				if (allinsteadflag == true) {
 					hpcut = (valkyrie.atk * skillupmedium) - healer.def;//減らすダメージを計算
-																		//もし減らすHPが1以下の場合1にする
-					if (hpcut <= 1) {
-						hpcut = 1;
-					}
+					hpcut = max(1, hpcut);								//もし減らすHPが1以下の場合1にする
 					if (pl1frame.choicejob == SHIELD || pl2frame.choicejob == SHIELD
 						|| pl3frame.choicejob == SHIELD) {
 						shield.hp -= hpcut;								//HPを減らす
@@ -4666,7 +5111,7 @@ void BossScene::BSturn()
 				UI_PL_ATTACKER_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
 				UI_PL_SHIELD_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
 				UI_PL_HEALER_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
-				 UI_PL_MAGIC_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
+				UI_PL_MAGIC_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
 
 				//HPの数値を変える
 				attackerhpal->setString(std::to_string(attacker.hp));
@@ -4678,10 +5123,7 @@ void BossScene::BSturn()
 			if (gameflame == flame220) {
 				if (allinsteadflag == true) {
 					hpcut = (valkyrie.atk * skillupmedium) - healer.def;//減らすダメージを計算
-																		//もし減らすHPが1以下の場合1にする
-					if (hpcut <= 1) {
-						hpcut = 1;
-					}
+					hpcut = max(1, hpcut);								//もし減らすHPが1以下の場合1にする
 					if (pl1frame.choicejob == SHIELD || pl2frame.choicejob == SHIELD
 						|| pl3frame.choicejob == SHIELD) {
 						shield.hp -= hpcut;								//HPを減らす
@@ -4702,10 +5144,7 @@ void BossScene::BSturn()
 			if (gameflame == flame230) {
 				if (insteadflag == true || allinsteadflag == true) {
 					hpcut = (valkyrie.atk * skillupmedium) - healer.def;//減らすダメージを計算
-					//もし減らすHPが1以下の場合1にする
-					if (hpcut <= 1) {
-						hpcut = 1;
-					}
+					hpcut = max(1, hpcut);	//もし減らすHPが1以下の場合1にする
 					if (pl1frame.choicejob == SHIELD || pl2frame.choicejob == SHIELD
 						|| pl3frame.choicejob == SHIELD) {
 						shield.hp -= hpcut;								//HPを減らす
@@ -4809,12 +5248,16 @@ void BossScene::BSturn()
 				if (insteadflag == false) {
 					//剣士
 					if (job == ATTACKER) {
-						hpcut = (valkyrie.atk - attacker.def);						//ダメージを計算
-						//もし減らすHPが1以下の場合1にする
-						if (hpcut <= 1) {
-							hpcut = 1;
+						if (attacker_defenceflag == false) {
+							hpcut = (valkyrie.atk - attacker.def);						//ダメージを計算
+							hpcut = max(1, hpcut);
+							attacker.hp -= hpcut;										//HPをへらす
 						}
-						attacker.hp -= hpcut;									//HPをへらす
+						else if (attacker_defenceflag == true) {
+							hpcut = (valkyrie.atk - attacker.def) / 2;						//ダメージを計算
+							hpcut = max(1, hpcut);
+							attacker.hp -= hpcut;
+						}
 						UI_PL_ATTACKER_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));	//受けるやつを赤くする
 						attackerdmf->setString(std::to_string(hpcut));				//ダメージを変化させる
 						this->addChild(attackerdmf, onece);							//ダメージ文字を出す
@@ -4824,12 +5267,16 @@ void BossScene::BSturn()
 					}
 					//騎士
 					else if (job == SHIELD) {
-						hpcut = (valkyrie.atk - shield.def);
-						//もし減らすHPが1以下の場合1にする
-						if (hpcut <= 1) {
-							hpcut = 1;
+						if (shield_defenceflag == false) {
+							hpcut = (valkyrie.atk - shield.def);
+							hpcut = max(1, hpcut);							//もし減らすHPが1以下の場合1にする
+							shield.hp -= hpcut;
 						}
-						shield.hp -= hpcut;
+						else if (shield_defenceflag == true) {
+							hpcut = (valkyrie.atk - shield.def) / 2;
+							hpcut = max(1, hpcut);							//もし減らすHPが1以下の場合1にする
+							shield.hp -= hpcut;
+						}
 						UI_PL_SHIELD_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
 						shielddmf->setString(std::to_string(hpcut));				//ダメージを変化させる
 						this->addChild(shielddmf, onece);							//ダメージ文字を出す
@@ -4839,13 +5286,17 @@ void BossScene::BSturn()
 					}
 					//魔術師
 					else if (job == MAGIC) {
-						hpcut = (valkyrie.atk - magic.def);
-						//もし減らすHPが1以下の場合1にする
-						if (hpcut <= 1) {
-							hpcut = 1;
+						if (magic_defenceflag == false) {
+							hpcut = (valkyrie.atk - magic.def);
+							hpcut = max(1, hpcut);							//もし減らすHPが1以下の場合1にする
+							magic.hp -= hpcut;
 						}
-						magic.hp -= hpcut;
-						 UI_PL_MAGIC_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
+						else if (magic_defenceflag == true) {
+							hpcut = (valkyrie.atk - magic.def) / 2;
+							hpcut = max(1, hpcut);							//もし減らすHPが1以下の場合1にする
+							magic.hp -= hpcut;
+						}
+						UI_PL_MAGIC_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
 						magicdmf->setString(std::to_string(hpcut));					//ダメージを変化させる
 						this->addChild(magicdmf, onece);							//ダメージ文字を出す
 						magicdmf->runAction(magicfadeout);							//ダメージ文字をフェードアウトさせる
@@ -4854,12 +5305,16 @@ void BossScene::BSturn()
 					}
 					//聖職者
 					else if (job == HEALER) {
-						hpcut = (valkyrie.atk - healer.def);
-						//もし減らすHPが1以下の場合1にする
-						if (hpcut <= 1) {
-							hpcut = 1;
+						if (healer_defenceflag == false) {
+							hpcut = (valkyrie.atk - healer.def);
+							hpcut = max(1, hpcut);							//もし減らすHPが1以下の場合1にする
+							healer.hp -= hpcut;
 						}
-						healer.hp -= hpcut;
+						else if (healer_defenceflag == true) {
+							hpcut = (valkyrie.atk - healer.def) / 2;
+							hpcut = max(1, hpcut);							//もし減らすHPが1以下の場合1にする
+							healer.hp -= hpcut;
+						}
 						UI_PL_HEALER_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
 						healerdmf->setString(std::to_string(hpcut));				//ダメージを変化させる
 						this->addChild(healerdmf, onece);							//ダメージ文字を出す
@@ -4875,24 +5330,26 @@ void BossScene::BSturn()
 					if (sskillchoice == ATTACKER) {
 						//剣士
 						if (job == ATTACKER) {
-							hpcut = (valkyrie.atk * skillupmedium) - shield.def;//減らすダメージを計算
-							//もし減らすHPが1以下の場合1にする
-							if (hpcut <= 1) {
-								hpcut = 1;
-							}
+							hpcut = (valkyrie.atk - shield.def) / 2;			//減らすダメージを計算
+							hpcut = max(1, hpcut);								//もし減らすHPが1以下の場合1にする
 							shield.hp -= hpcut;									//HPを減らす
 							shielddmf->setString(std::to_string(hpcut));		//ダメージを変化させる
 							this->addChild(shielddmf, onece);					//ダメージ文字を出す
 							shielddmf->runAction(shieldfadeout);				//ダメージ文字をフェードアウトさせる
 							shielddmf->runAction(shieldfdoutmov);				//ダメージ文字を上に動かす
+							shieldhpal->setString(std::to_string(shield.hp));
+							UI_PL_SHIELD_STATUSPLATE->runAction(shield_repeat_bigquake[0]);
+							UI_PL_SHIELD_HPBAR->runAction(shield_repeat_bigquake[1]);
+							UI_PL_SHIELD_MANABAR->runAction(shield_repeat_bigquake[2]);
+							shieldhpal->runAction(shield_repeat_bigquake[3]);
+							shieldhpmaxal->runAction(shield_repeat_bigquake[4]);
+							shieldmnal->runAction(shield_repeat_bigquake[5]);
+							shieldmnmaxal->runAction(shield_repeat_bigquake[6]);
 						}
 						//騎士
 						if (job == SHIELD) {
 							hpcut = (valkyrie.atk - shield.def);
-							//もし減らすHPが1以下の場合1にする
-							if (hpcut <= 1) {
-								hpcut = 1;
-							}
+							hpcut = max(1, hpcut);										//もし減らすHPが1以下の場合1にする
 							shield.hp -= hpcut;
 							UI_PL_SHIELD_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
 							shielddmf->setString(std::to_string(hpcut));				//ダメージを変化させる
@@ -4900,59 +5357,191 @@ void BossScene::BSturn()
 							shielddmf->runAction(shieldfadeout);						//ダメージ文字をフェードアウトさせる
 							shielddmf->runAction(shieldfdoutmov);						//ダメージ文字を上に動かす
 							shieldhpal->setString(std::to_string(shield.hp));
+							UI_PL_SHIELD_STATUSPLATE->runAction(shield_repeat_bigquake[0]);
+							UI_PL_SHIELD_HPBAR->runAction(shield_repeat_bigquake[1]);
+							UI_PL_SHIELD_MANABAR->runAction(shield_repeat_bigquake[2]);
+							shieldhpal->runAction(shield_repeat_bigquake[3]);
+							shieldhpmaxal->runAction(shield_repeat_bigquake[4]);
+							shieldmnal->runAction(shield_repeat_bigquake[5]);
+							shieldmnmaxal->runAction(shield_repeat_bigquake[6]);
 						}
 						//魔術師
 						if (job == MAGIC) {
-							hpcut = (valkyrie.atk - magic.def);
-							//もし減らすHPが1以下の場合1にする
-							if (hpcut <= 1) {
-								hpcut = 1;
+							if (magic_defenceflag == false) {
+								hpcut = (valkyrie.atk - magic.def);
+								hpcut = max(1, hpcut);									//もし減らすHPが1以下の場合1にする
+								magic.hp -= hpcut;
 							}
-							magic.hp -= hpcut;
-							 UI_PL_MAGIC_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
+							else if (magic_defenceflag == true) {
+								hpcut = (valkyrie.atk - magic.def) / 2;
+								hpcut = max(1, hpcut);									//もし減らすHPが1以下の場合1にする
+								magic.hp -= hpcut;
+							}
+							UI_PL_MAGIC_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
 							magicdmf->setString(std::to_string(hpcut));				//ダメージを変化させる
-							this->addChild(magicdmf, onece);							//ダメージ文字を出す
+							this->addChild(magicdmf, onece);						//ダメージ文字を出す
 							magicdmf->runAction(magicfadeout);						//ダメージ文字をフェードアウトさせる
 							magicdmf->runAction(magicfdoutmov);						//ダメージ文字を上に動かす
 							magichpal->setString(std::to_string(magic.hp));
+							UI_PL_MAGIC_STATUSPLATE->runAction(magic_repeat_bigquake[0]);
+							UI_PL_MAGIC_HPBAR->runAction(magic_repeat_bigquake[1]);
+							UI_PL_MAGIC_MANABAR->runAction(magic_repeat_bigquake[2]);
+							magichpal->runAction(magic_repeat_bigquake[3]);
+							magichpmaxal->runAction(magic_repeat_bigquake[4]);
+							magicmnal->runAction(magic_repeat_bigquake[5]);
+							magicmnmaxal->runAction(magic_repeat_bigquake[6]);
 						}
 						//聖職者
 						if (job == HEALER) {
-							hpcut = (valkyrie.atk - healer.def);
-							//もし減らすHPが1以下の場合1にする
-							if (hpcut <= 1) {
-								hpcut = 1;
+							if (healer_defenceflag == false) {
+								hpcut = (valkyrie.atk - healer.def);
+								hpcut = max(1, hpcut);										//もし減らすHPが1以下の場合1にする
+								healer.hp -= hpcut;
 							}
-							healer.hp -= hpcut;
+							else if (healer_defenceflag == true) {
+								hpcut = (valkyrie.atk - healer.def) / 2;
+								hpcut = max(1, hpcut);										//もし減らすHPが1以下の場合1にする
+								healer.hp -= hpcut;
+							}
 							UI_PL_HEALER_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
 							healerdmf->setString(std::to_string(hpcut));				//ダメージを変化させる
 							this->addChild(healerdmf, onece);							//ダメージ文字を出す
 							healerdmf->runAction(healerfadeout);						//ダメージ文字をフェードアウトさせる
 							healerdmf->runAction(healerfdoutmov);						//ダメージ文字を上に動かす
 							healerhpal->setString(std::to_string(healer.hp));
+							UI_PL_HEALER_STATUSPLATE->runAction(healaer_repeat_smallquake[0]);
+							UI_PL_HEALER_HPBAR->runAction(healaer_repeat_smallquake[1]);
+							UI_PL_HEALER_MANABAR->runAction(healaer_repeat_smallquake[2]);
+							healerhpal->runAction(healaer_repeat_smallquake[3]);
+							healerhpmaxal->runAction(healaer_repeat_smallquake[4]);
+							healermnal->runAction(healaer_repeat_smallquake[5]);
+							healermnmaxal->runAction(healaer_repeat_smallquake[6]);
 						}
 					}
 					//魔術師を選んだ場合
 					if (sskillchoice == MAGIC) {
+						//剣士
 						if (job == ATTACKER) {
-							hpcut = (valkyrie.atk * skillupmedium) - attacker.def;	//減らすダメージを計算
-							//もし減らすHPが1以下の場合1にする
-							if (hpcut <= 1) {
-								hpcut = 1;
+							if (attacker_defenceflag == false) {
+								hpcut = (valkyrie.atk * skillupmedium) - attacker.def;	//減らすダメージを計算
+								hpcut = max(1, hpcut);									//もし減らすHPが1以下の場合1にする
+								attacker.hp -= hpcut;									//HPを減らす
 							}
-							attacker.hp -= hpcut;									//HPを減らす
+							else if (attacker_defenceflag == true) {
+								hpcut = (valkyrie.atk - attacker.def) / 2;				//減らすダメージを計算
+								hpcut = max(1, hpcut);									//もし減らすHPが1以下の場合1にする
+								attacker.hp -= hpcut;									//HPを減らす
+							}
 							attackerdmf->setString(std::to_string(hpcut));			//ダメージを変化させる
 							this->addChild(attackerdmf, onece);						//ダメージ文字を出す
 							attackerdmf->runAction(attackerfadeout);				//ダメージ文字をフェードアウトさせる
 							attackerdmf->runAction(attackerfdoutmov);				//ダメージ文字を上に動かす
+							attackerhpal->setString(std::to_string(attacker.hp));
+							UI_PL_ATTACKER_STATUSPLATE->runAction(attacker_repeat_smallquake[0]);
+							UI_PL_ATTACKER_HPBAR->runAction(attacker_repeat_smallquake[1]);
+							UI_PL_ATTACKER_MANABAR->runAction(attacker_repeat_smallquake[2]);
+							attackerhpal->runAction(attacker_repeat_smallquake[3]);
+							attackerhpmaxal->runAction(attacker_repeat_smallquake[4]);
+							attackermnal->runAction(attacker_repeat_smallquake[5]);
+							attackermnmaxal->runAction(attacker_repeat_smallquake[6]);
 						}
 						//騎士
 						if (job == SHIELD) {
 							hpcut = (valkyrie.atk - shield.def);
-							//もし減らすHPが1以下の場合1にする
-							if (hpcut <= 1) {
-								hpcut = 1;
+							hpcut = max(1, hpcut);										//もし減らすHPが1以下の場合1にする
+							shield.hp -= hpcut;
+							UI_PL_SHIELD_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
+							shielddmf->setString(std::to_string(hpcut));				//ダメージを変化させる
+							this->addChild(shielddmf, onece);							//ダメージ文字を出す
+							shielddmf->runAction(shieldfadeout);						//ダメージ文字をフェードアウトさせる
+							shielddmf->runAction(shieldfdoutmov);						//ダメージ文字を上に動かす
+							shieldhpal->setString(std::to_string(shield.hp));
+							UI_PL_SHIELD_STATUSPLATE->runAction(shield_repeat_bigquake[0]);
+							UI_PL_SHIELD_HPBAR->runAction(shield_repeat_bigquake[1]);
+							UI_PL_SHIELD_MANABAR->runAction(shield_repeat_bigquake[2]);
+							shieldhpal->runAction(shield_repeat_bigquake[3]);
+							shieldhpmaxal->runAction(shield_repeat_bigquake[4]);
+							shieldmnal->runAction(shield_repeat_bigquake[5]);
+							shieldmnmaxal->runAction(shield_repeat_bigquake[6]);
+						}
+						//魔術師
+						if (job == MAGIC) {
+							//魔術師の代わりに騎士がダメージをくらう
+							hpcut = (valkyrie.atk * skillupmedium) - shield.def;//減らすダメージを計算
+							hpcut = max(1, hpcut);								//もし減らすHPが1以下の場合1にする
+							shield.hp -= hpcut;									//HPを減らす
+							shielddmf->setString(std::to_string(hpcut));		//ダメージを変化させる
+							this->addChild(shielddmf, onece);					//ダメージ文字を出す
+							shielddmf->runAction(shieldfadeout);				//ダメージ文字をフェードアウトさせる
+							shielddmf->runAction(shieldfdoutmov);				//ダメージ文字を上に動かす
+							magichpal->setString(std::to_string(magic.hp));
+							UI_PL_SHIELD_STATUSPLATE->runAction(shield_repeat_bigquake[0]);
+							UI_PL_SHIELD_HPBAR->runAction(shield_repeat_bigquake[1]);
+							UI_PL_SHIELD_MANABAR->runAction(shield_repeat_bigquake[2]);
+							shieldhpal->runAction(shield_repeat_bigquake[3]);
+							shieldhpmaxal->runAction(shield_repeat_bigquake[4]);
+							shieldmnal->runAction(shield_repeat_bigquake[5]);
+							shieldmnmaxal->runAction(shield_repeat_bigquake[6]);
+
+						}
+						//聖職者
+						if (job == HEALER) {
+							if (healer_defenceflag == false) {
+								hpcut = (valkyrie.atk - healer.def);
+								hpcut = max(1, hpcut);										//もし減らすHPが1以下の場合1にする
+								healer.hp -= hpcut;
 							}
+							else if (healer_defenceflag == true) {
+								hpcut = (valkyrie.atk - healer.def) / 2;
+								hpcut = max(1, hpcut);										//もし減らすHPが1以下の場合1にする
+								healer.hp -= hpcut;
+							}
+							UI_PL_HEALER_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
+							healerdmf->setString(std::to_string(hpcut));				//ダメージを変化させる
+							this->addChild(healerdmf, onece);							//ダメージ文字を出す
+							healerdmf->runAction(healerfadeout);						//ダメージ文字をフェードアウトさせる
+							healerdmf->runAction(healerfdoutmov);						//ダメージ文字を上に動かす
+							healerhpal->setString(std::to_string(healer.hp));
+							UI_PL_HEALER_STATUSPLATE->runAction(healaer_repeat_smallquake[0]);
+							UI_PL_HEALER_HPBAR->runAction(healaer_repeat_smallquake[1]);
+							UI_PL_HEALER_MANABAR->runAction(healaer_repeat_smallquake[2]);
+							healerhpal->runAction(healaer_repeat_smallquake[3]);
+							healerhpmaxal->runAction(healaer_repeat_smallquake[4]);
+							healermnal->runAction(healaer_repeat_smallquake[5]);
+							healermnmaxal->runAction(healaer_repeat_smallquake[6]);
+						}
+					}
+					//聖職者を選んだ場合
+					if (sskillchoice == HEALER) {
+						//剣士
+						if (job == ATTACKER) {
+							if (attacker_defenceflag == false) {
+								hpcut = (valkyrie.atk * skillupmedium) - attacker.def;//減らすダメージを計算
+								hpcut = max(1, hpcut);									//もし減らすHPが1以下の場合1にする
+								attacker.hp -= hpcut;									//HPを減らす
+							}
+							else if (attacker_defenceflag == true) {
+								hpcut = (valkyrie.atk - attacker.def) / 2;				//減らすダメージを計算
+								hpcut = max(1, hpcut);									//もし減らすHPが1以下の場合1にする
+								attacker.hp -= hpcut;
+							}
+							attackerdmf->setString(std::to_string(hpcut));			//ダメージを変化させる
+							this->addChild(attackerdmf, onece);						//ダメージ文字を出す
+							attackerdmf->runAction(attackerfadeout);				//ダメージ文字をフェードアウトさせる
+							attackerdmf->runAction(attackerfdoutmov);				//ダメージ文字を上に動かす
+							attackerhpal->setString(std::to_string(attacker.hp));
+							UI_PL_ATTACKER_STATUSPLATE->runAction(attacker_repeat_smallquake[0]);
+							UI_PL_ATTACKER_HPBAR->runAction(attacker_repeat_smallquake[1]);
+							UI_PL_ATTACKER_MANABAR->runAction(attacker_repeat_smallquake[2]);
+							attackerhpal->runAction(attacker_repeat_smallquake[3]);
+							attackerhpmaxal->runAction(attacker_repeat_smallquake[4]);
+							attackermnal->runAction(attacker_repeat_smallquake[5]);
+							attackermnmaxal->runAction(attacker_repeat_smallquake[6]);
+						}
+						//騎士
+						if (job == SHIELD) {
+							hpcut = (valkyrie.atk - shield.def);
+							hpcut = max(1, hpcut);									//もし減らすHPが1以下の場合1にする
 							shield.hp -= hpcut;
 							UI_PL_SHIELD_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
 							shielddmf->setString(std::to_string(hpcut));			//ダメージを変化させる
@@ -4960,101 +5549,58 @@ void BossScene::BSturn()
 							shielddmf->runAction(shieldfadeout);					//ダメージ文字をフェードアウトさせる
 							shielddmf->runAction(shieldfdoutmov);					//ダメージ文字を上に動かす
 							shieldhpal->setString(std::to_string(shield.hp));
+							UI_PL_SHIELD_STATUSPLATE->runAction(shield_repeat_bigquake[0]);
+							UI_PL_SHIELD_HPBAR->runAction(shield_repeat_bigquake[1]);
+							UI_PL_SHIELD_MANABAR->runAction(shield_repeat_bigquake[2]);
+							shieldhpal->runAction(shield_repeat_bigquake[3]);
+							shieldhpmaxal->runAction(shield_repeat_bigquake[4]);
+							shieldmnal->runAction(shield_repeat_bigquake[5]);
+							shieldmnmaxal->runAction(shield_repeat_bigquake[6]);
 						}
 						//魔術師
 						if (job == MAGIC) {
-							//魔術師の代わりに騎士がダメージをくらう
-							if (pl1frame.choicejob == MAGIC || pl2frame.choicejob == MAGIC
-								|| pl3frame.choicejob == MAGIC) {
-								hpcut = (valkyrie.atk * skillupmedium) - shield.def;//減らすダメージを計算
-																					//もし減らすHPが1以下の場合1にする
-								if (hpcut <= 1) {
-									hpcut = 1;
-								}
-								shield.hp -= hpcut;									//HPを減らす
-								shielddmf->setString(std::to_string(hpcut));		//ダメージを変化させる
-								this->addChild(shielddmf, onece);					//ダメージ文字を出す
-								shielddmf->runAction(shieldfadeout);				//ダメージ文字をフェードアウトさせる
-								shielddmf->runAction(shieldfdoutmov);				//ダメージ文字を上に動かす
+							if (magic_defenceflag == false) {
+								hpcut = (valkyrie.atk - magic.def);
+								hpcut = max(1, hpcut);									//もし減らすHPが1以下の場合1にする
+								magic.hp -= hpcut;
 							}
-						}
-						//聖職者
-						if (job == HEALER) {
-							hpcut = (valkyrie.atk - healer.def);
-							//もし減らすHPが1以下の場合1にする
-							if (hpcut <= 1) {
-								hpcut = 1;
+							else if (magic_defenceflag == true) {
+								hpcut = (valkyrie.atk - magic.def) / 2;
+								hpcut = max(1, hpcut);									//もし減らすHPが1以下の場合1にする
+								magic.hp -= hpcut;
 							}
-							healer.hp -= hpcut;
-							UI_PL_HEALER_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
-							healerdmf->setString(std::to_string(hpcut));				//ダメージを変化させる
-							this->addChild(healerdmf, onece);							//ダメージ文字を出す
-							healerdmf->runAction(healerfadeout);						//ダメージ文字をフェードアウトさせる
-							healerdmf->runAction(healerfdoutmov);						//ダメージ文字を上に動かす
-							healerhpal->setString(std::to_string(healer.hp));
-						}
-					}
-					//聖職者を選んだ場合
-					if (sskillchoice == HEALER) {
-						//剣士
-						if (job == ATTACKER) {
-							hpcut = (valkyrie.atk * skillupmedium) - attacker.def;//減らすダメージを計算
-																				//もし減らすHPが1以下の場合1にする
-							if (hpcut <= 1) {
-								hpcut = 1;
-							}
-							attacker.hp -= hpcut;									//HPを減らす
-							attackerdmf->setString(std::to_string(hpcut));		//ダメージを変化させる
-							this->addChild(attackerdmf, onece);					//ダメージ文字を出す
-							attackerdmf->runAction(attackerfadeout);				//ダメージ文字をフェードアウトさせる
-							attackerdmf->runAction(attackerfdoutmov);				//ダメージ文字を上に動かす
-						}
-						//騎士
-						if (job == SHIELD) {
-							hpcut = (valkyrie.atk - shield.def);
-							//もし減らすHPが1以下の場合1にする
-							if (hpcut <= 1) {
-								hpcut = 1;
-							}
-							shield.hp -= hpcut;
-							UI_PL_SHIELD_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
-							shielddmf->setString(std::to_string(hpcut));				//ダメージを変化させる
-							this->addChild(shielddmf, onece);							//ダメージ文字を出す
-							shielddmf->runAction(shieldfadeout);						//ダメージ文字をフェードアウトさせる
-							shielddmf->runAction(shieldfdoutmov);						//ダメージ文字を上に動かす
-							shieldhpal->setString(std::to_string(shield.hp));
-						}
-						//魔術師
-						if (job == MAGIC) {
-							hpcut = (valkyrie.atk - magic.def);
-							//もし減らすHPが1以下の場合1にする
-							if (hpcut <= 1) {
-								hpcut = 1;
-							}
-							magic.hp -= hpcut;
-							 UI_PL_MAGIC_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
+							UI_PL_MAGIC_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
 							magicdmf->setString(std::to_string(hpcut));				//ダメージを変化させる
-							this->addChild(magicdmf, onece);							//ダメージ文字を出す
+							this->addChild(magicdmf, onece);						//ダメージ文字を出す
 							magicdmf->runAction(magicfadeout);						//ダメージ文字をフェードアウトさせる
 							magicdmf->runAction(magicfdoutmov);						//ダメージ文字を上に動かす
 							magichpal->setString(std::to_string(magic.hp));
+							UI_PL_MAGIC_STATUSPLATE->runAction(magic_repeat_bigquake[0]);
+							UI_PL_MAGIC_HPBAR->runAction(magic_repeat_bigquake[1]);
+							UI_PL_MAGIC_MANABAR->runAction(magic_repeat_bigquake[2]);
+							magichpal->runAction(magic_repeat_bigquake[3]);
+							magichpmaxal->runAction(magic_repeat_bigquake[4]);
+							magicmnal->runAction(magic_repeat_bigquake[5]);
+							magicmnmaxal->runAction(magic_repeat_bigquake[6]);
 						}
 						//聖職者
 						if (job == HEALER) {
 							//聖職者の代わりに騎士がダメージをくらう
-							if (pl1frame.choicejob == HEALER || pl2frame.choicejob == HEALER
-								|| pl3frame.choicejob == HEALER) {
-								hpcut = (valkyrie.atk * skillupmedium) - shield.def;//減らすダメージを計算
-																					//もし減らすHPが1以下の場合1にする
-								if (hpcut <= 1) {
-									hpcut = 1;
-								}
-								shield.hp -= hpcut;									//HPを減らす
-								shielddmf->setString(std::to_string(hpcut));		//ダメージを変化させる
-								this->addChild(shielddmf, onece);					//ダメージ文字を出す
-								shielddmf->runAction(shieldfadeout);				//ダメージ文字をフェードアウトさせる
-								shielddmf->runAction(shieldfdoutmov);				//ダメージ文字を上に動かす
-							}
+							hpcut = (valkyrie.atk * skillupmedium) - shield.def;//減らすダメージを計算
+							hpcut = max(1, hpcut);								//もし減らすHPが1以下の場合1にする
+							shield.hp -= hpcut;									//HPを減らす
+							shielddmf->setString(std::to_string(hpcut));		//ダメージを変化させる
+							this->addChild(shielddmf, onece);					//ダメージ文字を出す
+							shielddmf->runAction(shieldfadeout);				//ダメージ文字をフェードアウトさせる
+							shielddmf->runAction(shieldfdoutmov);				//ダメージ文字を上に動かす
+							shieldhpal->setString(std::to_string(shield.hp));
+							UI_PL_SHIELD_STATUSPLATE->runAction(shield_repeat_bigquake[0]);
+							UI_PL_SHIELD_HPBAR->runAction(shield_repeat_bigquake[1]);
+							UI_PL_SHIELD_MANABAR->runAction(shield_repeat_bigquake[2]);
+							shieldhpal->runAction(shield_repeat_bigquake[3]);
+							shieldhpmaxal->runAction(shield_repeat_bigquake[4]);
+							shieldmnal->runAction(shield_repeat_bigquake[5]);
+							shieldmnmaxal->runAction(shield_repeat_bigquake[6]);
 						}
 					}
 				}
@@ -5076,97 +5622,85 @@ void BossScene::BSturn()
 				//二回目のHPを減らす
 
 				//ダメージを受けた時揺らす処理
-				Damage();
+				DamageSway();
 
 				//騎士の単体身代わりスキルが発動していないとき
 				if (insteadflag == false) {
 					//剣士
 					if (job == ATTACKER) {
-						hpcut = (valkyrie.atk - attacker.def);					//ダメージ計算
-						//もし減らすHPが1以下の場合1にする
-						if (hpcut <= 1) {
-							hpcut = 1;
+						if (attacker_defenceflag == false) {
+							hpcut = (valkyrie.atk - attacker.def);						//ダメージを計算
+							hpcut = max(1, hpcut);
+							attacker.hp -= hpcut;										//HPをへらす
 						}
-						attacker.hp -= hpcut;									//HPを減らす
-						UI_PL_ATTACKER_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));	//ダメージをくらった(プレイヤーの画像を赤くする)
-						attackerdmf->setString(std::to_string(hpcut));			//ダメージを変化させる
-						this->addChild(attackerdmf, onece);						//ダメージ文字を出す
-						attackerdmf->runAction(attackerfadeout);				//ダメージ文字をフェードアウトさせる
-						attackerdmf->runAction(attackerfdoutmov);				//ダメージ文字を上に動かす
-						attackerhpal->setString(std::to_string(attacker.hp));	//HP数値を減らす
-						UI_PL_ATTACKER_STATUSPLATE->runAction(attacker_repeat_bigquake[0]);
-						UI_PL_ATTACKER_HPBAR->runAction(attacker_repeat_bigquake[1]);
-						UI_PL_ATTACKER_MANABAR->runAction(attacker_repeat_bigquake[2]);
-						attackerhpal->runAction(attacker_repeat_bigquake[3]);
-						attackerhpmaxal->runAction(attacker_repeat_bigquake[4]);
-						attackermnal->runAction(attacker_repeat_bigquake[5]);
-						attackermnmaxal->runAction(attacker_repeat_bigquake[6]);
+						else if (attacker_defenceflag == true) {
+							hpcut = (valkyrie.atk - attacker.def) / 2;						//ダメージを計算
+							hpcut = max(1, hpcut);
+							attacker.hp -= hpcut;
+						}
+						UI_PL_ATTACKER_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));	//受けるやつを赤くする
+						attackerdmf->setString(std::to_string(hpcut));				//ダメージを変化させる
+						this->addChild(attackerdmf, onece);							//ダメージ文字を出す
+						attackerdmf->runAction(attackerfadeout);					//ダメージ文字をフェードアウトさせる
+						attackerdmf->runAction(attackerfdoutmov);					//ダメージ文字を上に動かす
+						attackerhpal->setString(std::to_string(attacker.hp));		//数値を変える↓以下同文
 					}
 					//騎士
 					else if (job == SHIELD) {
-						hpcut = (valkyrie.atk - shield.def);
-						//もし減らすHPが1以下の場合1にする
-						if (hpcut <= 1) {
-							hpcut = 1;
+						if (shield_defenceflag == false) {
+							hpcut = (valkyrie.atk - shield.def);
+							hpcut = max(1, hpcut);							//もし減らすHPが1以下の場合1にする
+							shield.hp -= hpcut;
 						}
-						shield.hp -= hpcut;
+						else if (shield_defenceflag == true) {
+							hpcut = (valkyrie.atk - shield.def) / 2;
+							hpcut = max(1, hpcut);							//もし減らすHPが1以下の場合1にする
+							shield.hp -= hpcut;
+						}
 						UI_PL_SHIELD_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
+						shielddmf->setString(std::to_string(hpcut));				//ダメージを変化させる
+						this->addChild(shielddmf, onece);							//ダメージ文字を出す
+						shielddmf->runAction(shieldfadeout);						//ダメージ文字をフェードアウトさせる
+						shielddmf->runAction(shieldfdoutmov);						//ダメージ文字を上に動かす
 						shieldhpal->setString(std::to_string(shield.hp));
-						shielddmf->setString(std::to_string(hpcut));			//ダメージを変化させる
-						this->addChild(shielddmf, onece);						//ダメージ文字を出す
-						shielddmf->runAction(shieldfadeout);					//ダメージ文字をフェードアウトさせる
-						shielddmf->runAction(shieldfdoutmov);					//ダメージ文字を上に動かす
-						UI_PL_SHIELD_STATUSPLATE->runAction(shield_repeat_bigquake[0]);
-						UI_PL_SHIELD_HPBAR->runAction(shield_repeat_bigquake[1]);
-						UI_PL_SHIELD_MANABAR->runAction(shield_repeat_bigquake[2]);
-						shieldhpal->runAction(shield_repeat_bigquake[3]);
-						shieldhpmaxal->runAction(shield_repeat_bigquake[4]);
-						shieldmnal->runAction(shield_repeat_bigquake[5]);
-						shieldmnmaxal->runAction(shield_repeat_bigquake[6]);
 					}
 					//魔術師
 					else if (job == MAGIC) {
-						hpcut = (valkyrie.atk - magic.def);
-						//もし減らすHPが1以下の場合1にする
-						if (hpcut <= 1) {
-							hpcut = 1;
+						if (magic_defenceflag == false) {
+							hpcut = (valkyrie.atk - magic.def);
+							hpcut = max(1, hpcut);							//もし減らすHPが1以下の場合1にする
+							magic.hp -= hpcut;
 						}
-						magic.hp -= hpcut;
-						 UI_PL_MAGIC_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
+						else if (magic_defenceflag == true) {
+							hpcut = (valkyrie.atk - magic.def) / 2;
+							hpcut = max(1, hpcut);							//もし減らすHPが1以下の場合1にする
+							magic.hp -= hpcut;
+						}
+						UI_PL_MAGIC_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
+						magicdmf->setString(std::to_string(hpcut));					//ダメージを変化させる
+						this->addChild(magicdmf, onece);							//ダメージ文字を出す
+						magicdmf->runAction(magicfadeout);							//ダメージ文字をフェードアウトさせる
+						magicdmf->runAction(magicfdoutmov);							//ダメージ文字を上に動かす
 						magichpal->setString(std::to_string(magic.hp));
-						magicdmf->setString(std::to_string(hpcut));				//ダメージを変化させる
-						this->addChild(magicdmf, onece);						//ダメージ文字を出す
-						magicdmf->runAction(magicfadeout);						//ダメージ文字をフェードアウトさせる
-						magicdmf->runAction(magicfdoutmov);						//ダメージ文字を上に動かす
-						 UI_PL_MAGIC_STATUSPLATE->runAction(magic_repeat_bigquake[0]);
-						UI_PL_MAGIC_HPBAR->runAction(magic_repeat_bigquake[1]);
-						UI_PL_MAGIC_MANABAR->runAction(magic_repeat_bigquake[2]);
-						magichpal->runAction(magic_repeat_bigquake[3]);
-						magichpmaxal->runAction(magic_repeat_bigquake[4]);
-						magicmnal->runAction(magic_repeat_bigquake[5]);
-						magicmnmaxal->runAction(magic_repeat_bigquake[6]);
 					}
 					//聖職者
 					else if (job == HEALER) {
-						hpcut = (valkyrie.atk - healer.def);
-						//もし減らすHPが1以下の場合1にする
-						if (hpcut <= 1) {
-							hpcut = 1;
+						if (healer_defenceflag == false) {
+							hpcut = (valkyrie.atk - healer.def);
+							hpcut = max(1, hpcut);							//もし減らすHPが1以下の場合1にする
+							healer.hp -= hpcut;
 						}
-						healer.hp -= hpcut;
+						else if (healer_defenceflag == true) {
+							hpcut = (valkyrie.atk - healer.def) / 2;
+							hpcut = max(1, hpcut);							//もし減らすHPが1以下の場合1にする
+							healer.hp -= hpcut;
+						}
 						UI_PL_HEALER_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
+						healerdmf->setString(std::to_string(hpcut));				//ダメージを変化させる
+						this->addChild(healerdmf, onece);							//ダメージ文字を出す
+						healerdmf->runAction(healerfadeout);						//ダメージ文字をフェードアウトさせる
+						healerdmf->runAction(healerfdoutmov);						//ダメージ文字を上に動かす
 						healerhpal->setString(std::to_string(healer.hp));
-						healerdmf->setString(std::to_string(hpcut));			//ダメージを変化させる
-						this->addChild(healerdmf, onece);						//ダメージ文字を出す
-						healerdmf->runAction(healerfadeout);					//ダメージ文字をフェードアウトさせる
-						healerdmf->runAction(healerfdoutmov);					//ダメージ文字を上に動かす
-						UI_PL_HEALER_STATUSPLATE->runAction(healaer_repeat_smallquake[0]);
-						UI_PL_HEALER_HPBAR->runAction(healaer_repeat_smallquake[1]);
-						UI_PL_HEALER_MANABAR->runAction(healaer_repeat_smallquake[2]);
-						healerhpal->runAction(healaer_repeat_smallquake[3]);
-						healerhpmaxal->runAction(healaer_repeat_smallquake[4]);
-						healermnal->runAction(healaer_repeat_smallquake[5]);
-						healermnmaxal->runAction(healaer_repeat_smallquake[6]);
 					}
 				}
 
@@ -5176,11 +5710,8 @@ void BossScene::BSturn()
 					if (sskillchoice == ATTACKER) {
 						//剣士
 						if (job == ATTACKER) {
-							hpcut = (valkyrie.atk * skillupmedium) - shield.def;//減らすダメージを計算
-																				//もし減らすHPが1以下の場合1にする
-							if (hpcut <= 1) {
-								hpcut = 1;
-							}
+							hpcut = (valkyrie.atk - shield.def) / 2;			//減らすダメージを計算
+							hpcut = max(1, hpcut);								//もし減らすHPが1以下の場合1にする
 							shield.hp -= hpcut;									//HPを減らす
 							shielddmf->setString(std::to_string(hpcut));		//ダメージを変化させる
 							this->addChild(shielddmf, onece);					//ダメージ文字を出す
@@ -5198,10 +5729,7 @@ void BossScene::BSturn()
 						//騎士
 						if (job == SHIELD) {
 							hpcut = (valkyrie.atk - shield.def);
-							//もし減らすHPが1以下の場合1にする
-							if (hpcut <= 1) {
-								hpcut = 1;
-							}
+							hpcut = max(1, hpcut);										//もし減らすHPが1以下の場合1にする
 							shield.hp -= hpcut;
 							UI_PL_SHIELD_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
 							shielddmf->setString(std::to_string(hpcut));				//ダメージを変化させる
@@ -5211,7 +5739,7 @@ void BossScene::BSturn()
 							shieldhpal->setString(std::to_string(shield.hp));
 							UI_PL_SHIELD_STATUSPLATE->runAction(shield_repeat_bigquake[0]);
 							UI_PL_SHIELD_HPBAR->runAction(shield_repeat_bigquake[1]);
-							UI_PL_SHIELD_HPBAR->runAction(shield_repeat_bigquake[2]);
+							UI_PL_SHIELD_MANABAR->runAction(shield_repeat_bigquake[2]);
 							shieldhpal->runAction(shield_repeat_bigquake[3]);
 							shieldhpmaxal->runAction(shield_repeat_bigquake[4]);
 							shieldmnal->runAction(shield_repeat_bigquake[5]);
@@ -5219,19 +5747,23 @@ void BossScene::BSturn()
 						}
 						//魔術師
 						if (job == MAGIC) {
-							hpcut = (valkyrie.atk - magic.def);
-							//もし減らすHPが1以下の場合1にする
-							if (hpcut <= 1) {
-								hpcut = 1;
+							if (magic_defenceflag == false) {
+								hpcut = (valkyrie.atk - magic.def);
+								hpcut = max(1, hpcut);									//もし減らすHPが1以下の場合1にする
+								magic.hp -= hpcut;
 							}
-							magic.hp -= hpcut;
-							 UI_PL_MAGIC_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
+							else if (magic_defenceflag == true) {
+								hpcut = (valkyrie.atk - magic.def) / 2;
+								hpcut = max(1, hpcut);									//もし減らすHPが1以下の場合1にする
+								magic.hp -= hpcut;
+							}
+							UI_PL_MAGIC_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
 							magicdmf->setString(std::to_string(hpcut));				//ダメージを変化させる
-							this->addChild(magicdmf, onece);							//ダメージ文字を出す
+							this->addChild(magicdmf, onece);						//ダメージ文字を出す
 							magicdmf->runAction(magicfadeout);						//ダメージ文字をフェードアウトさせる
 							magicdmf->runAction(magicfdoutmov);						//ダメージ文字を上に動かす
 							magichpal->setString(std::to_string(magic.hp));
-							 UI_PL_MAGIC_STATUSPLATE->runAction(magic_repeat_bigquake[0]);
+							UI_PL_MAGIC_STATUSPLATE->runAction(magic_repeat_bigquake[0]);
 							UI_PL_MAGIC_HPBAR->runAction(magic_repeat_bigquake[1]);
 							UI_PL_MAGIC_MANABAR->runAction(magic_repeat_bigquake[2]);
 							magichpal->runAction(magic_repeat_bigquake[3]);
@@ -5241,12 +5773,16 @@ void BossScene::BSturn()
 						}
 						//聖職者
 						if (job == HEALER) {
-							hpcut = (valkyrie.atk - healer.def);
-							//もし減らすHPが1以下の場合1にする
-							if (hpcut <= 1) {
-								hpcut = 1;
+							if (healer_defenceflag == false) {
+								hpcut = (valkyrie.atk - healer.def);
+								hpcut = max(1, hpcut);										//もし減らすHPが1以下の場合1にする
+								healer.hp -= hpcut;
 							}
-							healer.hp -= hpcut;
+							else if (healer_defenceflag == true) {
+								hpcut = (valkyrie.atk - healer.def) / 2;
+								hpcut = max(1, hpcut);										//もし減らすHPが1以下の場合1にする
+								healer.hp -= hpcut;
+							}
 							UI_PL_HEALER_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
 							healerdmf->setString(std::to_string(hpcut));				//ダメージを変化させる
 							this->addChild(healerdmf, onece);							//ダメージ文字を出す
@@ -5266,42 +5802,43 @@ void BossScene::BSturn()
 					if (sskillchoice == MAGIC) {
 						//剣士
 						if (job == ATTACKER) {
-							hpcut = (valkyrie.atk * skillupmedium) - attacker.def;	//減らすダメージを計算
-																					//もし減らすHPが1以下の場合1にする
-							if (hpcut <= 1) {
-								hpcut = 1;
+							if (attacker_defenceflag == false) {
+								hpcut = (valkyrie.atk * skillupmedium) - attacker.def;	//減らすダメージを計算
+								hpcut = max(1, hpcut);									//もし減らすHPが1以下の場合1にする
+								attacker.hp -= hpcut;									//HPを減らす
 							}
-							attacker.hp -= hpcut;									//HPを減らす
+							else if (attacker_defenceflag == true) {
+								hpcut = (valkyrie.atk - attacker.def) / 2;				//減らすダメージを計算
+								hpcut = max(1, hpcut);									//もし減らすHPが1以下の場合1にする
+								attacker.hp -= hpcut;									//HPを減らす
+							}
 							attackerdmf->setString(std::to_string(hpcut));			//ダメージを変化させる
 							this->addChild(attackerdmf, onece);						//ダメージ文字を出す
 							attackerdmf->runAction(attackerfadeout);				//ダメージ文字をフェードアウトさせる
 							attackerdmf->runAction(attackerfdoutmov);				//ダメージ文字を上に動かす
 							attackerhpal->setString(std::to_string(attacker.hp));
-							UI_PL_ATTACKER_STATUSPLATE->runAction(attacker_repeat_bigquake[0]);
-							UI_PL_ATTACKER_HPBAR->runAction(attacker_repeat_bigquake[1]);
-							UI_PL_ATTACKER_MANABAR->runAction(attacker_repeat_bigquake[2]);
-							attackerhpal->runAction(attacker_repeat_bigquake[3]);
-							attackerhpmaxal->runAction(attacker_repeat_bigquake[4]);
-							attackermnal->runAction(attacker_repeat_bigquake[5]);
-							attackermnmaxal->runAction(attacker_repeat_bigquake[6]);
+							UI_PL_ATTACKER_STATUSPLATE->runAction(attacker_repeat_smallquake[0]);
+							UI_PL_ATTACKER_HPBAR->runAction(attacker_repeat_smallquake[1]);
+							UI_PL_ATTACKER_MANABAR->runAction(attacker_repeat_smallquake[2]);
+							attackerhpal->runAction(attacker_repeat_smallquake[3]);
+							attackerhpmaxal->runAction(attacker_repeat_smallquake[4]);
+							attackermnal->runAction(attacker_repeat_smallquake[5]);
+							attackermnmaxal->runAction(attacker_repeat_smallquake[6]);
 						}
 						//騎士
 						if (job == SHIELD) {
 							hpcut = (valkyrie.atk - shield.def);
-							//もし減らすHPが1以下の場合1にする
-							if (hpcut <= 1) {
-								hpcut = 1;
-							}
+							hpcut = max(1, hpcut);										//もし減らすHPが1以下の場合1にする
 							shield.hp -= hpcut;
 							UI_PL_SHIELD_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
-							shielddmf->setString(std::to_string(hpcut));			//ダメージを変化させる
-							this->addChild(shielddmf, onece);						//ダメージ文字を出す
-							shielddmf->runAction(shieldfadeout);					//ダメージ文字をフェードアウトさせる
-							shielddmf->runAction(shieldfdoutmov);					//ダメージ文字を上に動かす
+							shielddmf->setString(std::to_string(hpcut));				//ダメージを変化させる
+							this->addChild(shielddmf, onece);							//ダメージ文字を出す
+							shielddmf->runAction(shieldfadeout);						//ダメージ文字をフェードアウトさせる
+							shielddmf->runAction(shieldfdoutmov);						//ダメージ文字を上に動かす
 							shieldhpal->setString(std::to_string(shield.hp));
 							UI_PL_SHIELD_STATUSPLATE->runAction(shield_repeat_bigquake[0]);
 							UI_PL_SHIELD_HPBAR->runAction(shield_repeat_bigquake[1]);
-							UI_PL_SHIELD_HPBAR->runAction(shield_repeat_bigquake[2]);
+							UI_PL_SHIELD_MANABAR->runAction(shield_repeat_bigquake[2]);
 							shieldhpal->runAction(shield_repeat_bigquake[3]);
 							shieldhpmaxal->runAction(shield_repeat_bigquake[4]);
 							shieldmnal->runAction(shield_repeat_bigquake[5]);
@@ -5311,10 +5848,7 @@ void BossScene::BSturn()
 						if (job == MAGIC) {
 							//魔術師の代わりに騎士がダメージをくらう
 							hpcut = (valkyrie.atk * skillupmedium) - shield.def;//減らすダメージを計算
-																				//もし減らすHPが1以下の場合1にする
-							if (hpcut <= 1) {
-								hpcut = 1;
-							}
+							hpcut = max(1, hpcut);								//もし減らすHPが1以下の場合1にする
 							shield.hp -= hpcut;									//HPを減らす
 							shielddmf->setString(std::to_string(hpcut));		//ダメージを変化させる
 							this->addChild(shielddmf, onece);					//ダメージ文字を出す
@@ -5323,7 +5857,7 @@ void BossScene::BSturn()
 							magichpal->setString(std::to_string(magic.hp));
 							UI_PL_SHIELD_STATUSPLATE->runAction(shield_repeat_bigquake[0]);
 							UI_PL_SHIELD_HPBAR->runAction(shield_repeat_bigquake[1]);
-							UI_PL_SHIELD_HPBAR->runAction(shield_repeat_bigquake[2]);
+							UI_PL_SHIELD_MANABAR->runAction(shield_repeat_bigquake[2]);
 							shieldhpal->runAction(shield_repeat_bigquake[3]);
 							shieldhpmaxal->runAction(shield_repeat_bigquake[4]);
 							shieldmnal->runAction(shield_repeat_bigquake[5]);
@@ -5332,12 +5866,16 @@ void BossScene::BSturn()
 						}
 						//聖職者
 						if (job == HEALER) {
-							hpcut = (valkyrie.atk - healer.def);
-							//もし減らすHPが1以下の場合1にする
-							if (hpcut <= 1) {
-								hpcut = 1;
+							if (healer_defenceflag == false) {
+								hpcut = (valkyrie.atk - healer.def);
+								hpcut = max(1, hpcut);										//もし減らすHPが1以下の場合1にする
+								healer.hp -= hpcut;
 							}
-							healer.hp -= hpcut;
+							else if (healer_defenceflag == true) {
+								hpcut = (valkyrie.atk - healer.def) / 2;
+								hpcut = max(1, hpcut);										//もし減らすHPが1以下の場合1にする
+								healer.hp -= hpcut;
+							}
 							UI_PL_HEALER_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
 							healerdmf->setString(std::to_string(hpcut));				//ダメージを変化させる
 							this->addChild(healerdmf, onece);							//ダメージ文字を出す
@@ -5357,32 +5895,33 @@ void BossScene::BSturn()
 					if (sskillchoice == HEALER) {
 						//剣士
 						if (job == ATTACKER) {
-							hpcut = (valkyrie.atk * skillupmedium) - attacker.def;//減らすダメージを計算
-																				  //もし減らすHPが1以下の場合1にする
-							if (hpcut <= 1) {
-								hpcut = 1;
+							if (attacker_defenceflag == false) {
+								hpcut = (valkyrie.atk * skillupmedium) - attacker.def;//減らすダメージを計算
+								hpcut = max(1, hpcut);									//もし減らすHPが1以下の場合1にする
+								attacker.hp -= hpcut;									//HPを減らす
 							}
-							attacker.hp -= hpcut;									//HPを減らす
+							else if (attacker_defenceflag == true) {
+								hpcut = (valkyrie.atk - attacker.def) / 2;				//減らすダメージを計算
+								hpcut = max(1, hpcut);									//もし減らすHPが1以下の場合1にする
+								attacker.hp -= hpcut;
+							}
 							attackerdmf->setString(std::to_string(hpcut));			//ダメージを変化させる
 							this->addChild(attackerdmf, onece);						//ダメージ文字を出す
 							attackerdmf->runAction(attackerfadeout);				//ダメージ文字をフェードアウトさせる
 							attackerdmf->runAction(attackerfdoutmov);				//ダメージ文字を上に動かす
 							attackerhpal->setString(std::to_string(attacker.hp));
-							UI_PL_ATTACKER_STATUSPLATE->runAction(attacker_repeat_bigquake[0]);
-							UI_PL_ATTACKER_HPBAR->runAction(attacker_repeat_bigquake[1]);
-							UI_PL_ATTACKER_MANABAR->runAction(attacker_repeat_bigquake[2]);
-							attackerhpal->runAction(attacker_repeat_bigquake[3]);
-							attackerhpmaxal->runAction(attacker_repeat_bigquake[4]);
-							attackermnal->runAction(attacker_repeat_bigquake[5]);
-							attackermnmaxal->runAction(attacker_repeat_bigquake[6]);
+							UI_PL_ATTACKER_STATUSPLATE->runAction(attacker_repeat_smallquake[0]);
+							UI_PL_ATTACKER_HPBAR->runAction(attacker_repeat_smallquake[1]);
+							UI_PL_ATTACKER_MANABAR->runAction(attacker_repeat_smallquake[2]);
+							attackerhpal->runAction(attacker_repeat_smallquake[3]);
+							attackerhpmaxal->runAction(attacker_repeat_smallquake[4]);
+							attackermnal->runAction(attacker_repeat_smallquake[5]);
+							attackermnmaxal->runAction(attacker_repeat_smallquake[6]);
 						}
 						//騎士
 						if (job == SHIELD) {
 							hpcut = (valkyrie.atk - shield.def);
-							//もし減らすHPが1以下の場合1にする
-							if (hpcut <= 1) {
-								hpcut = 1;
-							}
+							hpcut = max(1, hpcut);									//もし減らすHPが1以下の場合1にする
 							shield.hp -= hpcut;
 							UI_PL_SHIELD_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
 							shielddmf->setString(std::to_string(hpcut));			//ダメージを変化させる
@@ -5392,7 +5931,7 @@ void BossScene::BSturn()
 							shieldhpal->setString(std::to_string(shield.hp));
 							UI_PL_SHIELD_STATUSPLATE->runAction(shield_repeat_bigquake[0]);
 							UI_PL_SHIELD_HPBAR->runAction(shield_repeat_bigquake[1]);
-							UI_PL_SHIELD_HPBAR->runAction(shield_repeat_bigquake[2]);
+							UI_PL_SHIELD_MANABAR->runAction(shield_repeat_bigquake[2]);
 							shieldhpal->runAction(shield_repeat_bigquake[3]);
 							shieldhpmaxal->runAction(shield_repeat_bigquake[4]);
 							shieldmnal->runAction(shield_repeat_bigquake[5]);
@@ -5400,19 +5939,23 @@ void BossScene::BSturn()
 						}
 						//魔術師
 						if (job == MAGIC) {
-							hpcut = (valkyrie.atk - magic.def);
-							//もし減らすHPが1以下の場合1にする
-							if (hpcut <= 1) {
-								hpcut = 1;
+							if (magic_defenceflag == false) {
+								hpcut = (valkyrie.atk - magic.def);
+								hpcut = max(1, hpcut);									//もし減らすHPが1以下の場合1にする
+								magic.hp -= hpcut;
 							}
-							magic.hp -= hpcut;
-							 UI_PL_MAGIC_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
+							else if (magic_defenceflag == true) {
+								hpcut = (valkyrie.atk - magic.def) / 2;
+								hpcut = max(1, hpcut);									//もし減らすHPが1以下の場合1にする
+								magic.hp -= hpcut;
+							}
+							UI_PL_MAGIC_STATUSPLATE->setColor(ccc3(colormax, colordown, colordown));
 							magicdmf->setString(std::to_string(hpcut));				//ダメージを変化させる
 							this->addChild(magicdmf, onece);						//ダメージ文字を出す
 							magicdmf->runAction(magicfadeout);						//ダメージ文字をフェードアウトさせる
 							magicdmf->runAction(magicfdoutmov);						//ダメージ文字を上に動かす
 							magichpal->setString(std::to_string(magic.hp));
-							 UI_PL_MAGIC_STATUSPLATE->runAction(magic_repeat_bigquake[0]);
+							UI_PL_MAGIC_STATUSPLATE->runAction(magic_repeat_bigquake[0]);
 							UI_PL_MAGIC_HPBAR->runAction(magic_repeat_bigquake[1]);
 							UI_PL_MAGIC_MANABAR->runAction(magic_repeat_bigquake[2]);
 							magichpal->runAction(magic_repeat_bigquake[3]);
@@ -5424,10 +5967,7 @@ void BossScene::BSturn()
 						if (job == HEALER) {
 							//聖職者の代わりに騎士がダメージをくらう
 							hpcut = (valkyrie.atk * skillupmedium) - shield.def;//減らすダメージを計算
-																				//もし減らすHPが1以下の場合1にする
-							if (hpcut <= 1) {
-								hpcut = 1;
-							}
+							hpcut = max(1, hpcut);								//もし減らすHPが1以下の場合1にする
 							shield.hp -= hpcut;									//HPを減らす
 							shielddmf->setString(std::to_string(hpcut));		//ダメージを変化させる
 							this->addChild(shielddmf, onece);					//ダメージ文字を出す
@@ -5436,7 +5976,7 @@ void BossScene::BSturn()
 							shieldhpal->setString(std::to_string(shield.hp));
 							UI_PL_SHIELD_STATUSPLATE->runAction(shield_repeat_bigquake[0]);
 							UI_PL_SHIELD_HPBAR->runAction(shield_repeat_bigquake[1]);
-							UI_PL_SHIELD_HPBAR->runAction(shield_repeat_bigquake[2]);
+							UI_PL_SHIELD_MANABAR->runAction(shield_repeat_bigquake[2]);
 							shieldhpal->runAction(shield_repeat_bigquake[3]);
 							shieldhpmaxal->runAction(shield_repeat_bigquake[4]);
 							shieldmnal->runAction(shield_repeat_bigquake[5]);
@@ -5449,7 +5989,7 @@ void BossScene::BSturn()
 				UI_PL_ATTACKER_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
 				UI_PL_SHIELD_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
 				UI_PL_HEALER_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
-				 UI_PL_MAGIC_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
+				UI_PL_MAGIC_STATUSPLATE->setColor(ccc3(colormax, colormax, colormax));
 			}
 			//効果処理
 			//フレームが230(仮)になると効果を表記
@@ -5534,17 +6074,21 @@ void BossScene::BSturn()
 				this->addChild(Gskill3, backdepth, bossskill3S);
 
 				//ヴァルキリーの防御力を増やす
-				buffup = valkyrie.defmax;//上げる防御力を計算(ヴァルキュリ－の防御力×0.5)
-				valkyrie.def += buffup;				//ヴァルキリーの防御力に加える				
+				buffup_value[0] = valkyrie.defmax;		//上げる防御力を計算(ヴァルキュリ－の防御力×2)
+				buffup_value[1] = valkyrie.mdefmax;
+				valkyrie.def += buffup_value[0];			//ヴァルキリーの防御力に加える			
+				valkyrie.mdef += buffup_value[1];
 
 				//スキル効果ターンによる処理
-				if (vskill3.buffturn1 == 0) {
-					vskill3.buffturn1 = 2;
-					vskill3.buffupefect1 = buffup;
+				if (vskill3.buffturn[0] == 0) {
+					vskill3.buffturn[0] = 2;
+					vskill3.buffupefect[0][0] = buffup_value[0];
+					vskill3.buffupefect[1][0] = buffup_value[1];
 				}
-				else if (vskill3.buffturn2 == 0) {
-					vskill3.buffturn2 = 2;
-					vskill3.buffupefect2 = buffup;
+				else if (vskill3.buffturn[1] == 0) {
+					vskill3.buffturn[1] = 2;
+					vskill3.buffupefect[0][1] = buffup_value[0];
+					vskill3.buffupefect[1][1] = buffup_value[1];
 				}
 			}
 			//効果処理
@@ -5603,8 +6147,8 @@ void BossScene::BSturn()
 	log("%s", hpstrBS->getCString());
 }
 
-//画像を揺らすための処理
-void BossScene::Damage()
+//ダメージを受けた時に揺らす関数
+void BossScene::DamageSway()
 {
 //剣士
 	//attackerframe.choisjobが剣士の場合
@@ -5620,7 +6164,7 @@ void BossScene::Damage()
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 4.1f, rightSize.height / 5)),
 			NULL
 		);
-		attacker_repeat_bigquake[0] = Repeat::create(attackermove1a, continuity1);
+		attacker_repeat_bigquake[0] = Repeat::create(attackermove1a, continuity_few);
 		//揺らす処理剣士,2a
 		auto attackermove2a = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 6.32f, rightSize.height / 5.73f + 5)),
@@ -5631,7 +6175,7 @@ void BossScene::Damage()
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 6.32f, rightSize.height / 5.73f)),
 			NULL
 		);
-		attacker_repeat_bigquake[1]= Repeat::create(attackermove2a, continuity1);
+		attacker_repeat_bigquake[1]= Repeat::create(attackermove2a, continuity_few);
 		//揺らす処理剣士,3a
 		auto attackermove3a = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 3.6f, rightSize.height / 5.73f + 5)),
@@ -5642,7 +6186,7 @@ void BossScene::Damage()
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 3.6f, rightSize.height / 5.73f)),
 			NULL
 		);
-		attacker_repeat_bigquake[2] = Repeat::create(attackermove3a, continuity1);
+		attacker_repeat_bigquake[2] = Repeat::create(attackermove3a, continuity_few);
 		//揺らす処理剣士,4a
 		auto attackermove4a = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 5.0f, rightSize.height / 6.7f)),
@@ -5653,7 +6197,7 @@ void BossScene::Damage()
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 5.0f, rightSize.height / 6.7f)),
 			NULL
 		);
-		attacker_repeat_bigquake[3] = Repeat::create(attackermove4a, continuity1);
+		attacker_repeat_bigquake[3] = Repeat::create(attackermove4a, continuity_few);
 		//揺らす処理剣士,5a
 		auto attackermove5a = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 4.5f, rightSize.height / 6.3f)),
@@ -5664,7 +6208,7 @@ void BossScene::Damage()
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 4.5f, rightSize.height / 6.3f)),
 			NULL
 		);
-		attacker_repeat_bigquake[4] = Repeat::create(attackermove5a, continuity1);
+		attacker_repeat_bigquake[4] = Repeat::create(attackermove5a, continuity_few);
 		//揺らす処理剣士,6a
 		auto attackermove6a = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 3.22f, rightSize.height / 6.7f)),
@@ -5675,7 +6219,7 @@ void BossScene::Damage()
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 3.22f, rightSize.height / 6.7f)),
 			NULL
 		);
-		attacker_repeat_bigquake[5] = Repeat::create(attackermove6a, continuity1);
+		attacker_repeat_bigquake[5] = Repeat::create(attackermove6a, continuity_few);
 		//揺らす処理剣士,7a
 		auto attackermove7a = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 3.0f, rightSize.height / 6.3f)),
@@ -5686,7 +6230,7 @@ void BossScene::Damage()
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 3.0f, rightSize.height / 6.3f)),
 			NULL
 		);
-		attacker_repeat_bigquake[6] = Repeat::create(attackermove7a, continuity1);
+		attacker_repeat_bigquake[6] = Repeat::create(attackermove7a, continuity_few);
 	//揺れ幅が小さいやつ
 		//揺らす処理剣士,1b
 		auto attackermove1b = CCSequence::create(
@@ -5694,49 +6238,49 @@ void BossScene::Damage()
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 4.1f, rightSize.height / 5)),
 			NULL
 		);
-		attacker_repeat_smallquake[0] = Repeat::create(attackermove1b, continuity1);
+		attacker_repeat_smallquake[0] = Repeat::create(attackermove1b, continuity_few);
 		//揺らす処理剣士,2b
 		auto attackermove2b = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 6.32f, rightSize.height / 5.73f + 5)),
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 6.32f, rightSize.height / 5.73f)),
 			NULL
 		);
-		attacker_repeat_smallquake[1] = Repeat::create(attackermove2b, continuity1);
+		attacker_repeat_smallquake[1] = Repeat::create(attackermove2b, continuity_few);
 		//揺らす処理剣士,3b
 		auto attackermove3b = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 3.6f, rightSize.height / 5.73f + 5)),
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 3.6f, rightSize.height / 5.73f)),
 			NULL
 		);
-		attacker_repeat_smallquake[2] = Repeat::create(attackermove3b, continuity1);
+		attacker_repeat_smallquake[2] = Repeat::create(attackermove3b, continuity_few);
 		//揺らす処理剣士,4b
 		auto attackermove4b = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 5.0f, rightSize.height / 6.7f + 5)),
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 5.0f, rightSize.height / 6.7f)),
 			NULL
 		);
-		attacker_repeat_smallquake[3] = Repeat::create(attackermove4b, continuity1);
+		attacker_repeat_smallquake[3] = Repeat::create(attackermove4b, continuity_few);
 		//揺らす処理剣士,5b
 		auto attackermove5b = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 4.5f, rightSize.height / 6.3f + 5)),
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 4.5f, rightSize.height / 6.3f)),
 			NULL
 		);
-		attacker_repeat_smallquake[4] = Repeat::create(attackermove5b, continuity1);
+		attacker_repeat_smallquake[4] = Repeat::create(attackermove5b, continuity_few);
 		//揺らす処理剣士,6b
 		auto attackermove6b = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 3.22f, rightSize.height / 6.7f + 5)),
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 3.22f, rightSize.height / 6.7f)),
 			NULL
 		);
-		attacker_repeat_smallquake[5] = Repeat::create(attackermove6b, continuity1);
+		attacker_repeat_smallquake[5] = Repeat::create(attackermove6b, continuity_few);
 		//揺らす処理剣士,7b
 		auto attackermove7b = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 3.0f, rightSize.height / 6.3f + 5)),
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 3.0f, rightSize.height / 6.3f)),
 			NULL
 		);
-		attacker_repeat_smallquake[6] = Repeat::create(attackermove7b, continuity1);
+		attacker_repeat_smallquake[6] = Repeat::create(attackermove7b, continuity_few);
 	}
 	//pl2frame.choisjobが剣士の場合
 	if (pl2frame.choicejob == ATTACKER) {
@@ -5751,7 +6295,7 @@ void BossScene::Damage()
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 2, rightSize.height / 5)),
 			NULL
 		);
-		attacker_repeat_bigquake[0] = Repeat::create(attackermove1a, continuity1);
+		attacker_repeat_bigquake[0] = Repeat::create(attackermove1a, continuity_few);
 		//揺らす処理剣士,2a
 		auto attackermove2a = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 2.42f, rightSize.height / 5.735f + 5)),
@@ -5762,7 +6306,7 @@ void BossScene::Damage()
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 2.42f, rightSize.height / 5.735f)),
 			NULL
 		);
-		attacker_repeat_bigquake[1] = Repeat::create(attackermove2a, continuity1);
+		attacker_repeat_bigquake[1] = Repeat::create(attackermove2a, continuity_few);
 		//揺らす処理剣士,3a
 		auto attackermove3a = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.87f, rightSize.height / 5.735f + 5)),
@@ -5773,7 +6317,7 @@ void BossScene::Damage()
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.87f, rightSize.height / 5.735f)),
 			NULL
 		);
-		attacker_repeat_bigquake[2] = Repeat::create(attackermove3a, continuity1);
+		attacker_repeat_bigquake[2] = Repeat::create(attackermove3a, continuity_few);
 		//揺らす処理剣士,4a
 		auto attackermove4a = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 2.18f, rightSize.height / 6.7f + 5)),
@@ -5784,7 +6328,7 @@ void BossScene::Damage()
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 2.18f, rightSize.height / 6.7f)),
 			NULL
 		);
-		attacker_repeat_bigquake[3] = Repeat::create(attackermove4a, continuity1);
+		attacker_repeat_bigquake[3] = Repeat::create(attackermove4a, continuity_few);
 		//揺らす処理剣士,5a
 		auto attackermove5a = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 2.08f, rightSize.height / 6.3f + 5)),
@@ -5795,7 +6339,7 @@ void BossScene::Damage()
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 2.08f, rightSize.height / 6.3f)),
 			NULL
 		);
-		attacker_repeat_bigquake[4] = Repeat::create(attackermove5a, continuity1);
+		attacker_repeat_bigquake[4] = Repeat::create(attackermove5a, continuity_few);
 		//揺らす処理剣士,6a
 		auto attackermove6a = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.77f, rightSize.height / 6.7f + 5)),
@@ -5806,7 +6350,7 @@ void BossScene::Damage()
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.77f, rightSize.height / 6.7f)),
 			NULL
 		);
-		attacker_repeat_bigquake[5] = Repeat::create(attackermove6a, continuity1);
+		attacker_repeat_bigquake[5] = Repeat::create(attackermove6a, continuity_few);
 		//揺らす処理剣士,7a
 		auto attackermove7a = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.7f, rightSize.height / 6.3f + 5)),
@@ -5817,7 +6361,7 @@ void BossScene::Damage()
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.7f, rightSize.height / 6.3f)),
 			NULL
 		);
-		attacker_repeat_bigquake[6] = Repeat::create(attackermove7a, continuity1);
+		attacker_repeat_bigquake[6] = Repeat::create(attackermove7a, continuity_few);
 		//揺れ幅が小さいやつ
 		//揺らす処理剣士,1b
 		auto attackermove1b = CCSequence::create(
@@ -5825,49 +6369,49 @@ void BossScene::Damage()
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 2, rightSize.height / 5)),
 			NULL
 		);
-		attacker_repeat_smallquake[0] = Repeat::create(attackermove1b, continuity1);
+		attacker_repeat_smallquake[0] = Repeat::create(attackermove1b, continuity_few);
 		//揺らす処理剣士,2b
 		auto attackermove2b = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 2.42f, rightSize.height / 5.735f + 5)),
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 2.42f, rightSize.height / 5.735f)),
 			NULL
 		);
-		attacker_repeat_smallquake[1] = Repeat::create(attackermove2b, continuity1);
+		attacker_repeat_smallquake[1] = Repeat::create(attackermove2b, continuity_few);
 		//揺らす処理剣士,3b
 		auto attackermove3b = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.87f, rightSize.height / 5.735f + 5)),
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.87f, rightSize.height / 5.735f)),
 			NULL
 		);
-		attacker_repeat_smallquake[2] = Repeat::create(attackermove3b, continuity1);
+		attacker_repeat_smallquake[2] = Repeat::create(attackermove3b, continuity_few);
 		//揺らす処理剣士,4b
 		auto attackermove4b = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 2.18f, rightSize.height / 6.7f + 5)),
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 2.18f, rightSize.height / 6.7f)),
 			NULL
 		);
-		attacker_repeat_smallquake[3] = Repeat::create(attackermove4b, continuity1);
+		attacker_repeat_smallquake[3] = Repeat::create(attackermove4b, continuity_few);
 		//揺らす処理剣士,5b
 		auto attackermove5b = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 2.08f, rightSize.height / 6.3f + 5)),
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 2.08f, rightSize.height / 6.3f)),
 			NULL
 		);
-		attacker_repeat_smallquake[4] = Repeat::create(attackermove5b, continuity1);
+		attacker_repeat_smallquake[4] = Repeat::create(attackermove5b, continuity_few);
 		//揺らす処理剣士,6b
 		auto attackermove6b = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.77f, rightSize.height / 6.7f + 5)),
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.77f, rightSize.height / 6.7f)),
 			NULL
 		);
-		attacker_repeat_smallquake[5] = Repeat::create(attackermove6b, continuity1);
+		attacker_repeat_smallquake[5] = Repeat::create(attackermove6b, continuity_few);
 		//揺らす処理剣士,7b
 		auto attackermove7b = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.7f, rightSize.height / 6.3f + 5)),
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.7f, rightSize.height / 6.3f)),
 			NULL
 		);
-		attacker_repeat_smallquake[6] = Repeat::create(attackermove7b, continuity1);
+		attacker_repeat_smallquake[6] = Repeat::create(attackermove7b, continuity_few);
 	}
 	//pl3frame.choisjobが剣士の場合
 	if (pl3frame.choicejob == ATTACKER) {
@@ -5882,7 +6426,7 @@ void BossScene::Damage()
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.32f, rightSize.height / 5)),
 			NULL
 		);
-		attacker_repeat_bigquake[0] = Repeat::create(attackermove1a, continuity1);
+		attacker_repeat_bigquake[0] = Repeat::create(attackermove1a, continuity_few);
 		//揺らす処理剣士,2a
 		auto attackermove2a = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.489f, rightSize.height / 5.73f + 5)),
@@ -5893,7 +6437,7 @@ void BossScene::Damage()
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.489f, rightSize.height / 5.73f)),
 			NULL
 		);
-		attacker_repeat_bigquake[1] = Repeat::create(attackermove2a, continuity1);
+		attacker_repeat_bigquake[1] = Repeat::create(attackermove2a, continuity_few);
 		//揺らす処理剣士,3a
 		auto attackermove3a = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.265f, rightSize.height / 5.73f + 5)),
@@ -5904,7 +6448,7 @@ void BossScene::Damage()
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.265f, rightSize.height / 5.73f)),
 			NULL
 		);
-		attacker_repeat_bigquake[2] = Repeat::create(attackermove3a, continuity1);
+		attacker_repeat_bigquake[2] = Repeat::create(attackermove3a, continuity_few);
 		//揺らす処理剣士,4a
 		auto attackermove4a = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.39f, rightSize.height / 6.7f + 5)),
@@ -5915,7 +6459,7 @@ void BossScene::Damage()
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.39f, rightSize.height / 6.7f)),
 			NULL
 		);
-		attacker_repeat_bigquake[3] = Repeat::create(attackermove4a, continuity1);
+		attacker_repeat_bigquake[3] = Repeat::create(attackermove4a, continuity_few);
 		//揺らす処理剣士,5a
 		auto attackermove5a = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.35f, rightSize.height / 6.3f + 5)),
@@ -5926,7 +6470,7 @@ void BossScene::Damage()
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.35f, rightSize.height / 6.3f)),
 			NULL
 		);
-		attacker_repeat_bigquake[4] = Repeat::create(attackermove5a, continuity1);
+		attacker_repeat_bigquake[4] = Repeat::create(attackermove5a, continuity_few);
 		//揺らす処理剣士,6a
 		auto attackermove6a = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.21f, rightSize.height / 6.7f + 5)),
@@ -5937,7 +6481,7 @@ void BossScene::Damage()
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.21f, rightSize.height / 6.7f)),
 			NULL
 		);
-		attacker_repeat_bigquake[5] = Repeat::create(attackermove6a, continuity1);
+		attacker_repeat_bigquake[5] = Repeat::create(attackermove6a, continuity_few);
 		//揺らす処理剣士,7a
 		auto attackermove7a = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.18f, rightSize.height / 6.3f + 5)),
@@ -5948,7 +6492,7 @@ void BossScene::Damage()
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.18f, rightSize.height / 6.3f)),
 			NULL
 		);
-		attacker_repeat_bigquake[6] = Repeat::create(attackermove7a, continuity1);
+		attacker_repeat_bigquake[6] = Repeat::create(attackermove7a, continuity_few);
 		//揺れが小さいやつ
 		//揺らす処理剣士,1b
 		auto attackermove1b = CCSequence::create(
@@ -5956,49 +6500,49 @@ void BossScene::Damage()
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.32f, rightSize.height / 5)),
 			NULL
 		);
-		attacker_repeat_smallquake[0] = Repeat::create(attackermove1b, continuity1);
+		attacker_repeat_smallquake[0] = Repeat::create(attackermove1b, continuity_few);
 		//揺らす処理剣士,2b
 		auto attackermove2b = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.489f, rightSize.height / 5.73f + 5)),
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.489f, rightSize.height / 5.73f)),
 			NULL
 		);
-		attacker_repeat_smallquake[1] = Repeat::create(attackermove2b, continuity1);
+		attacker_repeat_smallquake[1] = Repeat::create(attackermove2b, continuity_few);
 		//揺らす処理剣士,3b
 		auto attackermove3b = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.265f, rightSize.height / 5.73f + 5)),
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.265f, rightSize.height / 5.73f)),
 			NULL
 		);
-		attacker_repeat_smallquake[2] = Repeat::create(attackermove3b, continuity1);
+		attacker_repeat_smallquake[2] = Repeat::create(attackermove3b, continuity_few);
 		//揺らす処理剣士,4b
 		auto attackermove4b = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.39f, rightSize.height / 6.7f + 5)),
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.39f, rightSize.height / 6.7f)),
 			NULL
 		);
-		attacker_repeat_smallquake[3] = Repeat::create(attackermove4b, continuity1);
+		attacker_repeat_smallquake[3] = Repeat::create(attackermove4b, continuity_few);
 		//揺らす処理剣士,5b
 		auto attackermove5b = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.35f, rightSize.height / 6.3f + 5)),
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.35f, rightSize.height / 6.3f)),
 			NULL
 		);
-		attacker_repeat_smallquake[4] = Repeat::create(attackermove5b, continuity1);
+		attacker_repeat_smallquake[4] = Repeat::create(attackermove5b, continuity_few);
 		//揺らす処理剣士,6b
 		auto attackermove6b = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.21f, rightSize.height / 6.7f + 5)),
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.21f, rightSize.height / 6.7f)),
 			NULL
 		);
-		attacker_repeat_smallquake[5] = Repeat::create(attackermove6b, continuity1);
+		attacker_repeat_smallquake[5] = Repeat::create(attackermove6b, continuity_few);
 		//揺らす処理剣士,7b
 		auto attackermove7b = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.18f, rightSize.height / 6.3f + 5)),
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.18f, rightSize.height / 6.3f)),
 			NULL
 		);
-		attacker_repeat_smallquake[6] = Repeat::create(attackermove7b, continuity1);
+		attacker_repeat_smallquake[6] = Repeat::create(attackermove7b, continuity_few);
 	}
 //騎士
 	//shieldframe.choisjobが騎士の場合
@@ -6014,7 +6558,7 @@ void BossScene::Damage()
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 4.1f, rightSize.height / 5)),
 			NULL
 		);
-		shield_repeat_bigquake[0] = Repeat::create(shieldmove1a, continuity1);
+		shield_repeat_bigquake[0] = Repeat::create(shieldmove1a, continuity_few);
 		//揺らす処理騎士,2a
 		auto shieldmove2a = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 6.32f, rightSize.height / 5.73f + 5)),
@@ -6025,7 +6569,7 @@ void BossScene::Damage()
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 6.32f, rightSize.height / 5.73f)),
 			NULL
 		);
-		shield_repeat_bigquake[1] = Repeat::create(shieldmove2a, continuity1);
+		shield_repeat_bigquake[1] = Repeat::create(shieldmove2a, continuity_few);
 		//揺らす処理騎士,3a
 		auto shieldmove3a = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 3.6f, rightSize.height / 5.73f + 5)),
@@ -6036,7 +6580,7 @@ void BossScene::Damage()
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 3.6f, rightSize.height / 5.73f)),
 			NULL
 		);
-		shield_repeat_bigquake[2] = Repeat::create(shieldmove3a, continuity1);
+		shield_repeat_bigquake[2] = Repeat::create(shieldmove3a, continuity_few);
 		//揺らす処理騎士,4a
 		auto shieldmove4a = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 5.0f, rightSize.height / 6.7f)),
@@ -6047,7 +6591,7 @@ void BossScene::Damage()
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 5.0f, rightSize.height / 6.7f)),
 			NULL
 		);
-		shield_repeat_bigquake[3] = Repeat::create(shieldmove4a, continuity1);
+		shield_repeat_bigquake[3] = Repeat::create(shieldmove4a, continuity_few);
 		//揺らす処理騎士,5a
 		auto shieldmove5a = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 4.5f, rightSize.height / 6.3f)),
@@ -6058,7 +6602,7 @@ void BossScene::Damage()
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 4.5f, rightSize.height / 6.3f)),
 			NULL
 		);
-		shield_repeat_bigquake[4] = Repeat::create(shieldmove5a, continuity1);
+		shield_repeat_bigquake[4] = Repeat::create(shieldmove5a, continuity_few);
 		//揺らす処理騎士,6a
 		auto shieldmove6a = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 3.22f, rightSize.height / 6.7f)),
@@ -6069,7 +6613,7 @@ void BossScene::Damage()
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 3.22f, rightSize.height / 6.7f)),
 			NULL
 		);
-		shield_repeat_bigquake[5] = Repeat::create(shieldmove6a, continuity1);
+		shield_repeat_bigquake[5] = Repeat::create(shieldmove6a, continuity_few);
 		//揺らす処理騎士,7a
 		auto shieldmove7a = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 3.0f, rightSize.height / 6.3f)),
@@ -6080,7 +6624,7 @@ void BossScene::Damage()
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 3.0f, rightSize.height / 6.3f)),
 			NULL
 		);
-		shield_repeat_bigquake[6] = Repeat::create(shieldmove7a, continuity1);
+		shield_repeat_bigquake[6] = Repeat::create(shieldmove7a, continuity_few);
 		//揺れ幅が小さいやつ
 		//揺らす処理騎士,1b
 		auto shieldmove1b = CCSequence::create(
@@ -6088,49 +6632,49 @@ void BossScene::Damage()
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 4.1f, rightSize.height / 5)),
 			NULL
 		);
-		shield_repeat_smallquake[0] = Repeat::create(shieldmove1b, continuity1);
+		shield_repeat_smallquake[0] = Repeat::create(shieldmove1b, continuity_few);
 		//揺らす処理騎士,2b
 		auto shieldmove2b = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 6.32f, rightSize.height / 5.73f + 5)),
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 6.32f, rightSize.height / 5.73f)),
 			NULL
 		);
-		shield_repeat_smallquake[1] = Repeat::create(shieldmove2b, continuity1);
+		shield_repeat_smallquake[1] = Repeat::create(shieldmove2b, continuity_few);
 		//揺らす処理騎士,3b
 		auto shieldmove3b = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 3.6f, rightSize.height / 5.73f + 5)),
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 3.6f, rightSize.height / 5.73f)),
 			NULL
 		);
-		shield_repeat_smallquake[2] = Repeat::create(shieldmove3b, continuity1);
+		shield_repeat_smallquake[2] = Repeat::create(shieldmove3b, continuity_few);
 		//揺らす処理騎士,4b
 		auto shieldmove4b = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 5.0f, rightSize.height / 6.7f + 5)),
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 5.0f, rightSize.height / 6.7f)),
 			NULL
 		);
-		shield_repeat_smallquake[3] = Repeat::create(shieldmove4b, continuity1);
+		shield_repeat_smallquake[3] = Repeat::create(shieldmove4b, continuity_few);
 		//揺らす処理騎士,5b
 		auto shieldmove5b = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 4.5f, rightSize.height / 6.3f + 5)),
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 4.5f, rightSize.height / 6.3f)),
 			NULL
 		);
-		shield_repeat_smallquake[4] = Repeat::create(shieldmove5b, continuity1);
+		shield_repeat_smallquake[4] = Repeat::create(shieldmove5b, continuity_few);
 		//揺らす処理騎士,6b
 		auto shieldmove6b = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 3.22f, rightSize.height / 6.7f + 5)),
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 3.22f, rightSize.height / 6.7f)),
 			NULL
 		);
-		shield_repeat_smallquake[5] = Repeat::create(shieldmove6b, continuity1);
+		shield_repeat_smallquake[5] = Repeat::create(shieldmove6b, continuity_few);
 		//揺らす処理騎士,7b
 		auto shieldmove7b = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 3.0f, rightSize.height / 6.3f + 5)),
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 3.0f, rightSize.height / 6.3f)),
 			NULL
 		);
-		shield_repeat_smallquake[6] = Repeat::create(shieldmove7b, continuity1);
+		shield_repeat_smallquake[6] = Repeat::create(shieldmove7b, continuity_few);
 	}
 	//pl2frame.choisjobが騎士の場合
 	if (pl2frame.choicejob == SHIELD) {
@@ -6145,7 +6689,7 @@ void BossScene::Damage()
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 2, rightSize.height / 5)),
 			NULL
 		);
-		shield_repeat_bigquake[0] = Repeat::create(shieldmove1a, continuity1);
+		shield_repeat_bigquake[0] = Repeat::create(shieldmove1a, continuity_few);
 		//揺らす処理騎士,2a
 		auto shieldmove2a = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 2.42f, rightSize.height / 5.735f + 5)),
@@ -6156,7 +6700,7 @@ void BossScene::Damage()
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 2.42f, rightSize.height / 5.735f)),
 			NULL
 		);
-		shield_repeat_bigquake[1] = Repeat::create(shieldmove2a, continuity1);
+		shield_repeat_bigquake[1] = Repeat::create(shieldmove2a, continuity_few);
 		//揺らす処理騎士,3a
 		auto shieldmove3a = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.87f, rightSize.height / 5.735f + 5)),
@@ -6167,7 +6711,7 @@ void BossScene::Damage()
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.87f, rightSize.height / 5.735f)),
 			NULL
 		);
-		shield_repeat_bigquake[2] = Repeat::create(shieldmove3a, continuity1);
+		shield_repeat_bigquake[2] = Repeat::create(shieldmove3a, continuity_few);
 		//揺らす処理騎士,4a
 		auto shieldmove4a = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 2.18f, rightSize.height / 6.7f + 5)),
@@ -6178,7 +6722,7 @@ void BossScene::Damage()
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 2.18f, rightSize.height / 6.7f)),
 			NULL
 		);
-		shield_repeat_bigquake[3] = Repeat::create(shieldmove4a, continuity1);
+		shield_repeat_bigquake[3] = Repeat::create(shieldmove4a, continuity_few);
 		//揺らす処理騎士,5a
 		auto shieldmove5a = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 2.08f, rightSize.height / 6.3f + 5)),
@@ -6189,7 +6733,7 @@ void BossScene::Damage()
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 2.08f, rightSize.height / 6.3f)),
 			NULL
 		);
-		shield_repeat_bigquake[4] = Repeat::create(shieldmove5a, continuity1);
+		shield_repeat_bigquake[4] = Repeat::create(shieldmove5a, continuity_few);
 		//揺らす処理騎士,6a
 		auto shieldmove6a = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.77f, rightSize.height / 6.7f + 5)),
@@ -6200,7 +6744,7 @@ void BossScene::Damage()
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.77f, rightSize.height / 6.7f)),
 			NULL
 		);
-		shield_repeat_bigquake[5] = Repeat::create(shieldmove6a, continuity1);
+		shield_repeat_bigquake[5] = Repeat::create(shieldmove6a, continuity_few);
 		//揺らす処理騎士,7a
 		auto shieldmove7a = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.7f, rightSize.height / 6.3f + 5)),
@@ -6211,7 +6755,7 @@ void BossScene::Damage()
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.7f, rightSize.height / 6.3f)),
 			NULL
 		);
-		shield_repeat_bigquake[6] = Repeat::create(shieldmove7a, continuity1);
+		shield_repeat_bigquake[6] = Repeat::create(shieldmove7a, continuity_few);
 		//揺れ幅が小さいやつ
 		//揺らす処理騎士,1b
 		auto shieldmove1b = CCSequence::create(
@@ -6219,49 +6763,49 @@ void BossScene::Damage()
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 2, rightSize.height / 5)),
 			NULL
 		);
-		shield_repeat_smallquake[0] = Repeat::create(shieldmove1b, continuity1);
+		shield_repeat_smallquake[0] = Repeat::create(shieldmove1b, continuity_few);
 		//揺らす処理騎士,2b
 		auto shieldmove2b = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 2.42f, rightSize.height / 5.735f + 5)),
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 2.42f, rightSize.height / 5.735f)),
 			NULL
 		);
-		shield_repeat_smallquake[1] = Repeat::create(shieldmove2b, continuity1);
+		shield_repeat_smallquake[1] = Repeat::create(shieldmove2b, continuity_few);
 		//揺らす処理騎士,3b
 		auto shieldmove3b = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.87f, rightSize.height / 5.735f + 5)),
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.87f, rightSize.height / 5.735f)),
 			NULL
 		);
-		shield_repeat_smallquake[2] = Repeat::create(shieldmove3b, continuity1);
+		shield_repeat_smallquake[2] = Repeat::create(shieldmove3b, continuity_few);
 		//揺らす処理騎士,4b
 		auto shieldmove4b = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 2.18f, rightSize.height / 6.7f + 5)),
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 2.18f, rightSize.height / 6.7f)),
 			NULL
 		);
-		shield_repeat_smallquake[3] = Repeat::create(shieldmove4b, continuity1);
+		shield_repeat_smallquake[3] = Repeat::create(shieldmove4b, continuity_few);
 		//揺らす処理騎士,5b
 		auto shieldmove5b = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 2.08f, rightSize.height / 6.3f + 5)),
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 2.08f, rightSize.height / 6.3f)),
 			NULL
 		);
-		shield_repeat_smallquake[4] = Repeat::create(shieldmove5b, continuity1);
+		shield_repeat_smallquake[4] = Repeat::create(shieldmove5b, continuity_few);
 		//揺らす処理騎士,6b
 		auto shieldmove6b = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.77f, rightSize.height / 6.7f + 5)),
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.77f, rightSize.height / 6.7f)),
 			NULL
 		);
-		shield_repeat_smallquake[5] = Repeat::create(shieldmove6b, continuity1);
+		shield_repeat_smallquake[5] = Repeat::create(shieldmove6b, continuity_few);
 		//揺らす処理騎士,7b
 		auto shieldmove7b = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.7f, rightSize.height / 6.3f + 5)),
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.7f, rightSize.height / 6.3f)),
 			NULL
 		);
-		shield_repeat_smallquake[6] = Repeat::create(shieldmove7b, continuity1);
+		shield_repeat_smallquake[6] = Repeat::create(shieldmove7b, continuity_few);
 	}
 	//pl3frame.choisjobが騎士の場合
 	if (pl3frame.choicejob == SHIELD) {
@@ -6276,7 +6820,7 @@ void BossScene::Damage()
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.32f, rightSize.height / 5)),
 			NULL
 		);
-		shield_repeat_bigquake[0] = Repeat::create(shieldmove1a, continuity1);
+		shield_repeat_bigquake[0] = Repeat::create(shieldmove1a, continuity_few);
 		//揺らす処理騎士,2a
 		auto shieldmove2a = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.489f, rightSize.height / 5.73f + 5)),
@@ -6287,7 +6831,7 @@ void BossScene::Damage()
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.489f, rightSize.height / 5.73f)),
 			NULL
 		);
-		shield_repeat_bigquake[1] = Repeat::create(shieldmove2a, continuity1);
+		shield_repeat_bigquake[1] = Repeat::create(shieldmove2a, continuity_few);
 		//揺らす処理騎士,3a
 		auto shieldmove3a = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.265f, rightSize.height / 5.73f + 5)),
@@ -6298,7 +6842,7 @@ void BossScene::Damage()
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.265f, rightSize.height / 5.73f)),
 			NULL
 		);
-		shield_repeat_bigquake[2] = Repeat::create(shieldmove3a, continuity1);
+		shield_repeat_bigquake[2] = Repeat::create(shieldmove3a, continuity_few);
 		//揺らす処理騎士,4a
 		auto shieldmove4a = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.39f, rightSize.height / 6.7f + 5)),
@@ -6309,7 +6853,7 @@ void BossScene::Damage()
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.39f, rightSize.height / 6.7f)),
 			NULL
 		);
-		shield_repeat_bigquake[3] = Repeat::create(shieldmove4a, continuity1);
+		shield_repeat_bigquake[3] = Repeat::create(shieldmove4a, continuity_few);
 		//揺らす処理騎士,5a
 		auto shieldmove5a = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.35f, rightSize.height / 6.3f + 5)),
@@ -6320,7 +6864,7 @@ void BossScene::Damage()
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.35f, rightSize.height / 6.3f)),
 			NULL
 		);
-		shield_repeat_bigquake[4] = Repeat::create(shieldmove5a, continuity1);
+		shield_repeat_bigquake[4] = Repeat::create(shieldmove5a, continuity_few);
 		//揺らす処理騎士,6a
 		auto shieldmove6a = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.21f, rightSize.height / 6.7f + 5)),
@@ -6331,7 +6875,7 @@ void BossScene::Damage()
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.21f, rightSize.height / 6.7f)),
 			NULL
 		);
-		shield_repeat_bigquake[5] = Repeat::create(shieldmove6a, continuity1);
+		shield_repeat_bigquake[5] = Repeat::create(shieldmove6a, continuity_few);
 		//揺らす処理騎士,7a
 		auto shieldmove7a = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.18f, rightSize.height / 6.3f + 5)),
@@ -6342,7 +6886,7 @@ void BossScene::Damage()
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.18f, rightSize.height / 6.3f)),
 			NULL
 		);
-		shield_repeat_bigquake[6] = Repeat::create(shieldmove7a, continuity1);
+		shield_repeat_bigquake[6] = Repeat::create(shieldmove7a, continuity_few);
 		//揺れが小さいやつ
 		//揺らす処理騎士,1b
 		auto shieldmove1b = CCSequence::create(
@@ -6350,49 +6894,49 @@ void BossScene::Damage()
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.32f, rightSize.height / 5)),
 			NULL
 		);
-		shield_repeat_smallquake[0] = Repeat::create(shieldmove1b, continuity1);
+		shield_repeat_smallquake[0] = Repeat::create(shieldmove1b, continuity_few);
 		//揺らす処理騎士,2b
 		auto shieldmove2b = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.489f, rightSize.height / 5.73f + 5)),
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.489f, rightSize.height / 5.73f)),
 			NULL
 		);
-		shield_repeat_smallquake[1] = Repeat::create(shieldmove2b, continuity1);
+		shield_repeat_smallquake[1] = Repeat::create(shieldmove2b, continuity_few);
 		//揺らす処理騎士,3b
 		auto shieldmove3b = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.265f, rightSize.height / 5.73f + 5)),
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.265f, rightSize.height / 5.73f)),
 			NULL
 		);
-		shield_repeat_smallquake[2] = Repeat::create(shieldmove3b, continuity1);
+		shield_repeat_smallquake[2] = Repeat::create(shieldmove3b, continuity_few);
 		//揺らす処理騎士,4b
 		auto shieldmove4b = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.39f, rightSize.height / 6.7f + 5)),
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.39f, rightSize.height / 6.7f)),
 			NULL
 		);
-		shield_repeat_smallquake[3] = Repeat::create(shieldmove4b, continuity1);
+		shield_repeat_smallquake[3] = Repeat::create(shieldmove4b, continuity_few);
 		//揺らす処理騎士,5b
 		auto shieldmove5b = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.35f, rightSize.height / 6.3f + 5)),
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.35f, rightSize.height / 6.3f)),
 			NULL
 		);
-		shield_repeat_smallquake[4] = Repeat::create(shieldmove5b, continuity1);
+		shield_repeat_smallquake[4] = Repeat::create(shieldmove5b, continuity_few);
 		//揺らす処理騎士,6b
 		auto shieldmove6b = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.21f, rightSize.height / 6.7f + 5)),
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.21f, rightSize.height / 6.7f)),
 			NULL
 		);
-		shield_repeat_smallquake[5] = Repeat::create(shieldmove6b, continuity1);
+		shield_repeat_smallquake[5] = Repeat::create(shieldmove6b, continuity_few);
 		//揺らす処理騎士,7b
 		auto shieldmove7b = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.18f, rightSize.height / 6.3f + 5)),
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.18f, rightSize.height / 6.3f)),
 			NULL
 		);
-		shield_repeat_smallquake[6] = Repeat::create(shieldmove7b, continuity1);
+		shield_repeat_smallquake[6] = Repeat::create(shieldmove7b, continuity_few);
 	}
 //魔術師
 	//pl1frame.choisjobが魔術師の場合
@@ -6408,7 +6952,7 @@ void BossScene::Damage()
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 4.1f, rightSize.height / 5)),
 			NULL
 		);
-		magic_repeat_bigquake[0] = Repeat::create(magicmove1a, continuity1);
+		magic_repeat_bigquake[0] = Repeat::create(magicmove1a, continuity_few);
 		//揺らす処理魔術師,2a
 		auto magicmove2a = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 6.32f, rightSize.height / 5.73f + 5)),
@@ -6419,7 +6963,7 @@ void BossScene::Damage()
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 6.32f, rightSize.height / 5.73f)),
 			NULL
 		);
-		magic_repeat_bigquake[1] = Repeat::create(magicmove2a, continuity1);
+		magic_repeat_bigquake[1] = Repeat::create(magicmove2a, continuity_few);
 		//揺らす処理魔術師,3a
 		auto magicmove3a = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 3.6f, rightSize.height / 5.73f + 5)),
@@ -6430,7 +6974,7 @@ void BossScene::Damage()
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 3.6f, rightSize.height / 5.73f)),
 			NULL
 		);
-		magic_repeat_bigquake[2] = Repeat::create(magicmove3a, continuity1);
+		magic_repeat_bigquake[2] = Repeat::create(magicmove3a, continuity_few);
 		//揺らす処理魔術師,4a
 		auto magicmove4a = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 5.0f, rightSize.height / 6.7f)),
@@ -6441,7 +6985,7 @@ void BossScene::Damage()
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 5.0f, rightSize.height / 6.7f)),
 			NULL
 		);
-		magic_repeat_bigquake[3] = Repeat::create(magicmove4a, continuity1);
+		magic_repeat_bigquake[3] = Repeat::create(magicmove4a, continuity_few);
 		//揺らす処理魔術師,5a
 		auto magicmove5a = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 4.5f, rightSize.height / 6.3f)),
@@ -6452,7 +6996,7 @@ void BossScene::Damage()
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 4.5f, rightSize.height / 6.3f)),
 			NULL
 		);
-		magic_repeat_bigquake[4] = Repeat::create(magicmove5a, continuity1);
+		magic_repeat_bigquake[4] = Repeat::create(magicmove5a, continuity_few);
 		//揺らす処理魔術師,6a
 		auto magicmove6a = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 3.22f, rightSize.height / 6.7f)),
@@ -6463,7 +7007,7 @@ void BossScene::Damage()
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 3.22f, rightSize.height / 6.7f)),
 			NULL
 		);
-		magic_repeat_bigquake[5] = Repeat::create(magicmove6a, continuity1);
+		magic_repeat_bigquake[5] = Repeat::create(magicmove6a, continuity_few);
 		//揺らす処理魔術師,7a
 		auto magicmove7a = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 3.0f, rightSize.height / 6.3f)),
@@ -6474,7 +7018,7 @@ void BossScene::Damage()
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 3.0f, rightSize.height / 6.3f)),
 			NULL
 		);
-		magic_repeat_bigquake[6] = Repeat::create(magicmove7a, continuity1);
+		magic_repeat_bigquake[6] = Repeat::create(magicmove7a, continuity_few);
 		//揺れ幅が小さいやつ
 		//揺らす処理魔術師,1b
 		auto magicmove1b = CCSequence::create(
@@ -6482,49 +7026,49 @@ void BossScene::Damage()
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 4.1f, rightSize.height / 5)),
 			NULL
 		);
-		magic_repeat_smallquake[0] = Repeat::create(magicmove1b, continuity1);
+		magic_repeat_smallquake[0] = Repeat::create(magicmove1b, continuity_few);
 		//揺らす処理魔術師,2b
 		auto magicmove2b = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 6.32f, rightSize.height / 5.73f + 5)),
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 6.32f, rightSize.height / 5.73f)),
 			NULL
 		);
-		magic_repeat_smallquake[1] = Repeat::create(magicmove2b, continuity1);
+		magic_repeat_smallquake[1] = Repeat::create(magicmove2b, continuity_few);
 		//揺らす処理魔術師,3b
 		auto magicmove3b = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 3.6f, rightSize.height / 5.73f + 5)),
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 3.6f, rightSize.height / 5.73f)),
 			NULL
 		);
-		magic_repeat_smallquake[2] = Repeat::create(magicmove3b, continuity1);
+		magic_repeat_smallquake[2] = Repeat::create(magicmove3b, continuity_few);
 		//揺らす処理魔術師,4b
 		auto magicmove4b = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 5.0f, rightSize.height / 6.7f + 5)),
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 5.0f, rightSize.height / 6.7f)),
 			NULL
 		);
-		magic_repeat_smallquake[3] = Repeat::create(magicmove4b, continuity1);
+		magic_repeat_smallquake[3] = Repeat::create(magicmove4b, continuity_few);
 		//揺らす処理魔術師,5b
 		auto magicmove5b = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 4.5f, rightSize.height / 6.3f + 5)),
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 4.5f, rightSize.height / 6.3f)),
 			NULL
 		);
-		magic_repeat_smallquake[4] = Repeat::create(magicmove5b, continuity1);
+		magic_repeat_smallquake[4] = Repeat::create(magicmove5b, continuity_few);
 		//揺らす処理魔術師,6b
 		auto magicmove6b = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 3.22f, rightSize.height / 6.7f + 5)),
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 3.22f, rightSize.height / 6.7f)),
 			NULL
 		);
-		magic_repeat_smallquake[5] = Repeat::create(magicmove6b, continuity1);
+		magic_repeat_smallquake[5] = Repeat::create(magicmove6b, continuity_few);
 		//揺らす処理魔術師,7b
 		auto magicmove7b = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 3.0f, rightSize.height / 6.3f + 5)),
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 3.0f, rightSize.height / 6.3f)),
 			NULL
 		);
-		magic_repeat_smallquake[6] = Repeat::create(magicmove7b, continuity1);
+		magic_repeat_smallquake[6] = Repeat::create(magicmove7b, continuity_few);
 	}
 	//pl2frame.choisjobが魔術師の場合
 	if (pl2frame.choicejob == MAGIC) {
@@ -6539,7 +7083,7 @@ void BossScene::Damage()
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 2, rightSize.height / 5)),
 			NULL
 		);
-		magic_repeat_bigquake[0] = Repeat::create(magicmove1a, continuity1);
+		magic_repeat_bigquake[0] = Repeat::create(magicmove1a, continuity_few);
 		//揺らす処理魔術師,2a
 		auto magicmove2a = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 2.42f, rightSize.height / 5.735f + 5)),
@@ -6550,7 +7094,7 @@ void BossScene::Damage()
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 2.42f, rightSize.height / 5.735f)),
 			NULL
 		);
-		magic_repeat_bigquake[1] = Repeat::create(magicmove2a, continuity1);
+		magic_repeat_bigquake[1] = Repeat::create(magicmove2a, continuity_few);
 		//揺らす処理魔術師,3a
 		auto magicmove3a = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.87f, rightSize.height / 5.735f + 5)),
@@ -6561,7 +7105,7 @@ void BossScene::Damage()
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.87f, rightSize.height / 5.735f)),
 			NULL
 		);
-		magic_repeat_bigquake[2] = Repeat::create(magicmove3a, continuity1);
+		magic_repeat_bigquake[2] = Repeat::create(magicmove3a, continuity_few);
 		//揺らす処理魔術師,4a
 		auto magicmove4a = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 2.18f, rightSize.height / 6.7f + 5)),
@@ -6572,7 +7116,7 @@ void BossScene::Damage()
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 2.18f, rightSize.height / 6.7f)),
 			NULL
 		);
-		magic_repeat_bigquake[3] = Repeat::create(magicmove4a, continuity1);
+		magic_repeat_bigquake[3] = Repeat::create(magicmove4a, continuity_few);
 		//揺らす処理魔術師,5a
 		auto magicmove5a = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 2.08f, rightSize.height / 6.3f + 5)),
@@ -6583,7 +7127,7 @@ void BossScene::Damage()
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 2.08f, rightSize.height / 6.3f)),
 			NULL
 		);
-		magic_repeat_bigquake[4] = Repeat::create(magicmove5a, continuity1);
+		magic_repeat_bigquake[4] = Repeat::create(magicmove5a, continuity_few);
 		//揺らす処理魔術師,6a
 		auto magicmove6a = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.77f, rightSize.height / 6.7f + 5)),
@@ -6594,7 +7138,7 @@ void BossScene::Damage()
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.77f, rightSize.height / 6.7f)),
 			NULL
 		);
-		magic_repeat_bigquake[5] = Repeat::create(magicmove6a, continuity1);
+		magic_repeat_bigquake[5] = Repeat::create(magicmove6a, continuity_few);
 		//揺らす処理魔術師,7a
 		auto magicmove7a = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.7f, rightSize.height / 6.3f + 5)),
@@ -6605,7 +7149,7 @@ void BossScene::Damage()
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.7f, rightSize.height / 6.3f)),
 			NULL
 		);
-		magic_repeat_bigquake[6] = Repeat::create(magicmove7a, continuity1);
+		magic_repeat_bigquake[6] = Repeat::create(magicmove7a, continuity_few);
 		//揺れ幅が小さいやつ
 		//揺らす処理魔術師,1b
 		auto magicmove1b = CCSequence::create(
@@ -6613,49 +7157,49 @@ void BossScene::Damage()
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 2, rightSize.height / 5)),
 			NULL
 		);
-		magic_repeat_smallquake[0] = Repeat::create(magicmove1b, continuity1);
+		magic_repeat_smallquake[0] = Repeat::create(magicmove1b, continuity_few);
 		//揺らす処理魔術師,2b
 		auto magicmove2b = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 2.42f, rightSize.height / 5.735f + 5)),
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 2.42f, rightSize.height / 5.735f)),
 			NULL
 		);
-		magic_repeat_smallquake[1] = Repeat::create(magicmove2b, continuity1);
+		magic_repeat_smallquake[1] = Repeat::create(magicmove2b, continuity_few);
 		//揺らす処理魔術師,3b
 		auto magicmove3b = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.87f, rightSize.height / 5.735f + 5)),
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.87f, rightSize.height / 5.735f)),
 			NULL
 		);
-		magic_repeat_smallquake[2] = Repeat::create(magicmove3b, continuity1);
+		magic_repeat_smallquake[2] = Repeat::create(magicmove3b, continuity_few);
 		//揺らす処理魔術師,4b
 		auto magicmove4b = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 2.18f, rightSize.height / 6.7f + 5)),
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 2.18f, rightSize.height / 6.7f)),
 			NULL
 		);
-		magic_repeat_smallquake[3] = Repeat::create(magicmove4b, continuity1);
+		magic_repeat_smallquake[3] = Repeat::create(magicmove4b, continuity_few);
 		//揺らす処理魔術師,5b
 		auto magicmove5b = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 2.08f, rightSize.height / 6.3f + 5)),
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 2.08f, rightSize.height / 6.3f)),
 			NULL
 		);
-		magic_repeat_smallquake[4] = Repeat::create(magicmove5b, continuity1);
+		magic_repeat_smallquake[4] = Repeat::create(magicmove5b, continuity_few);
 		//揺らす処理魔術師,6b
 		auto magicmove6b = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.77f, rightSize.height / 6.7f + 5)),
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.77f, rightSize.height / 6.7f)),
 			NULL
 		);
-		magic_repeat_smallquake[5] = Repeat::create(magicmove6b, continuity1);
+		magic_repeat_smallquake[5] = Repeat::create(magicmove6b, continuity_few);
 		//揺らす処理魔術師,7b
 		auto magicmove7b = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.7f, rightSize.height / 6.3f + 5)),
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.7f, rightSize.height / 6.3f)),
 			NULL
 		);
-		magic_repeat_smallquake[6] = Repeat::create(magicmove7b, continuity1);
+		magic_repeat_smallquake[6] = Repeat::create(magicmove7b, continuity_few);
 	}
 	//magicframe.choisjobが魔術師の場合
 	if (pl3frame.choicejob == MAGIC) {
@@ -6670,7 +7214,7 @@ void BossScene::Damage()
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.32f, rightSize.height / 5)),
 			NULL
 		);
-		magic_repeat_bigquake[0] = Repeat::create(magicmove1a, continuity1);
+		magic_repeat_bigquake[0] = Repeat::create(magicmove1a, continuity_few);
 		//揺らす処理魔術師,2a
 		auto magicmove2a = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.489f, rightSize.height / 5.73f + 5)),
@@ -6681,7 +7225,7 @@ void BossScene::Damage()
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.489f, rightSize.height / 5.73f)),
 			NULL
 		);
-		magic_repeat_bigquake[1] = Repeat::create(magicmove2a, continuity1);
+		magic_repeat_bigquake[1] = Repeat::create(magicmove2a, continuity_few);
 		//揺らす処理魔術師,3a
 		auto magicmove3a = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.265f, rightSize.height / 5.73f + 5)),
@@ -6692,7 +7236,7 @@ void BossScene::Damage()
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.265f, rightSize.height / 5.73f)),
 			NULL
 		);
-		magic_repeat_bigquake[2] = Repeat::create(magicmove3a, continuity1);
+		magic_repeat_bigquake[2] = Repeat::create(magicmove3a, continuity_few);
 		//揺らす処理魔術師,4a
 		auto magicmove4a = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.39f, rightSize.height / 6.7f + 5)),
@@ -6703,7 +7247,7 @@ void BossScene::Damage()
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.39f, rightSize.height / 6.7f)),
 			NULL
 		);
-		magic_repeat_bigquake[3] = Repeat::create(magicmove4a, continuity1);
+		magic_repeat_bigquake[3] = Repeat::create(magicmove4a, continuity_few);
 		//揺らす処理魔術師,5a
 		auto magicmove5a = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.35f, rightSize.height / 6.3f + 5)),
@@ -6714,7 +7258,7 @@ void BossScene::Damage()
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.35f, rightSize.height / 6.3f)),
 			NULL
 		);
-		magic_repeat_bigquake[4] = Repeat::create(magicmove5a, continuity1);
+		magic_repeat_bigquake[4] = Repeat::create(magicmove5a, continuity_few);
 		//揺らす処理魔術師,6a
 		auto magicmove6a = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.21f, rightSize.height / 6.7f + 5)),
@@ -6725,7 +7269,7 @@ void BossScene::Damage()
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.21f, rightSize.height / 6.7f)),
 			NULL
 		);
-		magic_repeat_bigquake[5] = Repeat::create(magicmove6a, continuity1);
+		magic_repeat_bigquake[5] = Repeat::create(magicmove6a, continuity_few);
 		//揺らす処理魔術師,7a
 		auto magicmove7a = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.18f, rightSize.height / 6.3f + 5)),
@@ -6736,7 +7280,7 @@ void BossScene::Damage()
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.18f, rightSize.height / 6.3f)),
 			NULL
 		);
-		magic_repeat_bigquake[6] = Repeat::create(magicmove7a, continuity1);
+		magic_repeat_bigquake[6] = Repeat::create(magicmove7a, continuity_few);
 		//揺れが小さいやつ
 		//揺らす処理魔術師,1b
 		auto magicmove1b = CCSequence::create(
@@ -6744,49 +7288,49 @@ void BossScene::Damage()
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.32f, rightSize.height / 5)),
 			NULL
 		);
-		magic_repeat_smallquake[0] = Repeat::create(magicmove1b, continuity1);
+		magic_repeat_smallquake[0] = Repeat::create(magicmove1b, continuity_few);
 		//揺らす処理魔術師,2b
 		auto magicmove2b = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.489f, rightSize.height / 5.73f + 5)),
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.489f, rightSize.height / 5.73f)),
 			NULL
 		);
-		magic_repeat_smallquake[1] = Repeat::create(magicmove2b, continuity1);
+		magic_repeat_smallquake[1] = Repeat::create(magicmove2b, continuity_few);
 		//揺らす処理魔術師,3b
 		auto magicmove3b = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.265f, rightSize.height / 5.73f + 5)),
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.265f, rightSize.height / 5.73f)),
 			NULL
 		);
-		magic_repeat_smallquake[2] = Repeat::create(magicmove3b, continuity1);
+		magic_repeat_smallquake[2] = Repeat::create(magicmove3b, continuity_few);
 		//揺らす処理魔術師,4b
 		auto magicmove4b = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.39f, rightSize.height / 6.7f + 5)),
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.39f, rightSize.height / 6.7f)),
 			NULL
 		);
-		magic_repeat_smallquake[3] = Repeat::create(magicmove4b, continuity1);
+		magic_repeat_smallquake[3] = Repeat::create(magicmove4b, continuity_few);
 		//揺らす処理魔術師,5b
 		auto magicmove5b = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.35f, rightSize.height / 6.3f + 5)),
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.35f, rightSize.height / 6.3f)),
 			NULL
 		);
-		magic_repeat_smallquake[4] = Repeat::create(magicmove5b, continuity1);
+		magic_repeat_smallquake[4] = Repeat::create(magicmove5b, continuity_few);
 		//揺らす処理魔術師,6b
 		auto magicmove6b = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.21f, rightSize.height / 6.7f + 5)),
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.21f, rightSize.height / 6.7f)),
 			NULL
 		);
-		magic_repeat_smallquake[5] = Repeat::create(magicmove6b, continuity1);
+		magic_repeat_smallquake[5] = Repeat::create(magicmove6b, continuity_few);
 		//揺らす処理魔術師,7b
 		auto magicmove7b = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.18f, rightSize.height / 6.3f + 5)),
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.18f, rightSize.height / 6.3f)),
 			NULL
 		);
-		magic_repeat_smallquake[6] = Repeat::create(magicmove7b, continuity1);
+		magic_repeat_smallquake[6] = Repeat::create(magicmove7b, continuity_few);
 	}
 //聖職者
 	//healerframe.choisjobが聖職者の場合
@@ -6802,7 +7346,7 @@ void BossScene::Damage()
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 4.1f, rightSize.height / 5)),
 			NULL
 		);
-		healaer_repeat_smallquake[0] = Repeat::create(healermove1a, continuity1);
+		healaer_repeat_smallquake[0] = Repeat::create(healermove1a, continuity_few);
 		//揺らす処理聖職者,2a
 		auto healermove2a = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 6.32f, rightSize.height / 5.73f + 5)),
@@ -6813,7 +7357,7 @@ void BossScene::Damage()
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 6.32f, rightSize.height / 5.73f)),
 			NULL
 		);
-		healaer_repeat_smallquake[1] = Repeat::create(healermove2a, continuity1);
+		healaer_repeat_smallquake[1] = Repeat::create(healermove2a, continuity_few);
 		//揺らす処理聖職者,3a
 		auto healermove3a = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 3.6f, rightSize.height / 5.73f + 5)),
@@ -6824,7 +7368,7 @@ void BossScene::Damage()
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 3.6f, rightSize.height / 5.73f)),
 			NULL
 		);
-		healaer_repeat_smallquake[2] = Repeat::create(healermove3a, continuity1);
+		healaer_repeat_smallquake[2] = Repeat::create(healermove3a, continuity_few);
 		//揺らす処理聖職者,4a
 		auto healermove4a = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 5.0f, rightSize.height / 6.7f)),
@@ -6835,7 +7379,7 @@ void BossScene::Damage()
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 5.0f, rightSize.height / 6.7f)),
 			NULL
 		);
-		healaer_repeat_smallquake[3] = Repeat::create(healermove4a, continuity1);
+		healaer_repeat_smallquake[3] = Repeat::create(healermove4a, continuity_few);
 		//揺らす処理聖職者,5a
 		auto healermove5a = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 4.5f, rightSize.height / 6.3f)),
@@ -6846,7 +7390,7 @@ void BossScene::Damage()
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 4.5f, rightSize.height / 6.3f)),
 			NULL
 		);
-		healaer_repeat_smallquake[4] = Repeat::create(healermove5a, continuity1);
+		healaer_repeat_smallquake[4] = Repeat::create(healermove5a, continuity_few);
 		//揺らす処理聖職者,6a
 		auto healermove6a = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 3.22f, rightSize.height / 6.7f)),
@@ -6857,7 +7401,7 @@ void BossScene::Damage()
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 3.22f, rightSize.height / 6.7f)),
 			NULL
 		);
-		healaer_repeat_smallquake[5] = Repeat::create(healermove6a, continuity1);
+		healaer_repeat_smallquake[5] = Repeat::create(healermove6a, continuity_few);
 		//揺らす処理聖職者,7a
 		auto healermove7a = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 3.0f, rightSize.height / 6.3f)),
@@ -6868,7 +7412,7 @@ void BossScene::Damage()
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 3.0f, rightSize.height / 6.3f)),
 			NULL
 		);
-		healaer_repeat_smallquake[6] = Repeat::create(healermove7a, continuity1);
+		healaer_repeat_smallquake[6] = Repeat::create(healermove7a, continuity_few);
 		//揺れ幅が小さいやつ
 		//揺らす処理聖職者,1b
 		auto healermove1b = CCSequence::create(
@@ -6876,49 +7420,49 @@ void BossScene::Damage()
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 4.1f, rightSize.height / 5)),
 			NULL
 		);
-		healaer_repeat_bigquake[0] = Repeat::create(healermove1b, continuity1);
+		healaer_repeat_bigquake[0] = Repeat::create(healermove1b, continuity_few);
 		//揺らす処理聖職者,2b
 		auto healermove2b = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 6.32f, rightSize.height / 5.73f + 5)),
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 6.32f, rightSize.height / 5.73f)),
 			NULL
 		);
-		healaer_repeat_bigquake[1] = Repeat::create(healermove2b, continuity1);
+		healaer_repeat_bigquake[1] = Repeat::create(healermove2b, continuity_few);
 		//揺らす処理聖職者,3b
 		auto healermove3b = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 3.6f, rightSize.height / 5.73f + 5)),
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 3.6f, rightSize.height / 5.73f)),
 			NULL
 		);
-		healaer_repeat_bigquake[2] = Repeat::create(healermove3b, continuity1);
+		healaer_repeat_bigquake[2] = Repeat::create(healermove3b, continuity_few);
 		//揺らす処理聖職者,4b
 		auto healermove4b = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 5.0f, rightSize.height / 6.7f + 5)),
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 5.0f, rightSize.height / 6.7f)),
 			NULL
 		);
-		healaer_repeat_bigquake[3] = Repeat::create(healermove4b, continuity1);
+		healaer_repeat_bigquake[3] = Repeat::create(healermove4b, continuity_few);
 		//揺らす処理聖職者,5b
 		auto healermove5b = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 4.5f, rightSize.height / 6.3f + 5)),
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 4.5f, rightSize.height / 6.3f)),
 			NULL
 		);
-		healaer_repeat_bigquake[4] = Repeat::create(healermove5b, continuity1);
+		healaer_repeat_bigquake[4] = Repeat::create(healermove5b, continuity_few);
 		//揺らす処理聖職者,6b
 		auto healermove6b = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 3.22f, rightSize.height / 6.7f + 5)),
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 3.22f, rightSize.height / 6.7f)),
 			NULL
 		);
-		healaer_repeat_bigquake[5] = Repeat::create(healermove6b, continuity1);
+		healaer_repeat_bigquake[5] = Repeat::create(healermove6b, continuity_few);
 		//揺らす処理聖職者,7b
 		auto healermove7b = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 3.0f, rightSize.height / 6.3f + 5)),
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 3.0f, rightSize.height / 6.3f)),
 			NULL
 		);
-		healaer_repeat_bigquake[6] = Repeat::create(healermove7b, continuity1);
+		healaer_repeat_bigquake[6] = Repeat::create(healermove7b, continuity_few);
 	}
 	//healerframe.choisjobが聖職者の場合
 	if (pl2frame.choicejob == HEALER) {
@@ -6933,7 +7477,7 @@ void BossScene::Damage()
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 2, rightSize.height / 5)),
 			NULL
 		);
-		healaer_repeat_smallquake[0] = Repeat::create(healermove1a, continuity1);
+		healaer_repeat_smallquake[0] = Repeat::create(healermove1a, continuity_few);
 		//揺らす処理聖職者,2a
 		auto healermove2a = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 2.42f, rightSize.height / 5.735f + 5)),
@@ -6944,7 +7488,7 @@ void BossScene::Damage()
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 2.42f, rightSize.height / 5.735f)),
 			NULL
 		);
-		healaer_repeat_smallquake[1] = Repeat::create(healermove2a, continuity1);
+		healaer_repeat_smallquake[1] = Repeat::create(healermove2a, continuity_few);
 		//揺らす処理聖職者,3a
 		auto healermove3a = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.87f, rightSize.height / 5.735f + 5)),
@@ -6955,7 +7499,7 @@ void BossScene::Damage()
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.87f, rightSize.height / 5.735f)),
 			NULL
 		);
-		healaer_repeat_smallquake[2] = Repeat::create(healermove3a, continuity1);
+		healaer_repeat_smallquake[2] = Repeat::create(healermove3a, continuity_few);
 		//揺らす処理聖職者,4a
 		auto healermove4a = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 2.18f, rightSize.height / 6.7f + 5)),
@@ -6966,7 +7510,7 @@ void BossScene::Damage()
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 2.18f, rightSize.height / 6.7f)),
 			NULL
 		);
-		healaer_repeat_smallquake[3] = Repeat::create(healermove4a, continuity1);
+		healaer_repeat_smallquake[3] = Repeat::create(healermove4a, continuity_few);
 		//揺らす処理聖職者,5a
 		auto healermove5a = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 2.08f, rightSize.height / 6.3f + 5)),
@@ -6977,7 +7521,7 @@ void BossScene::Damage()
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 2.08f, rightSize.height / 6.3f)),
 			NULL
 		);
-		healaer_repeat_smallquake[4] = Repeat::create(healermove5a, continuity1);
+		healaer_repeat_smallquake[4] = Repeat::create(healermove5a, continuity_few);
 		//揺らす処理聖職者,6a
 		auto healermove6a = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.77f, rightSize.height / 6.7f + 5)),
@@ -6988,7 +7532,7 @@ void BossScene::Damage()
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.77f, rightSize.height / 6.7f)),
 			NULL
 		);
-		healaer_repeat_smallquake[5] = Repeat::create(healermove6a, continuity1);
+		healaer_repeat_smallquake[5] = Repeat::create(healermove6a, continuity_few);
 		//揺らす処理聖職者,7a
 		auto healermove7a = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.7f, rightSize.height / 6.3f + 5)),
@@ -6999,7 +7543,7 @@ void BossScene::Damage()
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.7f, rightSize.height / 6.3f)),
 			NULL
 		);
-		healaer_repeat_smallquake[6] = Repeat::create(healermove7a, continuity1);
+		healaer_repeat_smallquake[6] = Repeat::create(healermove7a, continuity_few);
 		//揺れ幅が小さいやつ
 		//揺らす処理聖職者,1b
 		auto healermove1b = CCSequence::create(
@@ -7007,49 +7551,49 @@ void BossScene::Damage()
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 2, rightSize.height / 5)),
 			NULL
 		);
-		healaer_repeat_bigquake[0] = Repeat::create(healermove1b, continuity1);
+		healaer_repeat_bigquake[0] = Repeat::create(healermove1b, continuity_few);
 		//揺らす処理聖職者,2b
 		auto healermove2b = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 2.42f, rightSize.height / 5.735f + 5)),
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 2.42f, rightSize.height / 5.735f)),
 			NULL
 		);
-		healaer_repeat_bigquake[1] = Repeat::create(healermove2b, continuity1);
+		healaer_repeat_bigquake[1] = Repeat::create(healermove2b, continuity_few);
 		//揺らす処理聖職者,3b
 		auto healermove3b = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.87f, rightSize.height / 5.735f + 5)),
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.87f, rightSize.height / 5.735f)),
 			NULL
 		);
-		healaer_repeat_bigquake[2] = Repeat::create(healermove3b, continuity1);
+		healaer_repeat_bigquake[2] = Repeat::create(healermove3b, continuity_few);
 		//揺らす処理聖職者,4b
 		auto healermove4b = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 2.18f, rightSize.height / 6.7f + 5)),
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 2.18f, rightSize.height / 6.7f)),
 			NULL
 		);
-		healaer_repeat_bigquake[3] = Repeat::create(healermove4b, continuity1);
+		healaer_repeat_bigquake[3] = Repeat::create(healermove4b, continuity_few);
 		//揺らす処理聖職者,5b
 		auto healermove5b = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 2.08f, rightSize.height / 6.3f + 5)),
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 2.08f, rightSize.height / 6.3f)),
 			NULL
 		);
-		healaer_repeat_bigquake[4] = Repeat::create(healermove5b, continuity1);
+		healaer_repeat_bigquake[4] = Repeat::create(healermove5b, continuity_few);
 		//揺らす処理聖職者,6
 		auto healermove6b = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.77f, rightSize.height / 6.7f + 5)),
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.77f, rightSize.height / 6.7f)),
 			NULL
 		);
-		healaer_repeat_bigquake[5] = Repeat::create(healermove6b, continuity1);
+		healaer_repeat_bigquake[5] = Repeat::create(healermove6b, continuity_few);
 		//揺らす処理聖職者,7b
 		auto healermove7b = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.7f, rightSize.height / 6.3f + 5)),
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.7f, rightSize.height / 6.3f)),
 			NULL
 		);
-		healaer_repeat_bigquake[6] = Repeat::create(healermove7b, continuity1);
+		healaer_repeat_bigquake[6] = Repeat::create(healermove7b, continuity_few);
 	}
 	//pl3frame.choisjobが聖職者の場合
 	if (pl3frame.choicejob == HEALER) {
@@ -7064,7 +7608,7 @@ void BossScene::Damage()
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.32f, rightSize.height / 5)),
 			NULL
 		);
-		healaer_repeat_smallquake[0] = Repeat::create(healermove1a, continuity1);
+		healaer_repeat_smallquake[0] = Repeat::create(healermove1a, continuity_few);
 		//揺らす処理聖職者,2a
 		auto healermove2a = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.489f, rightSize.height / 5.73f + 5)),
@@ -7075,7 +7619,7 @@ void BossScene::Damage()
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.489f, rightSize.height / 5.73f)),
 			NULL
 		);
-		healaer_repeat_smallquake[1] = Repeat::create(healermove2a, continuity1);
+		healaer_repeat_smallquake[1] = Repeat::create(healermove2a, continuity_few);
 		//揺らす処理聖職者,3a
 		auto healermove3a = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.265f, rightSize.height / 5.73f + 5)),
@@ -7086,7 +7630,7 @@ void BossScene::Damage()
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.265f, rightSize.height / 5.73f)),
 			NULL
 		);
-		healaer_repeat_smallquake[2] = Repeat::create(healermove3a, continuity1);
+		healaer_repeat_smallquake[2] = Repeat::create(healermove3a, continuity_few);
 		//揺らす処理聖職者,4a
 		auto healermove4a = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.39f, rightSize.height / 6.7f + 5)),
@@ -7097,7 +7641,7 @@ void BossScene::Damage()
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.39f, rightSize.height / 6.7f)),
 			NULL
 		);
-		healaer_repeat_smallquake[3] = Repeat::create(healermove4a, continuity1);
+		healaer_repeat_smallquake[3] = Repeat::create(healermove4a, continuity_few);
 		//揺らす処理聖職者,5a
 		auto healermove5a = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.35f, rightSize.height / 6.3f + 5)),
@@ -7108,7 +7652,7 @@ void BossScene::Damage()
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.35f, rightSize.height / 6.3f)),
 			NULL
 		);
-		healaer_repeat_smallquake[4] = Repeat::create(healermove5a, continuity1);
+		healaer_repeat_smallquake[4] = Repeat::create(healermove5a, continuity_few);
 		//揺らす処理聖職者,6a
 		auto healermove6a = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.21f, rightSize.height / 6.7f + 5)),
@@ -7119,7 +7663,7 @@ void BossScene::Damage()
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.21f, rightSize.height / 6.7f)),
 			NULL
 		);
-		healaer_repeat_smallquake[5] = Repeat::create(healermove6a, continuity1);
+		healaer_repeat_smallquake[5] = Repeat::create(healermove6a, continuity_few);
 		//揺らす処理聖職者,7a
 		auto healermove7a = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.18f, rightSize.height / 6.3f + 5)),
@@ -7130,7 +7674,7 @@ void BossScene::Damage()
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.18f, rightSize.height / 6.3f)),
 			NULL
 		);
-		healaer_repeat_smallquake[6] = Repeat::create(healermove7a, continuity1);
+		healaer_repeat_smallquake[6] = Repeat::create(healermove7a, continuity_few);
 		//揺れが小さいやつ
 		//揺らす処理聖職者,1b
 		auto healermove1b = CCSequence::create(
@@ -7138,49 +7682,49 @@ void BossScene::Damage()
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.32f, rightSize.height / 5)),
 			NULL
 		);
-		healaer_repeat_bigquake[0] = Repeat::create(healermove1b, continuity1);
+		healaer_repeat_bigquake[0] = Repeat::create(healermove1b, continuity_few);
 		//揺らす処理聖職者,2b
 		auto healermove2b = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.489f, rightSize.height / 5.73f + 5)),
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.489f, rightSize.height / 5.73f)),
 			NULL
 		);
-		healaer_repeat_bigquake[1] = Repeat::create(healermove2b, continuity1);
+		healaer_repeat_bigquake[1] = Repeat::create(healermove2b, continuity_few);
 		//揺らす処理聖職者,3b
 		auto healermove3b = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.265f, rightSize.height / 5.73f + 5)),
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.265f, rightSize.height / 5.73f)),
 			NULL
 		);
-		healaer_repeat_bigquake[2] = Repeat::create(healermove3b, continuity1);
+		healaer_repeat_bigquake[2] = Repeat::create(healermove3b, continuity_few);
 		//揺らす処理聖職者,4b
 		auto healermove4b = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.39f, rightSize.height / 6.7f + 5)),
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.39f, rightSize.height / 6.7f)),
 			NULL
 		);
-		healaer_repeat_bigquake[3] = Repeat::create(healermove4b, continuity1);
+		healaer_repeat_bigquake[3] = Repeat::create(healermove4b, continuity_few);
 		//揺らす処理聖職者,5b
 		auto healermove5b = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.35f, rightSize.height / 6.3f + 5)),
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.35f, rightSize.height / 6.3f)),
 			NULL
 		);
-		healaer_repeat_bigquake[4] = Repeat::create(healermove5b, continuity1);
+		healaer_repeat_bigquake[4] = Repeat::create(healermove5b, continuity_few);
 		//揺らす処理聖職者,6b
 		auto healermove6b = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.21f, rightSize.height / 6.7f + 5)),
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.21f, rightSize.height / 6.7f)),
 			NULL
 		);
-		healaer_repeat_bigquake[5] = Repeat::create(healermove6b, continuity1);
+		healaer_repeat_bigquake[5] = Repeat::create(healermove6b, continuity_few);
 		//揺らす処理聖職者,7b
 		auto healermove7b = CCSequence::create(
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.18f, rightSize.height / 6.3f + 5)),
 			CCMoveTo::create(movecnt, ccp(rightSize.width / 1.18f, rightSize.height / 6.3f)),
 			NULL
 		);
-		healaer_repeat_bigquake[6] = Repeat::create(healermove7b, continuity1);
+		healaer_repeat_bigquake[6] = Repeat::create(healermove7b, continuity_few);
 	}
 //ボス
 	auto bossmove = CCSequence::create(
@@ -7191,7 +7735,7 @@ void BossScene::Damage()
 		CCMoveTo::create(movecnt, ccp(rightSize.width / 2, rightSize.height / 1.7f)),
 		NULL
 	);
-	bossrepeat = Repeat::create(bossmove, continuity1);
+	bossrepeat = Repeat::create(bossmove, continuity_few);
 }
 
 //スキルターン処理
@@ -7208,38 +7752,42 @@ void BossScene::Skillturn()
 
 		//重ね掛けの場合があるから増やしておく
 		//剣士　askill2の効果ターン処理1
-		if (askill2.buffendflag1 == false) {
-			if (askill2.buffturn1 > 1) {
-				askill2.buffturn1 -= 1;
-				askill2.buffendflag1 = true;	//スキルターンがあるならターンを1引いて終了
+		if (askill2.buffendflag[0] == false) {
+			if (askill2.buffturn[0] > 1) {
+				askill2.buffturn[0] -= 1;
+				askill2.buffendflag[0] = true;	//スキルターンがあるならターンを1引いて終了
 			}
-			else if (askill2.buffturn1 == 0) {
-				askill2.buffendflag1 = true;	//スキルターンがないならそのまま終了
+			else if (askill2.buffturn[0] == 0) {
+				askill2.buffendflag[0] = true;	//スキルターンがないならそのまま終了
 			}
 		}
 		//剣士　askill2の効果ターン処理2
-		if (askill2.buffendflag2 == false) {
-			if (askill2.buffturn2 > 1) {
-				askill2.buffturn2 -= 1;
-				askill2.buffendflag2 = true;
+		if (askill2.buffendflag[1] == false) {
+			if (askill2.buffturn[1] > 1) {
+				askill2.buffturn[1] -= 1;
+				askill2.buffendflag[1] = true;
 			}
-			else if (askill2.buffturn2 == 0) {
-				askill2.buffendflag2 = true;
+			else if (askill2.buffturn[1] == 0) {
+				askill2.buffendflag[1] = true;
 			}
 		}
 		//効果ターンが0になったらステータスを戻す
 		//処理1
-		if (askill2.buffturn1 == 1 && battleturn > 1) {
+		if (askill2.buffturn[0] == 1 && battleturn > 1) {
 			if (gameflame == flame15) {
-				valkyrie.def += askill2.buffdownefect1;		//下げた分だけ足す
-				askill2.buffdownefect1 = 0;					//バフの効果を初期値に戻す
+				valkyrie.def += askill2.buffdownefect[0][0];		//下げた分だけ足す
+				valkyrie.mdef += askill2.buffdownefect[1][0];
+				askill2.buffdownefect[0][0] = 0;					//バフの効果を初期値に戻す
+				askill2.buffdownefect[1][0] = 0;
 			}
 		}
 		//処理2
-		if (askill2.buffturn2 == 1 && battleturn > 1) {
+		if (askill2.buffturn[1] == 1 && battleturn > 1) {
 			if (gameflame == flame15) {
-				valkyrie.def += askill2.buffdownefect2;		//下げた分だけ足す
-				askill2.buffdownefect2 = 0;					//バフの効果を初期値に戻す
+				valkyrie.def += askill2.buffdownefect[0][1];		//下げた分だけ足す
+				valkyrie.mdef += askill2.buffdownefect[1][1];
+				askill2.buffdownefect[0][1] = 0;					//バフの効果を初期値に戻す
+				askill2.buffdownefect[1][1] = 0;
 			}
 		}
 
@@ -7249,36 +7797,36 @@ void BossScene::Skillturn()
 
 		//表記して終了
 		if (battleturn > 1) {
-			if (askill2.buffendflag1 == false) {
-				if (askill2.buffturn1 == 1) {
+			if (askill2.buffendflag[0] == false) {
+				if (askill2.buffturn[0] == 1) {
 					if (gameflame == flame80) {
 						this->addChild(askill2buffend, backdepth, buffendS);	//バフの効果が切れたことを表記する
 					}
 					if (gameflame == flame150) {
-						askill2.buffturn1 = 0;				//初期化する
-						askill2.buffendflag1 = true;		//終わった
+						askill2.buffturn[0] = 0;				//初期化する
+						askill2.buffendflag[0] = true;		//終わった
 					}
 				}
 			}
-			if (askill2.buffturn2 == 1) {
-				if (askill2.buffendflag2 == false) {
+			if (askill2.buffturn[1] == 1) {
+				if (askill2.buffendflag[1] == false) {
 					if (gameflame == flame80) {
 						this->addChild(askill2buffend, backdepth, buffendS);	//バフの効果が切れたことを表記する
 					}
 					if (gameflame == flame150) {
-						askill2.buffturn2 = 0;				//初期化する
-						askill2.buffendflag2 = true;		//終わった
+						askill2.buffturn[1] = 0;				//初期化する
+						askill2.buffendflag[1] = true;		//終わった
 					}
 				}
 			}
 		}
 		//剣士のスキル2の処理が全部終了したら終わり
-		if (askill2.buffendflag1 == true && askill2.buffendflag2 == true) {
+		if (askill2.buffendflag[0] == true && askill2.buffendflag[1] == true) {
 			bufft = ASKILL4T;
 			this->removeChildByTag(buffendS);			//表記を消す
-			askill2allworkendflag = true;				//スキル７の処理は全部終わった
-			askill2.buffendflag1 = false;				//初期化
-			askill2.buffendflag2 = false;				//初期化
+			askill2_allworkendflag = true;				//スキル７の処理は全部終わった
+			askill2.buffendflag[0] = false;				//初期化
+			askill2.buffendflag[1] = false;				//初期化
 			gameflame = 0;								//時間を0に
 		}
 		break;
@@ -7287,38 +7835,42 @@ void BossScene::Skillturn()
 	case BossScene::ASKILL4T: {
 		//重ね掛けの場合があるから増やしておく
 		//剣士　askill4の効果ターン処理1
-		if (askill4.buffendflag1 == false) {
-			if (askill4.buffturn1 > 1) {
-				askill4.buffturn1 -= 1;
-				askill4.buffendflag1 = true;	//スキルターンがあるならターンを1引いて終了
+		if (askill4.buffendflag[0] == false) {
+			if (askill4.buffturn[0] > 1) {
+				askill4.buffturn[0] -= 1;
+				askill4.buffendflag[0] = true;	//スキルターンがあるならターンを1引いて終了
 			}
-			else if (askill4.buffturn1 == 0) {
-				askill4.buffendflag1 = true;	//スキルターンがないならそのまま終了
+			else if (askill4.buffturn[0] == 0) {
+				askill4.buffendflag[0] = true;	//スキルターンがないならそのまま終了
 			}
 		}
 		//剣士　askill4の効果ターン処理2
-		if (askill4.buffendflag2 == false) {
-			if (askill4.buffturn2 > 1) {
-				askill4.buffturn2 -= 1;
-				askill4.buffendflag2 = true;
+		if (askill4.buffendflag[1] == false) {
+			if (askill4.buffturn[1] > 1) {
+				askill4.buffturn[1] -= 1;
+				askill4.buffendflag[1] = true;
 			}
-			else if (askill4.buffturn2 == 0) {
-				askill4.buffendflag2 = true;
+			else if (askill4.buffturn[1] == 0) {
+				askill4.buffendflag[1] = true;
 			}
 		}
 		//効果ターンが0になったらステータスを戻す
 		//処理1
-		if (askill4.buffturn1 == 1 && battleturn > 1) {
+		if (askill4.buffturn[0] == 1 && battleturn > 1) {
 			if (gameflame == flame15) {
-				valkyrie.atk += askill4.buffdownefect1;		//下げた分だけ足す
-				askill4.buffdownefect1 = 0;					//バフの効果を初期値に戻す
+				valkyrie.def += askill4.buffdownefect[0][0];		//下げた分だけ足す
+				valkyrie.mdef += askill4.buffdownefect[1][0];
+				askill4.buffdownefect[0][0] = 0;					//バフの効果を初期値に戻す
+				askill4.buffdownefect[1][0] = 0;
 			}
 		}
 		//処理2
-		if (askill4.buffturn2 == 1 && battleturn > 1) {
+		if (askill4.buffturn[1] == 1 && battleturn > 1) {
 			if (gameflame == flame15) {
-				valkyrie.atk += askill4.buffdownefect2;		//下げた分だけ足す
-				askill4.buffdownefect2 = 0;					//バフの効果を初期値に戻す
+				valkyrie.def += askill4.buffdownefect[0][1];		//下げた分だけ足す
+				valkyrie.mdef += askill4.buffdownefect[1][1];
+				askill4.buffdownefect[0][1] = 0;					//バフの効果を初期値に戻す
+				askill4.buffdownefect[1][1] = 0;
 			}
 		}
 
@@ -7328,36 +7880,36 @@ void BossScene::Skillturn()
 
 		//表記して終了
 		if (battleturn > 1) {
-			if (askill4.buffturn1 == 1) {
-				if (askill4.buffendflag1 == false) {
+			if (askill4.buffturn[0] == 1) {
+				if (askill4.buffendflag[0] == false) {
 					if (gameflame == flame80) {
 						this->addChild(askill4buffend, backdepth, buffendS);	//バフの効果が切れたことを表記する
 					}
 					if (gameflame == flame150) {
-						askill4.buffturn1 = 0;				//初期化する
-						askill4.buffendflag1 = true;		//終わった
+						askill4.buffturn[0] = 0;				//初期化する
+						askill4.buffendflag[0] = true;		//終わった
 					}
 				}
 			}
-			if (askill4.buffturn2 == 1) {
-				if (askill4.buffendflag2 == false) {
+			if (askill4.buffturn[1] == 1) {
+				if (askill4.buffendflag[1] == false) {
 					if (gameflame == flame80) {
 						this->addChild(askill4buffend, backdepth, buffendS);	//バフの効果が切れたことを表記する
 					}
 					if (gameflame == flame150) {
-						askill4.buffturn2 = 0;				//初期化する
-						askill4.buffendflag2 = true;		//終わった
+						askill4.buffturn[1] = 0;				//初期化する
+						askill4.buffendflag[1] = true;		//終わった
 					}
 				}
 			}
 		}
 		//剣士のスキル2の処理が全部終了したら終わり
-		if (askill4.buffendflag1 == true && askill4.buffendflag2 == true) {
+		if (askill4.buffendflag[0] == true && askill4.buffendflag[1] == true) {
 			bufft = ASKILL7T;
 			this->removeChildByTag(buffendS);			//表記を消す
-			askill4allworkendflag = true;				//スキル７の処理は全部終わった
-			askill4.buffendflag1 = false;				//初期化
-			askill4.buffendflag2 = false;				//初期化
+			askill4_allworkendflag = true;				//スキル７の処理は全部終わった
+			askill4.buffendflag[0] = false;				//初期化
+			askill4.buffendflag[1] = false;				//初期化
 			gameflame = 0;								//時間を0に
 		}
 		break;
@@ -7366,72 +7918,80 @@ void BossScene::Skillturn()
 	case BossScene::ASKILL7T: {
 		//重ね掛けの場合があるから増やしておく
 		//剣士　ASKILL7の効果ターン処理1
-		if (askill7.buffendflag1 == false) {
-			if (askill7.buffturn1 > 1) {
-				askill7.buffturn1 -= 1;
-				askill7.buffendflag1 = true;	//スキルターンがあるならターンを1引いて終了
+		if (askill7.buffendflag[0] == false) {
+			if (askill7.buffturn[0] > 1) {
+				askill7.buffturn[0] -= 1;
+				askill7.buffendflag[0] = true;	//スキルターンがあるならターンを1引いて終了
 			}
-			else if (askill7.buffturn1 == 0) {
-				askill7.buffendflag1 = true;	//スキルターンがないならそのまま終了
+			else if (askill7.buffturn[0] == 0) {
+				askill7.buffendflag[0] = true;	//スキルターンがないならそのまま終了
 			}
 		}
 		//剣士　ASKILL7の効果ターン処理2
-		if (askill7.buffendflag2 == false) {
-			if (askill7.buffturn2 > 1) {
-				askill7.buffturn2 -= 1;
-				askill7.buffendflag2 = true;
+		if (askill7.buffendflag[1] == false) {
+			if (askill7.buffturn[1] > 1) {
+				askill7.buffturn[1] -= 1;
+				askill7.buffendflag[1] = true;
 			}
-			else if (askill7.buffturn2 == 0) {
-				askill7.buffendflag2 = true;
+			else if (askill7.buffturn[1] == 0) {
+				askill7.buffendflag[1] = true;
 			}
 		}
 		//剣士　ASKILL7の効果ターン処理3
-		if (askill7.buffendflag3 == false) {
-			if (askill7.buffturn3 > 1) {
-				askill7.buffturn3 -= 1;
-				askill7.buffendflag3 = true;
+		if (askill7.buffendflag[2] == false) {
+			if (askill7.buffturn[2] > 1) {
+				askill7.buffturn[2] -= 1;
+				askill7.buffendflag[2] = true;
 			}
-			else if (askill7.buffturn3 == 0) {
-				askill7.buffendflag3 = true;
+			else if (askill7.buffturn[2] == 0) {
+				askill7.buffendflag[2] = true;
 			}
 		}
 		//剣士　ASKILL7の効果ターン処理4
-		if (askill7.buffendflag4 == false) {
-			if (askill7.buffturn4 > 1) {
-				askill7.buffturn4 -= 1;
-				askill7.buffendflag4 = true;
+		if (askill7.buffendflag[3] == false) {
+			if (askill7.buffturn[3] > 1) {
+				askill7.buffturn[3] -= 1;
+				askill7.buffendflag[3] = true;
 			}
-			else if (askill7.buffturn4 == 0) {
-				askill7.buffendflag4 = true;
+			else if (askill7.buffturn[3] == 0) {
+				askill7.buffendflag[3] = true;
 			}
 		}
 		//効果ターンが0になったらステータスを戻す
 		//処理1
-		if (askill7.buffturn1 == 1 && battleturn > 1) {
+		if (askill7.buffturn[0] == 1 && battleturn > 1) {
 			if (gameflame == flame15) {
-				attacker.atk -= askill7.buffupefect1;		//上げた分だけ引く
-				askill7.buffupefect1 = 0;					//バフの効果を初期値に戻す
+				valkyrie.def += askill7.buffupefect[0][0];		//下げた分だけ足す
+				valkyrie.mdef += askill7.buffupefect[1][0];
+				askill7.buffupefect[0][0] = 0;					//バフの効果を初期値に戻す
+				askill7.buffupefect[1][0] = 0;
 			}
 		}
 		//処理2
-		if (askill7.buffturn2 == 1 && battleturn > 1) {
+		if (askill7.buffturn[1] == 1 && battleturn > 1) {
 			if (gameflame == flame15) {
-				attacker.atk -= askill7.buffupefect2;		//上げた分だけ引く
-				askill7.buffupefect2 = 0;					//バフの効果を初期値に戻す
+				valkyrie.def += askill2.buffupefect[0][1];		//下げた分だけ足す
+				valkyrie.mdef += askill2.buffupefect[1][1];
+				askill2.buffupefect[0][1] = 0;					//バフの効果を初期値に戻す
+				askill2.buffupefect[1][1] = 0;
 			}
 		}
 		//処理3
-		if (askill7.buffturn3 == 1 && battleturn > 1) {
+		if (askill7.buffturn[2] == 1 && battleturn > 1) {
 			if (gameflame == flame15) {
-				attacker.atk -= askill7.buffupefect3;		//上げた分だけ引く
-				askill7.buffupefect3 = 0;					//バフの効果を初期値に戻す
+				valkyrie.def += askill2.buffupefect[0][2];		//下げた分だけ足す
+				valkyrie.mdef += askill2.buffupefect[1][2];
+				askill2.buffupefect[0][2] = 0;					//バフの効果を初期値に戻す
+				askill2.buffupefect[1][2] = 0;
 			}
 		}
 		//処理4
-		if (askill7.buffturn4 == 1 && battleturn > 1) {
+		if (askill7.buffturn[3] == 1 && battleturn > 1) {
 			if (gameflame == flame15) {
-				attacker.atk -= askill7.buffupefect4;		//上げた分だけ引く
-				askill7.buffupefect4 = 0;					//バフの効果を初期値に戻す
+				valkyrie.def += askill2.buffupefect[0][3];		//下げた分だけ足す
+				valkyrie.mdef += askill2.buffupefect[1][3];
+				askill2.buffupefect[0][3] = 0;					//バフの効果を初期値に戻す
+				askill2.buffupefect[1][3] = 0;
 			}
 		}
 
@@ -7441,61 +8001,61 @@ void BossScene::Skillturn()
 
 		//表記して終了
 		if (battleturn > 1) {
-			if (askill7.buffturn1 == 1) {
-				if (askill7.buffendflag1 == false) {
+			if (askill7.buffturn[0] == 1) {
+				if (askill7.buffendflag[0] == false) {
 					if (gameflame == flame80) {
 						this->addChild(askill7buffend, backdepth, buffendS);	//バフの効果が切れたことを表記する
 					}
 					if (gameflame == flame150) {
-						askill7.buffturn1 = 0;				//初期化する
-						askill7.buffendflag1 = true;		//終わった
+						askill7.buffturn[0] = 0;				//初期化する
+						askill7.buffendflag[0] = true;		//終わった
 					}
 				}
 			}
-			if (askill7.buffturn2 == 1) {
-				if (askill7.buffendflag2 == false) {
+			if (askill7.buffturn[1] == 1) {
+				if (askill7.buffendflag[1] == false) {
 					if (gameflame == flame80) {
 						this->addChild(askill7buffend, backdepth, buffendS);	//バフの効果が切れたことを表記する
 					}
 					if (gameflame == flame150) {
-						askill7.buffturn2 = 0;				//初期化する
-						askill7.buffendflag2 = true;		//終わった
+						askill7.buffturn[1] = 0;				//初期化する
+						askill7.buffendflag[1] = true;		//終わった
 					}
 				}
 			}
-			if (askill7.buffturn3 == 1) {
-				if (askill7.buffendflag3 == false) {
+			if (askill7.buffturn[2] == 1) {
+				if (askill7.buffendflag[2] == false) {
 					if (gameflame == flame80) {
 						this->addChild(askill7buffend, backdepth, buffendS);	//バフの効果が切れたことを表記する
 					}
 					if (gameflame == flame150) {
-						askill7.buffturn3 = 0;				//初期化する
-						askill7.buffendflag3 = true;		//終わった
+						askill7.buffturn[2] = 0;				//初期化する
+						askill7.buffendflag[2] = true;		//終わった
 					}
 				}
 			}
-			if (askill7.buffturn4 == 1) {
-				if (askill7.buffendflag4 == false) {
+			if (askill7.buffturn[3] == 1) {
+				if (askill7.buffendflag[3] == false) {
 					if (gameflame == flame80) {
 						this->addChild(askill7buffend, backdepth, buffendS);	//バフの効果が切れたことを表記する
 					}
 					if (gameflame == flame150) {
-						askill7.buffturn4 = 0;				//初期化する
-						askill7.buffendflag4 = true;		//終わった
+						askill7.buffturn[3] = 0;				//初期化する
+						askill7.buffendflag[3] = true;		//終わった
 					}
 				}
 			}
 		}
 		//剣士のスキル7の処理が全部終了したら終わり
-		if (askill7.buffendflag1 == true && askill7.buffendflag2 == true
-			&& askill7.buffendflag3 == true && askill7.buffendflag4 == true) {
+		if (askill7.buffendflag[0] == true && askill7.buffendflag[1] == true
+			&& askill7.buffendflag[2] == true && askill7.buffendflag[3] == true) {
 			bufft = ASKILL8T;
 			this->removeChildByTag(buffendS);			//表記を消す
 			askill7allworkendflag = true;				//スキル７の処理は全部終わった
-			askill7.buffendflag1 = false;				//初期化
-			askill7.buffendflag2 = false;				//初期化
-			askill7.buffendflag3 = false;				//初期化
-			askill7.buffendflag4 = false;				//初期化
+			askill7.buffendflag[0] = false;				//初期化
+			askill7.buffendflag[1] = false;				//初期化
+			askill7.buffendflag[2] = false;				//初期化
+			askill7.buffendflag[3] = false;				//初期化
 			gameflame = 0;								//時間を0に
 		}
 		break;
@@ -7504,80 +8064,96 @@ void BossScene::Skillturn()
 	case BossScene::ASKILL8T: {
 		//重ね掛けの場合があるから増やしておく
 		//剣士　askill8の効果ターン処理1
-		if (askill8.buffendflag1 == false) {
-			if (askill8.buffturn1 > 1) {
-				askill8.buffturn1 -= 1;
-				askill8.buffendflag1 = true;	//スキルターンがあるならターンを1引いて終了
+		if (askill8.buffendflag[0] == false) {
+			if (askill8.buffturn[0] > 1) {
+				askill8.buffturn[0] -= 1;
+				askill8.buffendflag[0] = true;	//スキルターンがあるならターンを1引いて終了
 			}
-			else if (askill8.buffturn1 == 0) {
-				askill8.buffendflag1 = true;	//スキルターンがないならそのまま終了
+			else if (askill8.buffturn[0] == 0) {
+				askill8.buffendflag[0] = true;	//スキルターンがないならそのまま終了
 			}
 		}
 		//剣士　askill8の効果ターン処理2
-		if (askill8.buffendflag2 == false) {
-			if (askill8.buffturn2 > 1) {
-				askill8.buffturn2 -= 1;
-				askill8.buffendflag2 = true;
+		if (askill8.buffendflag[1] == false) {
+			if (askill8.buffturn[1] > 1) {
+				askill8.buffturn[1] -= 1;
+				askill8.buffendflag[1] = true;
 			}
-			else if (askill8.buffturn2 == 0) {
-				askill8.buffendflag2 = true;
+			else if (askill8.buffturn[1] == 0) {
+				askill8.buffendflag[1] = true;
 			}
 		}
 		//剣士　askill8の効果ターン処理3
-		if (askill8.buffendflag3 == false) {
-			if (askill8.buffturn3 > 1) {
-				askill8.buffturn3 -= 1;
-				askill8.buffendflag3 = true;
+		if (askill8.buffendflag[2] == false) {
+			if (askill8.buffturn[2] > 1) {
+				askill8.buffturn[2] -= 1;
+				askill8.buffendflag[2] = true;
 			}
-			else if (askill8.buffturn3 == 0) {
-				askill8.buffendflag3 = true;
+			else if (askill8.buffturn[2] == 0) {
+				askill8.buffendflag[2] = true;
 			}
 		}
 		//剣士　askill8の効果ターン処理4
-		if (askill8.buffendflag4 == false) {
-			if (askill8.buffturn4 > 1) {
-				askill8.buffturn4 -= 1;
-				askill8.buffendflag4 = true;
+		if (askill8.buffendflag[3] == false) {
+			if (askill8.buffturn[3] > 1) {
+				askill8.buffturn[3] -= 1;
+				askill8.buffendflag[3] = true;
 			}
-			else if (askill8.buffturn4 == 0) {
-				askill8.buffendflag4 = true;
+			else if (askill8.buffturn[3] == 0) {
+				askill8.buffendflag[3] = true;
 			}
 		}
 		//効果ターンが0になったらステータスを戻す
 		//処理1
-		if (askill8.buffturn1 == 1 && battleturn > 1) {
+		if (askill8.buffturn[0] == 1 && battleturn > 1) {
 			if (gameflame == flame15) {
-				attacker.atk -= askill8.buffupefect1;		//上げた分だけ引く
-				attacker.def += askill8.buffdownefect1;		//下げた分だけ足す
-				askill8.buffupefect1 = 0;					//バフの効果を初期値に戻す
-				askill8.buffdownefect1 = 0;					//バフの効果を初期値に戻す
+				attacker.atk -= askill8.buffupefect[0][0];		//上げた分だけ引く
+				attacker.matk -= askill8.buffupefect[1][0];		//上げた分だけ引く
+				attacker.def += askill8.buffdownefect[0][0];	//下げた分だけ足す
+				attacker.mdef += askill8.buffdownefect[1][0];	//下げた分だけ足す
+				askill8.buffupefect[0][0] = 0;					//バフの効果を初期値に戻す
+				askill8.buffupefect[1][0] = 0;					//バフの効果を初期値に戻す
+				askill8.buffdownefect[0][0] = 0;				//バフの効果を初期値に戻す
+				askill8.buffdownefect[1][0] = 0;				//バフの効果を初期値に戻す
 			}
 		}
 		//処理2
-		if (askill8.buffturn2 == 1 && battleturn > 1) {
+		if (askill8.buffturn[1] == 1 && battleturn > 1) {
 			if (gameflame == flame15) {
-				attacker.atk -= askill8.buffupefect2;		//上げた分だけ引く
-				attacker.def += askill8.buffdownefect2;		//下げた分だけ足す
-				askill8.buffupefect2 = 0;					//バフの効果を初期値に戻す
-				askill8.buffdownefect2 = 0;					//バフの効果を初期値に戻す
+				attacker.atk -= askill8.buffupefect[0][1];		//上げた分だけ引く
+				attacker.matk -= askill8.buffupefect[1][1];		//上げた分だけ引く
+				attacker.def += askill8.buffdownefect[0][1];	//下げた分だけ足す
+				attacker.mdef += askill8.buffdownefect[1][1];	//下げた分だけ足す
+				askill8.buffupefect[0][1] = 0;					//バフの効果を初期値に戻す
+				askill8.buffupefect[1][1] = 0;					//バフの効果を初期値に戻す
+				askill8.buffdownefect[0][1] = 0;				//バフの効果を初期値に戻す
+				askill8.buffdownefect[1][1] = 0;				//バフの効果を初期値に戻す
 			}
 		}
 		//処理3
-		if (askill8.buffturn3 == 1 && battleturn > 1) {
+		if (askill8.buffturn[2] == 1 && battleturn > 1) {
 			if (gameflame == flame15) {
-				attacker.atk -= askill8.buffupefect3;		//上げた分だけ引く
-				attacker.def += askill8.buffdownefect3;		//下げた分だけ足す
-				askill8.buffupefect3 = 0;					//バフの効果を初期値に戻す
-				askill8.buffdownefect3 = 0;					//バフの効果を初期値に戻す
+				attacker.atk -= askill8.buffupefect[0][2];		//上げた分だけ引く
+				attacker.matk -= askill8.buffupefect[1][2];		//上げた分だけ引く
+				attacker.def += askill8.buffdownefect[0][2];	//下げた分だけ足す
+				attacker.mdef += askill8.buffdownefect[1][2];	//下げた分だけ足す
+				askill8.buffupefect[0][2] = 0;					//バフの効果を初期値に戻す
+				askill8.buffupefect[1][2] = 0;					//バフの効果を初期値に戻す
+				askill8.buffdownefect[0][2] = 0;				//バフの効果を初期値に戻す
+				askill8.buffdownefect[1][2] = 0;				//バフの効果を初期値に戻す
 			}
 		}
 		//処理4
-		if (askill8.buffturn4 == 1 && battleturn > 1) {
+		if (askill8.buffturn[3] == 1 && battleturn > 1) {
 			if (gameflame == flame15) {
-				attacker.atk -= askill8.buffupefect4;		//上げた分だけ引く
-				attacker.def += askill8.buffdownefect4;		//下げた分だけ足す
-				askill8.buffupefect4 = 0;					//バフの効果を初期値に戻す
-				askill8.buffdownefect4 = 0;					//バフの効果を初期値に戻す
+				attacker.atk -= askill8.buffupefect[0][3];		//上げた分だけ引く
+				attacker.matk -= askill8.buffupefect[1][3];		//上げた分だけ引く
+				attacker.def += askill8.buffdownefect[0][3];	//下げた分だけ足す
+				attacker.mdef += askill8.buffdownefect[1][3];	//下げた分だけ足す
+				askill8.buffupefect[0][3] = 0;					//バフの効果を初期値に戻す
+				askill8.buffupefect[1][3] = 0;					//バフの効果を初期値に戻す
+				askill8.buffdownefect[0][3] = 0;				//バフの効果を初期値に戻す
+				askill8.buffdownefect[1][3] = 0;				//バフの効果を初期値に戻す
 			}
 		}
 
@@ -7590,8 +8166,8 @@ void BossScene::Skillturn()
 
 		//表記して終了
 		if (battleturn > 1) {
-			if (askill8.buffturn1 == 1) {
-				if (askill8.buffendflag1 == false) {
+			if (askill8.buffturn[0] == 1) {
+				if (askill8.buffendflag[0] == false) {
 					if (gameflame == flame80) {
 						this->addChild(askill8buffend, backdepth, buffendS);	//バフの効果が切れたことを表記する
 					}
@@ -7600,13 +8176,13 @@ void BossScene::Skillturn()
 						this->addChild(askill8buffend2, backdepth, buffend2S);	//バフの効果が切れたことを表記する
 					}
 					if (gameflame == flame220) {
-						askill8.buffturn1 = 0;				//初期化する
-						askill8.buffendflag1 = true;		//終わった
+						askill8.buffturn[0] = 0;				//初期化する
+						askill8.buffendflag[0] = true;		//終わった
 					}
 				}
 			}
-			if (askill8.buffturn2 == 1) {
-				if (askill8.buffendflag2 == false) {
+			if (askill8.buffturn[1] == 1) {
+				if (askill8.buffendflag[1] == false) {
 					if (gameflame == flame80) {
 						this->addChild(askill8buffend, backdepth, buffendS);	//バフの効果が切れたことを表記する
 					}
@@ -7615,13 +8191,13 @@ void BossScene::Skillturn()
 						this->addChild(askill8buffend2, backdepth, buffend2S);	//バフの効果が切れたことを表記する
 					}
 					if (gameflame == flame220) {
-						askill8.buffturn2 = 0;				//初期化する
-						askill8.buffendflag2 = true;		//終わった
+						askill8.buffturn[1] = 0;				//初期化する
+						askill8.buffendflag[1] = true;		//終わった
 					}
 				}
 			}
-			if (askill8.buffturn3 == 1) {
-				if (askill8.buffendflag3 == false) {
+			if (askill8.buffturn[2] == 1) {
+				if (askill8.buffendflag[2] == false) {
 					if (gameflame == flame80) {
 						this->addChild(askill8buffend, backdepth, buffendS);	//バフの効果が切れたことを表記する
 					}
@@ -7630,13 +8206,13 @@ void BossScene::Skillturn()
 						this->addChild(askill8buffend2, backdepth, buffend2S);	//バフの効果が切れたことを表記する
 					}
 					if (gameflame == flame220) {
-						askill8.buffturn3 = 0;				//初期化する
-						askill8.buffendflag3 = true;		//終わった
+						askill8.buffturn[2] = 0;				//初期化する
+						askill8.buffendflag[2] = true;		//終わった
 					}
 				}
 			}
-			if (askill8.buffturn4 == 1) {
-				if (askill8.buffendflag4 == false) {
+			if (askill8.buffturn[3] == 1) {
+				if (askill8.buffendflag[3] == false) {
 					if (gameflame == flame80) {
 						this->addChild(askill8buffend, backdepth, buffendS);	//バフの効果が切れたことを表記する
 					}
@@ -7645,22 +8221,22 @@ void BossScene::Skillturn()
 						this->addChild(askill8buffend2, backdepth, buffend2S);	//バフの効果が切れたことを表記する
 					}
 					if (gameflame == flame220) {
-						askill8.buffturn4 = 0;				//初期化する
-						askill8.buffendflag4 = true;		//終わった
+						askill8.buffturn[3] = 0;				//初期化する
+						askill8.buffendflag[3] = true;		//終わった
 					}
 				}
 			}
 		}
 		//剣士のスキル8の処理が全部終了したら終わり
-		if (askill8.buffendflag1 == true && askill8.buffendflag2 == true
-			&& askill8.buffendflag3 == true && askill8.buffendflag4 == true) {
+		if (askill8.buffendflag[0] == true && askill8.buffendflag[1] == true
+			&& askill8.buffendflag[2] == true && askill8.buffendflag[3] == true) {
 			bufft = SSKILL2T;
 			this->removeChildByTag(buffend2S);			//表記を消す
 			askill8allworkendflag = true;				//スキル７の処理は全部終わった
-			askill8.buffendflag1 = false;				//初期化
-			askill8.buffendflag2 = false;				//初期化
-			askill8.buffendflag3 = false;				//初期化
-			askill8.buffendflag4 = false;				//初期化
+			askill8.buffendflag[0] = false;				//初期化
+			askill8.buffendflag[1] = false;				//初期化
+			askill8.buffendflag[2] = false;				//初期化
+			askill8.buffendflag[3] = false;				//初期化
 			gameflame = 0;								//時間を0に
 		}
 		break;
@@ -7669,19 +8245,19 @@ void BossScene::Skillturn()
 	case BossScene::SSKILL2T: {
 		//重ね掛けの場合があるから増やしておく
 		//騎士　sskill2の効果ターン処理1
-		if (sskill2.buffendflag1 == false) {
-			if (sskill2.buffturn1 > 1) {
-				sskill2.buffturn1 -= 1;
-				sskill2.buffendflag1 = true;	//スキルターンがあるならターンを1引いて終了
+		if (sskill2.buffendflag[0] == false) {
+			if (sskill2.buffturn[0] > 1) {
+				sskill2.buffturn[0] -= 1;
+				sskill2.buffendflag[0] = true;	//スキルターンがあるならターンを1引いて終了
 			}
-			else if (sskill2.buffturn1 == 0) {
-				sskill2.buffendflag1 = true;	//スキルターンがないならそのまま終了
+			else if (sskill2.buffturn[0] == 0) {
+				sskill2.buffendflag[0] = true;	//スキルターンがないならそのまま終了
 			}
 		}
 
 		//効果ターンが0になったらステータスを戻す
 		//処理1
-		if (sskill2.buffturn1 == 1 && battleturn > 1) {
+		if (sskill2.buffturn[0] == 1 && battleturn > 1) {
 			if (gameflame == flame15) {
 				counter_attackflag = false;		//カウンター1解除
 			}
@@ -7693,25 +8269,25 @@ void BossScene::Skillturn()
 
 		//表記して終了
 		if (battleturn > 1) {
-			if (sskill2.buffturn1 == 1) {
-				if (sskill2.buffendflag1 == false) {
+			if (sskill2.buffturn[0] == 1) {
+				if (sskill2.buffendflag[0] == false) {
 					if (gameflame == flame80) {
 						this->addChild(sskill2buffend, backdepth, buffendS);	//バフの効果が切れたことを表記する
 					}
 					if (gameflame == flame150) {
-						sskill2.buffturn1 = 0;				//初期化する
-						sskill2.buffendflag1 = true;		//終わった
+						sskill2.buffturn[0] = 0;				//初期化する
+						sskill2.buffendflag[0] = true;		//終わった
 					}
 				}
 			}
 		}
 		//騎士のスキル2の処理が全部終了したら終わり
-		if (sskill2.buffendflag1 == true) {
+		if (sskill2.buffendflag[0] == true) {
 			bufft = SSKILL3T;
 			this->removeChildByTag(buffendS);			//表記を消す
 			sskill2allworkendflag = true;				//スキル７の処理は全部終わった
-			sskill2.buffendflag1 = false;				//初期化
-			sskill2.buffendflag2 = false;				//初期化
+			sskill2.buffendflag[0] = false;				//初期化
+			sskill2.buffendflag[1] = false;				//初期化
 			gameflame = 0;								//時間を0に
 		}
 		break;
@@ -7720,37 +8296,37 @@ void BossScene::Skillturn()
 	case BossScene::SSKILL3T: {
 		//重ね掛けの場合があるから増やしておく
 		//騎士　sskill3の効果ターン処理1
-		if (sskill3.buffendflag1 == false) {
-			if (sskill3.buffturn1 > 1) {
-				sskill3.buffturn1 -= 1;
-				sskill3.buffendflag1 = true;	//スキルターンがあるならターンを1引いて終了
+		if (sskill3.buffendflag[0] == false) {
+			if (sskill3.buffturn[0] > 1) {
+				sskill3.buffturn[0] -= 1;
+				sskill3.buffendflag[0] = true;	//スキルターンがあるならターンを1引いて終了
 			}
-			else if (sskill3.buffturn1 == 0) {
-				sskill3.buffendflag1 = true;	//スキルターンがないならそのまま終了
+			else if (sskill3.buffturn[0] == 0) {
+				sskill3.buffendflag[0] = true;	//スキルターンがないならそのまま終了
 			}
 		}
 		//騎士　sskill3の効果ターン処理2
-		if (sskill3.buffendflag2 == false) {
-			if (sskill3.buffturn2 > 1) {
-				sskill3.buffturn2 -= 1;
-				sskill3.buffendflag2 = true;
+		if (sskill3.buffendflag[1] == false) {
+			if (sskill3.buffturn[1] > 1) {
+				sskill3.buffturn[1] -= 1;
+				sskill3.buffendflag[1] = true;
 			}
-			else if (sskill3.buffturn2 == 0) {
-				sskill3.buffendflag2 = true;
+			else if (sskill3.buffturn[1] == 0) {
+				sskill3.buffendflag[1] = true;
 			}
 		}
 		
 		//効果ターンが0になったらステータスを戻す
 		//処理1
-		if (sskill3.buffturn1 == 1 && battleturn > 1) {
+		if (sskill3.buffturn[0] == 1 && battleturn > 1) {
 			if (gameflame == flame15) {
-				coverflag1 = false;		//タゲ集中1解除
+				coverflag[0] = false;		//タゲ集中1解除
 			}
 		}
 		//処理2
-		if (sskill3.buffturn2 == 1 && battleturn > 1) {
+		if (sskill3.buffturn[1] == 1 && battleturn > 1) {
 			if (gameflame == flame15) {
-				coverflag2 = false;		//タゲ集中2解除
+				coverflag[1] = false;		//タゲ集中2解除
 			}
 		}
 
@@ -7760,36 +8336,36 @@ void BossScene::Skillturn()
 
 		//表記して終了
 		if (battleturn > 1) {
-			if (sskill3.buffturn1 == 1) {
-				if (sskill3.buffendflag1 == false) {
+			if (sskill3.buffturn[0] == 1) {
+				if (sskill3.buffendflag[0] == false) {
 					if (gameflame == flame80) {
 						this->addChild(sskill3buffend, backdepth, buffendS);	//バフの効果が切れたことを表記する
 					}
 					if (gameflame == flame150) {
-						sskill3.buffturn1 = 0;				//初期化する
-						sskill3.buffendflag1 = true;		//終わった
+						sskill3.buffturn[0] = 0;				//初期化する
+						sskill3.buffendflag[0] = true;		//終わった
 					}
 				}
 			}
-			if (sskill3.buffturn2 == 1) {
-				if (sskill3.buffendflag2 == false) {
+			if (sskill3.buffturn[1] == 1) {
+				if (sskill3.buffendflag[1] == false) {
 					if (gameflame == flame80) {
 						this->addChild(sskill3buffend, backdepth, buffendS);	//バフの効果が切れたことを表記する
 					}
 					if (gameflame == flame150) {
-						sskill3.buffturn2 = 0;				//初期化する
-						sskill3.buffendflag2 = true;		//終わった
+						sskill3.buffturn[1] = 0;				//初期化する
+						sskill3.buffendflag[1] = true;		//終わった
 					}
 				}
 			}
 		}
 		//騎士のスキル3の処理が全部終了したら終わり
-		if (sskill3.buffendflag1 == true && sskill3.buffendflag2 == true) {
+		if (sskill3.buffendflag[0] == true && sskill3.buffendflag[1] == true) {
 			bufft = SSKILL4T;
 			this->removeChildByTag(buffendS);			//表記を消す
 			sskill3allworkendflag = true;				//スキル７の処理は全部終わった
-			sskill3.buffendflag1 = false;				//初期化
-			sskill3.buffendflag2 = false;				//初期化
+			sskill3.buffendflag[0] = false;				//初期化
+			sskill3.buffendflag[1] = false;				//初期化
 			gameflame = 0;								//時間を0に
 		}
 		break;
@@ -7798,19 +8374,19 @@ void BossScene::Skillturn()
 	case BossScene::SSKILL4T: {
 		//重ね掛けの場合があるから増やしておく
 		//騎士　sskill4の効果ターン処理1
-		if (sskill4.buffendflag1 == false) {
-			if (sskill4.buffturn1 > 1) {
-				sskill4.buffturn1 -= 1;
-				sskill4.buffendflag1 = true;	//スキルターンがあるならターンを1引いて終了
+		if (sskill4.buffendflag[0] == false) {
+			if (sskill4.buffturn[0] > 1) {
+				sskill4.buffturn[0] -= 1;
+				sskill4.buffendflag[0] = true;	//スキルターンがあるならターンを1引いて終了
 			}
-			else if (sskill4.buffturn1 == 0) {
-				sskill4.buffendflag1 = true;	//スキルターンがないならそのまま終了
+			else if (sskill4.buffturn[0] == 0) {
+				sskill4.buffendflag[0] = true;	//スキルターンがないならそのまま終了
 			}
 		}
 
 		//効果ターンが0になったらステータスを戻す
 		//処理1
-		if (sskill4.buffturn1 == 1 && battleturn > 1) {
+		if (sskill4.buffturn[0] == 1 && battleturn > 1) {
 			if (gameflame == flame15) {
 				insteadflag = false;		//タゲ集中1解除
 			}
@@ -7822,25 +8398,25 @@ void BossScene::Skillturn()
 
 		//表記して終了
 		if (battleturn > 1) {
-			if (sskill4.buffturn1 == 1) {
-				if (sskill4.buffendflag1 == false) {
+			if (sskill4.buffturn[0] == 1) {
+				if (sskill4.buffendflag[0] == false) {
 					if (gameflame == flame80) {
 						this->addChild(sskill4buffend, backdepth, buffendS);	//バフの効果が切れたことを表記する
 					}
 					if (gameflame == flame150) {
-						sskill4.buffturn1 = 0;				//初期化する
-						sskill4.buffendflag1 = true;		//終わった
+						sskill4.buffturn[0] = 0;				//初期化する
+						sskill4.buffendflag[0] = true;		//終わった
 					}
 				}
 			}
 		}
 		//騎士のスキル3の処理が全部終了したら終わり
-		if (sskill4.buffendflag1 == true) {
+		if (sskill4.buffendflag[0] == true) {
 			bufft = SSKILL5T;
 			this->removeChildByTag(buffendS);			//表記を消す
 			sskill4allworkendflag = true;				//スキル７の処理は全部終わった
-			sskill4.buffendflag1 = false;				//初期化
-			sskill4.buffendflag2 = false;				//初期化
+			sskill4.buffendflag[0] = false;				//初期化
+			sskill4.buffendflag[1] = false;				//初期化
 			gameflame = 0;								//時間を0に
 		}
 		break;
@@ -7849,19 +8425,19 @@ void BossScene::Skillturn()
 	case BossScene::SSKILL5T: {
 		//重ね掛けの場合があるから増やしておく
 		//騎士　sskill5の効果ターン処理1
-		if (sskill5.buffendflag1 == false) {
-			if (sskill5.buffturn1 > 1) {
-				sskill5.buffturn1 -= 1;
-				sskill5.buffendflag1 = true;	//スキルターンがあるならターンを1引いて終了
+		if (sskill5.buffendflag[0] == false) {
+			if (sskill5.buffturn[0] > 1) {
+				sskill5.buffturn[0] -= 1;
+				sskill5.buffendflag[0] = true;	//スキルターンがあるならターンを1引いて終了
 			}
-			else if (sskill5.buffturn1 == 0) {
-				sskill5.buffendflag1 = true;	//スキルターンがないならそのまま終了
+			else if (sskill5.buffturn[0] == 0) {
+				sskill5.buffendflag[0] = true;	//スキルターンがないならそのまま終了
 			}
 		}
 
 		//効果ターンが0になったらステータスを戻す
 		//処理1
-		if (sskill5.buffturn1 == 1 && battleturn > 1) {
+		if (sskill5.buffturn[0] == 1 && battleturn > 1) {
 			if (gameflame == flame15) {
 				allinsteadflag = false;		//タゲ集中1解除
 			}
@@ -7873,25 +8449,25 @@ void BossScene::Skillturn()
 
 		//表記して終了
 		if (battleturn > 1) {
-			if (sskill5.buffturn1 == 1) {
-				if (sskill5.buffendflag1 == false) {
+			if (sskill5.buffturn[0] == 1) {
+				if (sskill5.buffendflag[0] == false) {
 					if (gameflame == flame80) {
 						this->addChild(sskill5buffend, backdepth, buffendS);	//バフの効果が切れたことを表記する
 					}
 					if (gameflame == flame150) {
-						sskill5.buffturn1 = 0;				//初期化する
-						sskill5.buffendflag1 = true;		//終わった
+						sskill5.buffturn[0] = 0;				//初期化する
+						sskill5.buffendflag[0] = true;		//終わった
 					}
 				}
 			}
 		}
 		//騎士のスキル3の処理が全部終了したら終わり
-		if (sskill5.buffendflag1 == true) {
+		if (sskill5.buffendflag[0] == true) {
 			bufft = SSKILL6T;
 			this->removeChildByTag(buffendS);			//表記を消す
 			sskill5allworkendflag = true;				//スキル７の処理は全部終わった
-			sskill5.buffendflag1 = false;				//初期化
-			sskill5.buffendflag2 = false;				//初期化
+			sskill5.buffendflag[0] = false;				//初期化
+			sskill5.buffendflag[1] = false;				//初期化
 			gameflame = 0;								//時間を0に
 		}
 		break;
@@ -7901,22 +8477,22 @@ void BossScene::Skillturn()
 		//重ね掛けの場合があるから増やしておく
 		//フラグがないなら終わり
 		if (resurrectionflag == false) {
-			sskill6.buffendflag1 = true;
+			sskill6.buffendflag[0] = true;
 		}
 		//騎士　sskill6の効果ターン処理1
-		if (sskill6.buffendflag1 == false) {
-			if (sskill6.buffturn1 > 1) {
-				sskill6.buffturn1 -= 1;
-				sskill6.buffendflag1 = true;	//スキルターンがあるならターンを1引いて終了
+		if (sskill6.buffendflag[0] == false) {
+			if (sskill6.buffturn[0] > 1) {
+				sskill6.buffturn[0] -= 1;
+				sskill6.buffendflag[0] = true;	//スキルターンがあるならターンを1引いて終了
 			}
-			else if (sskill6.buffturn1 == 0) {
-				sskill6.buffendflag1 = true;	//スキルターンがないならそのまま終了
+			else if (sskill6.buffturn[0] == 0) {
+				sskill6.buffendflag[0] = true;	//スキルターンがないならそのまま終了
 			}
 		}
 
 		//効果ターンが0になったらステータスを戻す
 		//処理1
-		if (sskill6.buffturn1 == 1 && battleturn > 1) {
+		if (sskill6.buffturn[0] == 1 && battleturn > 1) {
 			if (gameflame == flame15) {
 				resurrectionflag = false;
 			}
@@ -7928,25 +8504,25 @@ void BossScene::Skillturn()
 		
 		//表記して終了
 		if (battleturn > 1) {
-			if (sskill6.buffturn1 == 1) {
-				if (sskill6.buffendflag1 == false) {
+			if (sskill6.buffturn[0] == 1) {
+				if (sskill6.buffendflag[0] == false) {
 					if (gameflame == flame80) {
 						this->addChild(sskill6buffend, backdepth, buffendS);	//バフの効果が切れたことを表記する
 					}
 					if (gameflame == flame150) {
-						sskill6.buffturn1 = 0;				//初期化する
-						sskill6.buffendflag1 = true;		//終わった
+						sskill6.buffturn[0] = 0;				//初期化する
+						sskill6.buffendflag[0] = true;		//終わった
 					}
 				}
 			}
 		}
 		//騎士のスキル2の処理が全部終了したら終わり
-		if (sskill6.buffendflag1 == true) {
+		if (sskill6.buffendflag[0] == true) {
 			bufft = SSKILL7T;
 			this->removeChildByTag(buffendS);			//表記を消す
 			sskill6allworkendflag = true;				//スキル７の処理は全部終わった
-			sskill6.buffendflag1 = false;				//初期化
-			sskill6.buffendflag2 = false;				//初期化
+			sskill6.buffendflag[0] = false;				//初期化
+			sskill6.buffendflag[1] = false;				//初期化
 			gameflame = 0;								//時間を0に
 		}
 		
@@ -7956,89 +8532,99 @@ void BossScene::Skillturn()
 	case BossScene::SSKILL7T: {
 		//重ね掛けの場合があるから増やしておく
 		//騎士　sskill7の効果ターン処理1
-		if (sskill7.buffendflag1 == false) {
-			if (sskill7.buffturn1 > 1) {
-				sskill7.buffturn1 -= 1;
-				sskill7.buffendflag1 = true;	//スキルターンがあるならターンを1引いて終了
+		if (sskill7.buffendflag[0] == false) {
+			if (sskill7.buffturn[0] > 1) {
+				sskill7.buffturn[0] -= 1;
+				sskill7.buffendflag[0] = true;	//スキルターンがあるならターンを1引いて終了
 			}
-			else if (sskill7.buffturn1 == 0) {
-				sskill7.buffendflag1 = true;	//スキルターンがないならそのまま終了
+			else if (sskill7.buffturn[0] == 0) {
+				sskill7.buffendflag[0] = true;	//スキルターンがないならそのまま終了
 			}
 		}
 		//騎士　sskill7の効果ターン処理2
-		if (sskill7.buffendflag2 == false) {
-			if (sskill7.buffturn2 > 1) {
-				sskill7.buffturn2 -= 1;
-				sskill7.buffendflag2 = true;
+		if (sskill7.buffendflag[1] == false) {
+			if (sskill7.buffturn[1] > 1) {
+				sskill7.buffturn[1] -= 1;
+				sskill7.buffendflag[1] = true;
 			}
-			else if (sskill7.buffturn2 == 0) {
-				sskill7.buffendflag2 = true;
+			else if (sskill7.buffturn[1] == 0) {
+				sskill7.buffendflag[1] = true;
 			}
 		}
 		//騎士　sskill7の効果ターン処理3
-		if (sskill7.buffendflag3 == false) {
-			if (sskill7.buffturn3 > 1) {
-				sskill7.buffturn3 -= 1;
-				sskill7.buffendflag3 = true;
+		if (sskill7.buffendflag[2] == false) {
+			if (sskill7.buffturn[2] > 1) {
+				sskill7.buffturn[2] -= 1;
+				sskill7.buffendflag[2] = true;
 			}
-			else if (sskill7.buffturn3 == 0) {
-				sskill7.buffendflag3 = true;
+			else if (sskill7.buffturn[2] == 0) {
+				sskill7.buffendflag[2] = true;
 			}
 		}
 		//騎士　sskill7の効果ターン処理4
-		if (sskill7.buffendflag4 == false) {
-			if (sskill7.buffturn4 > 1) {
-				sskill7.buffturn4 -= 1;
-				sskill7.buffendflag4 = true;
+		if (sskill7.buffendflag[3] == false) {
+			if (sskill7.buffturn[3] > 1) {
+				sskill7.buffturn[3] -= 1;
+				sskill7.buffendflag[3] = true;
 			}
-			else if (sskill7.buffturn4 == 0) {
-				sskill7.buffendflag4 = true;
+			else if (sskill7.buffturn[3] == 0) {
+				sskill7.buffendflag[3] = true;
 			}
 		}
 		//騎士　sskill7の効果ターン処理5
-		if (sskill7.buffendflag5 == false) {
-			if (sskill7.buffturn5 > 1) {
-				sskill7.buffturn5 -= 1;
-				sskill7.buffendflag5 = true;
+		if (sskill7.buffendflag[4] == false) {
+			if (sskill7.buffturn[4] > 1) {
+				sskill7.buffturn[4] -= 1;
+				sskill7.buffendflag[4] = true;
 			}
-			else if (sskill7.buffturn5 == 0) {
-				sskill7.buffendflag5 = true;
+			else if (sskill7.buffturn[4] == 0) {
+				sskill7.buffendflag[4] = true;
 			}
 		}
 		//効果ターンが0になったらステータスを戻す
 		//処理1
-		if (sskill7.buffturn1 == 1 && battleturn > 1) {
+		if (sskill7.buffturn[0] == 1 && battleturn > 1) {
 			if (gameflame == flame15) {
-				attacker.def -= sskill7.buffupefect1;		//上げた分だけ引く
-				sskill7.buffupefect1 = 0;					//バフの効果を初期値に戻す
+				shield.def -= sskill7.buffupefect[0][0];		//上げた分だけ引く
+				shield.mdef -= sskill7.buffupefect[1][0];
+				sskill7.buffupefect[0][0] = 0;					//バフの効果を初期値に戻す
+				sskill7.buffupefect[1][0] = 0;					//バフの効果を初期値に戻す
 			}
 		}
 		//処理2
-		if (sskill7.buffturn2 == 1 && battleturn > 1) {
+		if (sskill7.buffturn[1] == 1 && battleturn > 1) {
 			if (gameflame == flame15) {
-				attacker.def -= sskill7.buffupefect2;		//上げた分だけ引く
-				sskill7.buffupefect2 = 0;					//バフの効果を初期値に戻す
+				shield.def -= sskill7.buffupefect[0][1];		//上げた分だけ引く
+				shield.mdef -= sskill7.buffupefect[1][1];
+				sskill7.buffupefect[0][1] = 0;					//バフの効果を初期値に戻す
+				sskill7.buffupefect[1][1] = 0;					//バフの効果を初期値に戻す
 			}
 		}
 		//処理3
-		if (sskill7.buffturn3 == 1 && battleturn > 1) {
+		if (sskill7.buffturn[2] == 1 && battleturn > 1) {
 			if (gameflame == flame15) {
-				attacker.def -= sskill7.buffupefect3;		//上げた分だけ引く
-				sskill7.buffupefect3 = 0;					//バフの効果を初期値に戻す
+				shield.def -= sskill7.buffupefect[0][2];		//上げた分だけ引く
+				shield.mdef -= sskill7.buffupefect[1][2];
+				sskill7.buffupefect[0][2] = 0;					//バフの効果を初期値に戻す
+				sskill7.buffupefect[1][2] = 0;					//バフの効果を初期値に戻す
 			}
 		}
 		//処理4
-		if (sskill7.buffturn4 == 1 && battleturn > 1) {
+		if (sskill7.buffturn[3] == 1 && battleturn > 1) {
 			if (gameflame == flame15) {
-				attacker.def -= sskill7.buffupefect4;		//上げた分だけ引く
-				sskill7.buffupefect4 = 0;					//バフの効果を初期値に戻す
+				shield.def -= sskill7.buffupefect[0][3];		//上げた分だけ引く
+				shield.mdef -= sskill7.buffupefect[1][3];
+				sskill7.buffupefect[0][3] = 0;					//バフの効果を初期値に戻す
+				sskill7.buffupefect[1][3] = 0;					//バフの効果を初期値に戻す
 			}
 		}
 		//処理5
-		if (sskill7.buffturn5 == 1 && battleturn > 1) {
+		if (sskill7.buffturn[4] == 1 && battleturn > 1) {
 			if (gameflame == flame15) {
-				attacker.def -= sskill7.buffupefect5;		//上げた分だけ引く
-				sskill7.buffupefect5 = 0;					//バフの効果を初期値に戻す
+				shield.def -= sskill7.buffupefect[0][4];		//上げた分だけ引く
+				shield.mdef -= sskill7.buffupefect[1][4];
+				sskill7.buffupefect[0][4] = 0;					//バフの効果を初期値に戻す
+				sskill7.buffupefect[1][4] = 0;					//バフの効果を初期値に戻す
 			}
 		}
 
@@ -8048,74 +8634,74 @@ void BossScene::Skillturn()
 
 		//表記して終了
 		if (battleturn > 1) {
-			if (sskill7.buffturn1 == 1) {
-				if (sskill7.buffendflag1 == false) {
+			if (sskill7.buffturn[0] == 1) {
+				if (sskill7.buffendflag[0] == false) {
 					if (gameflame == flame80) {
 						this->addChild(sskill7buffend, backdepth, buffendS);	//バフの効果が切れたことを表記する
 					}
 					if (gameflame == flame150) {
-						sskill7.buffturn1 = 0;				//初期化する
-						sskill7.buffendflag1 = true;		//終わった
+						sskill7.buffturn[0] = 0;				//初期化する
+						sskill7.buffendflag[0] = true;		//終わった
 					}
 				}
 			}
-			if (sskill7.buffturn2 == 1) {
-				if (sskill7.buffendflag2 == false) {
+			if (sskill7.buffturn[1] == 1) {
+				if (sskill7.buffendflag[1] == false) {
 					if (gameflame == flame80) {
 						this->addChild(sskill7buffend, backdepth, buffendS);	//バフの効果が切れたことを表記する
 					}
 					if (gameflame == flame150) {
-						sskill7.buffturn2 = 0;				//初期化する
-						sskill7.buffendflag2 = true;		//終わった
+						sskill7.buffturn[1] = 0;				//初期化する
+						sskill7.buffendflag[1] = true;		//終わった
 					}
 				}
 			}
-			if (sskill7.buffturn3 == 1) {
-				if (sskill7.buffendflag3 == false) {
+			if (sskill7.buffturn[2] == 1) {
+				if (sskill7.buffendflag[2] == false) {
 					if (gameflame == flame80) {
 						this->addChild(sskill7buffend, backdepth, buffendS);	//バフの効果が切れたことを表記する
 					}
 					if (gameflame == flame150) {
-						sskill7.buffturn3 = 0;				//初期化する
-						sskill7.buffendflag3 = true;		//終わった
+						sskill7.buffturn[2] = 0;				//初期化する
+						sskill7.buffendflag[2] = true;		//終わった
 					}
 				}
 			}
-			if (sskill7.buffturn4 == 1) {
-				if (sskill7.buffendflag4 == false) {
+			if (sskill7.buffturn[3] == 1) {
+				if (sskill7.buffendflag[3] == false) {
 					if (gameflame == flame80) {
 						this->addChild(sskill7buffend, backdepth, buffendS);	//バフの効果が切れたことを表記する
 					}
 					if (gameflame == flame150) {
-						sskill7.buffturn4 = 0;				//初期化する
-						sskill7.buffendflag4 = true;		//終わった
+						sskill7.buffturn[3] = 0;				//初期化する
+						sskill7.buffendflag[3] = true;		//終わった
 					}
 				}
 			}
-			if (sskill7.buffturn5 == 1) {
-				if (sskill7.buffendflag5 == false) {
+			if (sskill7.buffturn[4] == 1) {
+				if (sskill7.buffendflag[4] == false) {
 					if (gameflame == flame80) {
 						this->addChild(sskill7buffend, backdepth, buffendS);	//バフの効果が切れたことを表記する
 					}
 					if (gameflame == flame150) {
-						sskill7.buffturn5 = 0;				//初期化する
-						sskill7.buffendflag5 = true;		//終わった
+						sskill7.buffturn[4] = 0;				//初期化する
+						sskill7.buffendflag[4] = true;		//終わった
 					}
 				}
 			}
 		}
 		//騎士のスキル7の処理が全部終了したら終わり
-		if (sskill7.buffendflag1 == true && sskill7.buffendflag2 == true
-			&& sskill7.buffendflag3 == true && sskill7.buffendflag4 == true
-			&& sskill7.buffendflag5 == true) {
+		if (sskill7.buffendflag[0] == true && sskill7.buffendflag[1] == true
+			&& sskill7.buffendflag[2] == true && sskill7.buffendflag[3] == true
+			&& sskill7.buffendflag[4] == true) {
 			bufft = SSKILL8T;
 			this->removeChildByTag(buffendS);			//表記を消す
 			sskill7allworkendflag = true;				//スキル７の処理は全部終わった
-			sskill7.buffendflag1 = false;				//初期化
-			sskill7.buffendflag2 = false;				//初期化
-			sskill7.buffendflag3 = false;				//初期化
-			sskill7.buffendflag4 = false;				//初期化
-			sskill7.buffendflag5 = false;				//初期化
+			sskill7.buffendflag[0] = false;				//初期化
+			sskill7.buffendflag[1] = false;				//初期化
+			sskill7.buffendflag[2] = false;				//初期化
+			sskill7.buffendflag[3] = false;				//初期化
+			sskill7.buffendflag[4] = false;				//初期化
 			gameflame = 0;								//時間を0に
 		}
 		break;
@@ -8124,80 +8710,96 @@ void BossScene::Skillturn()
 	case BossScene::SSKILL8T: {
 		//重ね掛けの場合があるから増やしておく
 		//騎士　sskill8の効果ターン処理1
-		if (sskill8.buffendflag1 == false) {
-			if (sskill8.buffturn1 > 1) {
-				sskill8.buffturn1 -= 1;
-				sskill8.buffendflag1 = true;	//スキルターンがあるならターンを1引いて終了
+		if (sskill8.buffendflag[0] == false) {
+			if (sskill8.buffturn[0] > 1) {
+				sskill8.buffturn[0] -= 1;
+				sskill8.buffendflag[0] = true;	//スキルターンがあるならターンを1引いて終了
 			}
-			else if (sskill8.buffturn1 == 0) {
-				sskill8.buffendflag1 = true;	//スキルターンがないならそのまま終了
+			else if (sskill8.buffturn[0] == 0) {
+				sskill8.buffendflag[0] = true;	//スキルターンがないならそのまま終了
 			}
 		}
 		//騎士　sskill8の効果ターン処理2
-		if (sskill8.buffendflag2 == false) {
-			if (sskill8.buffturn2 > 1) {
-				sskill8.buffturn2 -= 1;
-				sskill8.buffendflag2 = true;
+		if (sskill8.buffendflag[1] == false) {
+			if (sskill8.buffturn[1] > 1) {
+				sskill8.buffturn[1] -= 1;
+				sskill8.buffendflag[1] = true;
 			}
-			else if (sskill8.buffturn2 == 0) {
-				sskill8.buffendflag2 = true;
+			else if (sskill8.buffturn[1] == 0) {
+				sskill8.buffendflag[1] = true;
 			}
 		}
 		//騎士　sskill8の効果ターン処理3
-		if (sskill8.buffendflag3 == false) {
-			if (sskill8.buffturn3 > 1) {
-				sskill8.buffturn3 -= 1;
-				sskill8.buffendflag3 = true;
+		if (sskill8.buffendflag[2] == false) {
+			if (sskill8.buffturn[2] > 1) {
+				sskill8.buffturn[2] -= 1;
+				sskill8.buffendflag[2] = true;
 			}
-			else if (sskill8.buffturn3 == 0) {
-				sskill8.buffendflag3 = true;
+			else if (sskill8.buffturn[2] == 0) {
+				sskill8.buffendflag[2] = true;
 			}
 		}
 		//騎士　sskill8の効果ターン処理4
-		if (sskill8.buffendflag4 == false) {
-			if (sskill8.buffturn4 > 1) {
-				sskill8.buffturn4 -= 1;
-				sskill8.buffendflag4 = true;
+		if (sskill8.buffendflag[3] == false) {
+			if (sskill8.buffturn[3] > 1) {
+				sskill8.buffturn[3] -= 1;
+				sskill8.buffendflag[3] = true;
 			}
-			else if (sskill8.buffturn4 == 0) {
-				sskill8.buffendflag4 = true;
+			else if (sskill8.buffturn[3] == 0) {
+				sskill8.buffendflag[3] = true;
 			}
 		}
 		//効果ターンが0になったらステータスを戻す
 		//処理1
-		if (sskill8.buffturn1 == 1 && battleturn > 1) {
+		if (sskill8.buffturn[0] == 1 && battleturn > 1) {
 			if (gameflame == flame15) {
-				shield.def -= sskill8.buffupefect1;	//上げた分だけ引く
-				shield.atk += sskill8.buffdownefect1;	//下げた分だけ足す
-				sskill8.buffupefect1 = 0;				//バフの効果を初期値に戻す
-				sskill8.buffdownefect1 = 0;				//バフの効果を初期値に戻す
+				shield.def -= sskill8.buffupefect[0][0];		//上げた分だけ引く
+				shield.mdef -= sskill8.buffupefect[1][0];		//上げた分だけ引く
+				shield.atk += sskill8.buffdownefect[0][0];		//下げた分だけ足す
+				shield.matk += sskill8.buffdownefect[1][0];		//下げた分だけ足す
+				sskill8.buffupefect[0][0] = 0;					//バフの効果を初期値に戻す
+				sskill8.buffupefect[1][0] = 0;					//バフの効果を初期値に戻す
+				sskill8.buffdownefect[0][0] = 0;				//バフの効果を初期値に戻す
+				sskill8.buffdownefect[1][0] = 0;				//バフの効果を初期値に戻す
 			}
 		}
 		//処理2
-		if (sskill8.buffturn2 == 1 && battleturn > 1) {
+		if (sskill8.buffturn[1] == 1 && battleturn > 1) {
 			if (gameflame == flame15) {
-				shield.def -= sskill8.buffupefect2;		//上げた分だけ引く
-				shield.atk += sskill8.buffdownefect2;	//下げた分だけ足す
-				sskill8.buffupefect2 = 0;				//バフの効果を初期値に戻す
-				sskill8.buffdownefect2 = 0;				//バフの効果を初期値に戻す
+				shield.def -= sskill8.buffupefect[0][0];		//上げた分だけ引く
+				shield.mdef -= sskill8.buffupefect[1][0];		//上げた分だけ引く
+				shield.atk += sskill8.buffdownefect[0][0];		//下げた分だけ足す
+				shield.matk += sskill8.buffdownefect[1][0];		//下げた分だけ足す
+				sskill8.buffupefect[0][0] = 0;					//バフの効果を初期値に戻す
+				sskill8.buffupefect[1][0] = 0;					//バフの効果を初期値に戻す
+				sskill8.buffdownefect[0][0] = 0;				//バフの効果を初期値に戻す
+				sskill8.buffdownefect[1][0] = 0;				//バフの効果を初期値に戻す
 			}
 		}
 		//処理3
-		if (sskill8.buffturn3 == 1 && battleturn > 1) {
+		if (sskill8.buffturn[2] == 1 && battleturn > 1) {
 			if (gameflame == flame15) {
-				shield.def -= sskill8.buffupefect3;		//上げた分だけ引く
-				shield.atk += sskill8.buffdownefect3;	//下げた分だけ足す
-				sskill8.buffupefect3 = 0;				//バフの効果を初期値に戻す
-				sskill8.buffdownefect3 = 0;				//バフの効果を初期値に戻す
+				shield.def -= sskill8.buffupefect[0][0];		//上げた分だけ引く
+				shield.mdef -= sskill8.buffupefect[1][0];		//上げた分だけ引く
+				shield.atk += sskill8.buffdownefect[0][0];		//下げた分だけ足す
+				shield.matk += sskill8.buffdownefect[1][0];		//下げた分だけ足す
+				sskill8.buffupefect[0][0] = 0;					//バフの効果を初期値に戻す
+				sskill8.buffupefect[1][0] = 0;					//バフの効果を初期値に戻す
+				sskill8.buffdownefect[0][0] = 0;				//バフの効果を初期値に戻す
+				sskill8.buffdownefect[1][0] = 0;				//バフの効果を初期値に戻す
 			}
 		}
 		//処理4
-		if (sskill8.buffturn4 == 1 && battleturn > 1) {
+		if (sskill8.buffturn[3] == 1 && battleturn > 1) {
 			if (gameflame == flame15) {
-				shield.def -= sskill8.buffupefect4;		//上げた分だけ引く
-				shield.atk += sskill8.buffdownefect4;	//下げた分だけ足す
-				sskill8.buffupefect4 = 0;				//バフの効果を初期値に戻す
-				sskill8.buffdownefect4 = 0;				//バフの効果を初期値に戻す
+				shield.def -= sskill8.buffupefect[0][0];		//上げた分だけ引く
+				shield.mdef -= sskill8.buffupefect[1][0];		//上げた分だけ引く
+				shield.atk += sskill8.buffdownefect[0][0];		//下げた分だけ足す
+				shield.matk += sskill8.buffdownefect[1][0];		//下げた分だけ足す
+				sskill8.buffupefect[0][0] = 0;					//バフの効果を初期値に戻す
+				sskill8.buffupefect[1][0] = 0;					//バフの効果を初期値に戻す
+				sskill8.buffdownefect[0][0] = 0;				//バフの効果を初期値に戻す
+				sskill8.buffdownefect[1][0] = 0;				//バフの効果を初期値に戻す
 			}
 		}
 
@@ -8210,8 +8812,8 @@ void BossScene::Skillturn()
 
 		//表記して終了
 		if (battleturn > 1) {
-			if (sskill8.buffturn1 == 1) {
-				if (sskill8.buffendflag1 == false) {
+			if (sskill8.buffturn[0] == 1) {
+				if (sskill8.buffendflag[0] == false) {
 					if (gameflame == flame80) {
 						this->addChild(sskill8buffend, backdepth, buffendS);	//バフの効果が切れたことを表記する
 					}
@@ -8220,13 +8822,13 @@ void BossScene::Skillturn()
 						this->addChild(sskill8buffend2, backdepth, buffend2S);	//バフの効果が切れたことを表記する
 					}
 					if (gameflame == flame220) {
-						sskill8.buffturn1 = 0;				//初期化する
-						sskill8.buffendflag1 = true;		//終わった
+						sskill8.buffturn[0] = 0;				//初期化する
+						sskill8.buffendflag[0] = true;		//終わった
 					}
 				}
 			}
-			if (sskill8.buffturn2 == 1) {
-				if (sskill8.buffendflag2 == false) {
+			if (sskill8.buffturn[1] == 1) {
+				if (sskill8.buffendflag[1] == false) {
 					if (gameflame == flame80) {
 						this->addChild(sskill8buffend, backdepth, buffendS);	//バフの効果が切れたことを表記する
 					}
@@ -8235,13 +8837,13 @@ void BossScene::Skillturn()
 						this->addChild(sskill8buffend2, backdepth, buffend2S);	//バフの効果が切れたことを表記する
 					}
 					if (gameflame == flame220) {
-						sskill8.buffturn2 = 0;				//初期化する
-						sskill8.buffendflag2 = true;		//終わった
+						sskill8.buffturn[1] = 0;				//初期化する
+						sskill8.buffendflag[1] = true;		//終わった
 					}
 				}
 			}
-			if (sskill8.buffturn3 == 1) {
-				if (sskill8.buffendflag3 == false) {
+			if (sskill8.buffturn[2] == 1) {
+				if (sskill8.buffendflag[2] == false) {
 					if (gameflame == flame80) {
 						this->addChild(sskill8buffend, backdepth, buffendS);	//バフの効果が切れたことを表記する
 					}
@@ -8250,13 +8852,13 @@ void BossScene::Skillturn()
 						this->addChild(sskill8buffend2, backdepth, buffend2S);	//バフの効果が切れたことを表記する
 					}
 					if (gameflame == flame220) {
-						sskill8.buffturn3 = 0;				//初期化する
-						sskill8.buffendflag3 = true;		//終わった
+						sskill8.buffturn[2] = 0;				//初期化する
+						sskill8.buffendflag[2] = true;		//終わった
 					}
 				}
 			}
-			if (sskill8.buffturn4 == 1) {
-				if (sskill8.buffendflag4 == false) {
+			if (sskill8.buffturn[3] == 1) {
+				if (sskill8.buffendflag[3] == false) {
 					if (gameflame == flame80) {
 						this->addChild(sskill8buffend, backdepth, buffendS);	//バフの効果が切れたことを表記する
 					}
@@ -8265,62 +8867,66 @@ void BossScene::Skillturn()
 						this->addChild(sskill8buffend2, backdepth, buffend2S);	//バフの効果が切れたことを表記する
 					}
 					if (gameflame == flame220) {
-						sskill8.buffturn4 = 0;				//初期化する
-						sskill8.buffendflag4 = true;		//終わった
+						sskill8.buffturn[3] = 0;				//初期化する
+						sskill8.buffendflag[3] = true;		//終わった
 					}
 				}
 			}
 		}
 		//騎士のスキル8の処理が全部終了したら終わり
-		if (sskill8.buffendflag1 == true && sskill8.buffendflag2 == true
-			&& sskill8.buffendflag3 == true && sskill8.buffendflag4 == true) {
+		if (sskill8.buffendflag[0] == true && sskill8.buffendflag[1] == true
+			&& sskill8.buffendflag[2] == true && sskill8.buffendflag[3] == true) {
 			bufft = MSKILL2T;
 			this->removeChildByTag(buffend2S);			//表記を消す
 			sskill8allworkendflag = true;				//スキル8の処理は全部終わった
-			sskill8.buffendflag1 = false;				//初期化
-			sskill8.buffendflag2 = false;				//初期化
-			sskill8.buffendflag3 = false;				//初期化
-			sskill8.buffendflag4 = false;				//初期化
+			sskill8.buffendflag[0] = false;				//初期化
+			sskill8.buffendflag[1] = false;				//初期化
+			sskill8.buffendflag[2] = false;				//初期化
+			sskill8.buffendflag[3] = false;				//初期化
 			gameflame = 0;								//時間を0に
 		}
 		break;
 	}
 //魔術師 mskill2(魔術師の防御力小アップ)
 	case BossScene::MSKILL2T: {
-		if (mskill2.buffendflag1 == false) {
+		if (mskill2.buffendflag[0] == false) {
 			//重ね掛けの場合があるから増やしておく
 			//魔術師　mskill2の効果ターン処理1
-			if (mskill2.buffturn1 > 1) {
-				mskill2.buffturn1 -= 1;
-				mskill2.buffendflag1 = true;	//スキルターンがあるならターンを1引いて終了
+			if (mskill2.buffturn[0] > 1) {
+				mskill2.buffturn[0] -= 1;
+				mskill2.buffendflag[0] = true;	//スキルターンがあるならターンを1引いて終了
 			}
-			else if (mskill2.buffturn1 == 0) {
-				mskill2.buffendflag1 = true;	//スキルターンがないならそのまま終了
+			else if (mskill2.buffturn[0] == 0) {
+				mskill2.buffendflag[0] = true;	//スキルターンがないならそのまま終了
 			}
 		}
 		//魔術師　mskill2の効果ターン処理2
-		if (mskill2.buffendflag2 == false) {
-			if (mskill2.buffturn2 > 1) {
-				mskill2.buffturn2 -= 1;
-				mskill2.buffendflag2 = true;
+		if (mskill2.buffendflag[1] == false) {
+			if (mskill2.buffturn[1] > 1) {
+				mskill2.buffturn[1] -= 1;
+				mskill2.buffendflag[1] = true;
 			}
-			else if (mskill2.buffturn2 == 0) {
-				mskill2.buffendflag2 = true;
+			else if (mskill2.buffturn[1] == 0) {
+				mskill2.buffendflag[1] = true;
 			}
 		}
 		//効果ターンが0になったらステータスを戻す
 		//処理1
-		if (mskill2.buffturn1 == 1 && battleturn > 1) {
+		if (mskill2.buffturn[0] == 1 && battleturn > 1) {
 			if (gameflame == flame15) {
-				magic.def -= mskill2.buffupefect1;		//上げた分だけ引く
-				mskill2.buffupefect1 = 0;				//バフの効果を初期値に戻す
+				magic.def -= mskill2.buffupefect[0][0];		//上げた分だけ引く
+				magic.mdef -= mskill2.buffupefect[1][0];
+				mskill2.buffupefect[0][0] = 0;				//バフの効果を初期値に戻す
+				mskill2.buffupefect[1][0] = 0;				//バフの効果を初期値に戻す
 			}
 		}
 		//処理2
-		if (mskill2.buffturn2 == 1 && battleturn > 1) {
+		if (mskill2.buffturn[1] == 1 && battleturn > 1) {
 			if (gameflame == flame15) {
-				magic.def -= mskill2.buffupefect2;		//上げた分だけ引く
-				mskill2.buffupefect2 = 0;				//バフの効果を初期値に戻す
+				magic.def -= mskill2.buffupefect[0][1];		//上げた分だけ引く
+				magic.mdef -= mskill2.buffupefect[1][1];
+				mskill2.buffupefect[0][1] = 0;				//バフの効果を初期値に戻す
+				mskill2.buffupefect[1][1] = 0;				//バフの効果を初期値に戻す
 			}
 		}
 
@@ -8330,76 +8936,78 @@ void BossScene::Skillturn()
 
 		//表記して終了
 		if (battleturn > 1) {
-			if (mskill2.buffturn1 == 1) {
-				if (mskill2.buffendflag1 == false) {
+			if (mskill2.buffturn[0] == 1) {
+				if (mskill2.buffendflag[0] == false) {
 					if (gameflame == flame80) {
 						this->addChild(mskill2buffend, backdepth, buffendS);	//バフの効果が切れたことを表記する
 					}
 					if (gameflame == flame150) {
-						mskill2.buffturn1 = 0;				//初期化する
-						mskill2.buffendflag1 = true;		//終わった
+						mskill2.buffturn[0] = 0;				//初期化する
+						mskill2.buffendflag[0] = true;		//終わった
 					}
 				}
 			}
-			if (mskill2.buffturn2 == 1) {
-				if (mskill2.buffendflag2 == false) {
+			if (mskill2.buffturn[1] == 1) {
+				if (mskill2.buffendflag[1] == false) {
 					if (gameflame == flame80) {
 						this->addChild(mskill2buffend, backdepth, buffendS);	//バフの効果が切れたことを表記する
 					}
 					if (gameflame == flame150) {
-						mskill2.buffturn2 = 0;				//初期化する
-						mskill2.buffendflag2 = true;		//終わった
+						mskill2.buffturn[1] = 0;				//初期化する
+						mskill2.buffendflag[1] = true;		//終わった
 					}
 				}
 			}
 		}
 		//魔術師のスキル2の処理が全部終了したら終わり
-		if (mskill2.buffendflag1 == true && mskill2.buffendflag2 == true) {
+		if (mskill2.buffendflag[0] == true && mskill2.buffendflag[1] == true) {
 			bufft = MSKILL3T;
 			this->removeChildByTag(buffendS);			//表記を消す
 			mskill2allworkendflag = true;				//スキル７の処理は全部終わった
-			mskill2.buffendflag1 = false;				//初期化
-			mskill2.buffendflag2 = false;				//初期化
+			mskill2.buffendflag[0] = false;				//初期化
+			mskill2.buffendflag[1] = false;				//初期化
 			gameflame = 0;								//時間を0に
 		}
 		break;
 	}
 //魔術師 mskill3(敵の攻撃力を小ダウン)
 	case BossScene::MSKILL3T: {
-		if (mskill3.buffendflag1 == false) {
+		if (mskill3.buffendflag[0] == false) {
 			//重ね掛けの場合があるから増やしておく
 			//魔術師　mskill3の効果ターン処理1
-			if (mskill3.buffturn1 > 1) {
-				mskill3.buffturn1 -= 1;
-				mskill3.buffendflag1 = true;	//スキルターンがあるならターンを1引いて終了
+			if (mskill3.buffturn[0] > 1) {
+				mskill3.buffturn[0] -= 1;
+				mskill3.buffendflag[0] = true;	//スキルターンがあるならターンを1引いて終了
 			}
-			else if (mskill3.buffturn1 == 0) {
-				mskill3.buffendflag1 = true;	//スキルターンがないならそのまま終了
+			else if (mskill3.buffturn[0] == 0) {
+				mskill3.buffendflag[0] = true;	//スキルターンがないならそのまま終了
 			}
 		}
 		//魔術師　mskill3の効果ターン処理2
-		if (mskill3.buffendflag2 == false) {
-			if (mskill3.buffturn2 > 1) {
-				mskill3.buffturn2 -= 1;
-				mskill3.buffendflag2 = true;
+		if (mskill3.buffendflag[1] == false) {
+			if (mskill3.buffturn[1] > 1) {
+				mskill3.buffturn[1] -= 1;
+				mskill3.buffendflag[1] = true;
 			}
-			else if (mskill3.buffturn2 == 0) {
-				mskill3.buffendflag2 = true;
+			else if (mskill3.buffturn[1] == 0) {
+				mskill3.buffendflag[1] = true;
 			}
 		}
 		//効果ターンが0になったらステータスを戻す
 		//処理1
-		if (mskill3.buffturn1 == 1 && battleturn > 1) {
+		if (mskill3.buffturn[0] == 1 && battleturn > 1) {
 			if (gameflame == flame15) {
-				valkyrie.atk += mskill3.buffdownefect1;		//下げた分だけ足す
-				mskill3.buffdownefect1 = 0;					//バフの効果を初期値に戻す
+				valkyrie.atk += mskill3.buffdownefect[0][0];		//下げた分だけ足す
+				valkyrie.matk += mskill3.buffdownefect[1][0];
+				mskill3.buffdownefect[0][0] = 0;					//バフの効果を初期値に戻す
+				mskill3.buffdownefect[0][1] = 0;					//バフの効果を初期値に戻す
 			}
 		}
 		//処理2
-		if (mskill3.buffturn2 == 1 && battleturn > 1) {
+		if (mskill3.buffturn[1] == 1 && battleturn > 1) {
 			if (gameflame == flame15) {
-				valkyrie.atk += mskill3.buffdownefect2;		//下げた分だけ足す
-				mskill3.buffdownefect2 = 0;					//バフの効果を初期値に戻す
+				valkyrie.atk += mskill3.buffupefect[0][1];		//下げた分だけ足す
+				mskill3.buffupefect[0][1] = 0;					//バフの効果を初期値に戻す
 			}
 		}
 
@@ -8409,36 +9017,36 @@ void BossScene::Skillturn()
 
 		//表記して終了
 		if (battleturn > 1) {
-			if (mskill3.buffturn1 == 1) {
-				if (mskill3.buffendflag1 == false) {
+			if (mskill3.buffturn[0] == 1) {
+				if (mskill3.buffendflag[0] == false) {
 					if (gameflame == flame80) {
 						this->addChild(mskill3buffend, backdepth, buffendS);	//バフの効果が切れたことを表記する
 					}
 					if (gameflame == flame150) {
-						mskill3.buffturn1 = 0;				//初期化する
-						mskill3.buffendflag1 = true;		//終わった
+						mskill3.buffturn[0] = 0;				//初期化する
+						mskill3.buffendflag[0] = true;		//終わった
 					}
 				}
 			}
-			if (mskill3.buffturn2 == 1) {
-				if (mskill3.buffendflag2 == false) {
+			if (mskill3.buffturn[1] == 1) {
+				if (mskill3.buffendflag[1] == false) {
 					if (gameflame == flame80) {
 						this->addChild(mskill3buffend, backdepth, buffendS);	//バフの効果が切れたことを表記する
 					}
 					if (gameflame == flame150) {
-						mskill3.buffturn2 = 0;				//初期化する
-						mskill3.buffendflag2 = true;		//終わった
+						mskill3.buffturn[1] = 0;				//初期化する
+						mskill3.buffendflag[1] = true;		//終わった
 					}
 				}
 			}
 		}
 		//魔術師のスキル2の処理が全部終了したら終わり
-		if (mskill3.buffendflag1 == true && mskill3.buffendflag2 == true) {
+		if (mskill3.buffendflag[0] == true && mskill3.buffendflag[1] == true) {
 			bufft = MSKILL5T;
 			this->removeChildByTag(buffendS);			//表記を消す
 			mskill3allworkendflag = true;				//スキル７の処理は全部終わった
-			mskill3.buffendflag1 = false;				//初期化
-			mskill3.buffendflag2 = false;				//初期化
+			mskill3.buffendflag[0] = false;				//初期化
+			mskill3.buffendflag[1] = false;				//初期化
 			gameflame = 0;								//時間を0に
 		}
 		break;
@@ -8447,129 +9055,193 @@ void BossScene::Skillturn()
 	case BossScene::MSKILL5T: {
 		//重ね掛けの場合があるから増やしておく
 		//魔術師　mskill5の効果ターン処理1
-		if (mskill5.buffendflag1 == false) {
-			if (mskill5.buffturn1 > 1) {
-				mskill5.buffturn1 -= 1;
-				mskill5.buffendflag1 = true;	//スキルターンがあるならターンを1引いて終了
+		if (mskill5.buffendflag[0] == false) {
+			if (mskill5.buffturn[0] > 1) {
+				mskill5.buffturn[0] -= 1;
+				mskill5.buffendflag[0] = true;	//スキルターンがあるならターンを1引いて終了
 			}
-			else if (mskill5.buffturn1 == 0) {
-				mskill5.buffendflag1 = true;	//スキルターンがないならそのまま終了
+			else if (mskill5.buffturn[0] == 0) {
+				mskill5.buffendflag[0] = true;	//スキルターンがないならそのまま終了
 			}
 		}
 		//魔術師　mskill5の効果ターン処理2
-		if (mskill5.buffendflag2 == false) {
-			if (mskill5.buffturn2 > 1) {
-				mskill5.buffturn2 -= 1;
-				mskill5.buffendflag2 = true;
+		if (mskill5.buffendflag[1] == false) {
+			if (mskill5.buffturn[1] > 1) {
+				mskill5.buffturn[1] -= 1;
+				mskill5.buffendflag[1] = true;
 			}
-			else if (mskill5.buffturn2 == 0) {
-				mskill5.buffendflag2 = true;
+			else if (mskill5.buffturn[1] == 0) {
+				mskill5.buffendflag[1] = true;
 			}
 		}
 		//魔術師　mskill5の効果ターン処理3
-		if (mskill5.buffendflag3 == false) {
-			if (mskill5.buffturn3 > 1) {
-				mskill5.buffturn3 -= 1;
-				mskill5.buffendflag3 = true;
+		if (mskill5.buffendflag[2] == false) {
+			if (mskill5.buffturn[2] > 1) {
+				mskill5.buffturn[2] -= 1;
+				mskill5.buffendflag[2] = true;
 			}
-			else if (mskill5.buffturn3 == 0) {
-				mskill5.buffendflag3 = true;
+			else if (mskill5.buffturn[2] == 0) {
+				mskill5.buffendflag[2] = true;
 			}
 		}
 		//魔術師　mskill5の効果ターン処理4
-		if (mskill5.buffendflag4 == false) {
-			if (mskill5.buffturn4 > 1) {
-				mskill5.buffturn4 -= 1;
-				mskill5.buffendflag4 = true;
+		if (mskill5.buffendflag[3] == false) {
+			if (mskill5.buffturn[3] > 1) {
+				mskill5.buffturn[3] -= 1;
+				mskill5.buffendflag[3] = true;
 			}
-			else if (mskill5.buffturn4 == 0) {
-				mskill5.buffendflag4 = true;
+			else if (mskill5.buffturn[3] == 0) {
+				mskill5.buffendflag[3] = true;
 			}
 		}
 
 		//効果ターンが0になったらステータスを戻す
 		//処理1
-		if (mskill5.buffturn1 == 1 && battleturn > 1) {
+		if (mskill5.buffturn[0] == 1 && battleturn > 1) {
 			if (gameflame == flame15) {
-				attacker.atk -= mskill5.attackeratkbuff1;	//上げた分だけ引く
-				attacker.def -= mskill5.attackerdefbuff1;	//上げた分だけ引く
-				shield.atk -= mskill5.shieldatkbuff1;		//上げた分だけ引く
-				shield.def -= mskill5.shielddefbuff1;		//上げた分だけ引く
-				magic.atk -= mskill5.magicatkbuff1;			//上げた分だけ引く
-				magic.def -= mskill5.magicdefbuff1;			//上げた分だけ引く
-				healer.atk -= mskill5.healeratkbuff1;		//上げた分だけ引く
-				healer.def -= mskill5.healerdefbuff1;		//上げた分だけ引く
-				mskill5.attackeratkbuff1 = 0;			//バフの効果を初期値に戻す
-				mskill5.attackerdefbuff1 = 0;			//バフの効果を初期値に戻す
-				mskill5.shieldatkbuff1 = 0;				//バフの効果を初期値に戻す
-				mskill5.shielddefbuff1 = 0;				//バフの効果を初期値に戻す
-				mskill5.magicatkbuff1 = 0;				//バフの効果を初期値に戻す
-				mskill5.magicdefbuff1 = 0;				//バフの効果を初期値に戻す
-				mskill5.healeratkbuff1 = 0;				//バフの効果を初期値に戻す
-				mskill5.healerdefbuff1 = 0;				//バフの効果を初期値に戻す
+				attacker.atk -= mskill5.attackerbuff[0][0];	//上げた分だけ引く
+				attacker.matk -= mskill5.attackerbuff[1][0];
+				attacker.def -= mskill5.attackerbuff[2][0];	
+				attacker.mdef -= mskill5.attackerbuff[3][0];
+				shield.atk -= mskill5.shieldbuff[0][0];
+				shield.matk -= mskill5.shieldbuff[1][0];
+				shield.def -= mskill5.shieldbuff[2][0];	
+				shield.mdef -= mskill5.shieldbuff[3][0];
+				magic.atk -= mskill5.magicbuff[0][0];
+				magic.matk -= mskill5.magicbuff[1][0];
+				magic.def -= mskill5.magicbuff[2][0];
+				magic.mdef -= mskill5.magicbuff[3][0];
+				healer.atk -= mskill5.healerbuff[0][0];
+				healer.matk -= mskill5.healerbuff[1][0];
+				healer.def -= mskill5.healerbuff[2][0];
+				healer.mdef -= mskill5.healerbuff[3][0];
+				mskill5.attackerbuff[0][0] = 0;			//バフの効果を初期値に戻す
+				mskill5.attackerbuff[1][0] = 0;
+				mskill5.attackerbuff[2][0] = 0;	
+				mskill5.attackerbuff[3][0] = 0;
+				mskill5.shieldbuff[0][0] = 0;
+				mskill5.shieldbuff[1][0] = 0;
+				mskill5.shieldbuff[2][0] = 0;
+				mskill5.shieldbuff[3][0] = 0;
+				mskill5.magicbuff[0][0] = 0;
+				mskill5.magicbuff[1][0] = 0;
+				mskill5.magicbuff[2][0] = 0;
+				mskill5.magicbuff[3][0] = 0;
+				mskill5.healerbuff[0][0] = 0;
+				mskill5.healerbuff[1][0] = 0;
+				mskill5.healerbuff[2][0] = 0;
+				mskill5.healerbuff[3][0] = 0;
 			}
 		}
 		//処理2
-		if (mskill5.buffturn2 == 1 && battleturn > 1) {
+		if (mskill5.buffturn[1] == 1 && battleturn > 1) {
 			if (gameflame == flame15) {
-				attacker.atk -= mskill5.attackeratkbuff2;	//上げた分だけ引く
-				attacker.def -= mskill5.attackerdefbuff2;	//上げた分だけ引く
-				shield.atk -= mskill5.shieldatkbuff2;		//上げた分だけ引く
-				shield.def -= mskill5.shielddefbuff2;		//上げた分だけ引く
-				magic.atk -= mskill5.magicatkbuff2;			//上げた分だけ引く
-				magic.def -= mskill5.magicdefbuff2;			//上げた分だけ引く
-				healer.atk -= mskill5.healeratkbuff2;		//上げた分だけ引く
-				healer.def -= mskill5.healerdefbuff2;		//上げた分だけ引く
-				mskill5.attackeratkbuff2 = 0;			//バフの効果を初期値に戻す
-				mskill5.attackerdefbuff2 = 0;			//バフの効果を初期値に戻す
-				mskill5.shieldatkbuff2 = 0;				//バフの効果を初期値に戻す
-				mskill5.shielddefbuff2 = 0;				//バフの効果を初期値に戻す
-				mskill5.magicatkbuff2 = 0;				//バフの効果を初期値に戻す
-				mskill5.magicdefbuff2 = 0;				//バフの効果を初期値に戻す
-				mskill5.healeratkbuff2 = 0;				//バフの効果を初期値に戻す
-				mskill5.healerdefbuff2 = 0;				//バフの効果を初期値に戻す
+				attacker.atk -= mskill5.attackerbuff[0][1];	//上げた分だけ引く
+				attacker.matk -= mskill5.attackerbuff[1][1];
+				attacker.def -= mskill5.attackerbuff[2][1];
+				attacker.mdef -= mskill5.attackerbuff[3][1];
+				shield.atk -= mskill5.shieldbuff[0][1];
+				shield.matk -= mskill5.shieldbuff[1][1];
+				shield.def -= mskill5.shieldbuff[2][1];
+				shield.mdef -= mskill5.shieldbuff[3][1];
+				magic.atk -= mskill5.magicbuff[0][1];
+				magic.matk -= mskill5.magicbuff[1][1];
+				magic.def -= mskill5.magicbuff[2][1];
+				magic.mdef -= mskill5.magicbuff[3][1];
+				healer.atk -= mskill5.healerbuff[0][1];
+				healer.matk -= mskill5.healerbuff[1][1];
+				healer.def -= mskill5.healerbuff[2][1];
+				healer.mdef -= mskill5.healerbuff[3][1];
+				mskill5.attackerbuff[0][1] = 0;			//バフの効果を初期値に戻す
+				mskill5.attackerbuff[1][1] = 0;
+				mskill5.attackerbuff[2][1] = 0;
+				mskill5.attackerbuff[3][1] = 0;
+				mskill5.shieldbuff[0][1] = 0;
+				mskill5.shieldbuff[1][1] = 0;
+				mskill5.shieldbuff[2][1] = 0;
+				mskill5.shieldbuff[3][1] = 0;
+				mskill5.magicbuff[0][1] = 0;
+				mskill5.magicbuff[1][1] = 0;
+				mskill5.magicbuff[2][1] = 0;
+				mskill5.magicbuff[3][1] = 0;
+				mskill5.healerbuff[0][1] = 0;
+				mskill5.healerbuff[1][1] = 0;
+				mskill5.healerbuff[2][1] = 0;
+				mskill5.healerbuff[3][1] = 0;
 			}
 		}
 		//処理3
-		if (mskill5.buffturn3 == 1 && battleturn > 1) {
+		if (mskill5.buffturn[2] == 1 && battleturn > 1) {
 			if (gameflame == flame15) {
-				attacker.atk -= mskill5.attackeratkbuff3;	//上げた分だけ引く
-				attacker.def -= mskill5.attackerdefbuff3;	//上げた分だけ引く
-				shield.atk -= mskill5.shieldatkbuff3;		//上げた分だけ引く
-				shield.def -= mskill5.shielddefbuff3;		//上げた分だけ引く
-				magic.atk -= mskill5.magicatkbuff3;			//上げた分だけ引く
-				magic.def -= mskill5.magicdefbuff3;			//上げた分だけ引く
-				healer.atk -= mskill5.healeratkbuff3;		//上げた分だけ引く
-				healer.def -= mskill5.healerdefbuff3;		//上げた分だけ引く
-				mskill5.attackeratkbuff3 = 0;			//バフの効果を初期値に戻す
-				mskill5.attackerdefbuff3 = 0;			//バフの効果を初期値に戻す
-				mskill5.shieldatkbuff3 = 0;				//バフの効果を初期値に戻す
-				mskill5.shielddefbuff3 = 0;				//バフの効果を初期値に戻す
-				mskill5.magicatkbuff3 = 0;				//バフの効果を初期値に戻す
-				mskill5.magicdefbuff3 = 0;				//バフの効果を初期値に戻す
-				mskill5.healeratkbuff3 = 0;				//バフの効果を初期値に戻す
-				mskill5.healerdefbuff3 = 0;				//バフの効果を初期値に戻す
+				attacker.atk -= mskill5.attackerbuff[0][2];	//上げた分だけ引く
+				attacker.matk -= mskill5.attackerbuff[1][2];
+				attacker.def -= mskill5.attackerbuff[2][2];
+				attacker.mdef -= mskill5.attackerbuff[3][2];
+				shield.atk -= mskill5.shieldbuff[0][2];
+				shield.matk -= mskill5.shieldbuff[1][2];
+				shield.def -= mskill5.shieldbuff[2][2];
+				shield.mdef -= mskill5.shieldbuff[3][2];
+				magic.atk -= mskill5.magicbuff[0][2];
+				magic.matk -= mskill5.magicbuff[1][2];
+				magic.def -= mskill5.magicbuff[2][2];
+				magic.mdef -= mskill5.magicbuff[3][2];
+				healer.atk -= mskill5.healerbuff[0][2];
+				healer.matk -= mskill5.healerbuff[1][2];
+				healer.def -= mskill5.healerbuff[2][2];
+				healer.mdef -= mskill5.healerbuff[3][2];
+				mskill5.attackerbuff[0][2] = 0;			//バフの効果を初期値に戻す
+				mskill5.attackerbuff[1][2] = 0;
+				mskill5.attackerbuff[2][2] = 0;
+				mskill5.attackerbuff[3][2] = 0;
+				mskill5.shieldbuff[0][2] = 0;
+				mskill5.shieldbuff[1][2] = 0;
+				mskill5.shieldbuff[2][2] = 0;
+				mskill5.shieldbuff[3][2] = 0;
+				mskill5.magicbuff[0][2] = 0;
+				mskill5.magicbuff[1][2] = 0;
+				mskill5.magicbuff[2][2] = 0;
+				mskill5.magicbuff[3][2] = 0;
+				mskill5.healerbuff[0][2] = 0;
+				mskill5.healerbuff[1][2] = 0;
+				mskill5.healerbuff[2][2] = 0;
+				mskill5.healerbuff[3][2] = 0;
 			}
 		}
 		//処理4
-		if (mskill5.buffturn4 == 1 && battleturn > 1) {
+		if (mskill5.buffturn[3] == 1 && battleturn > 1) {
 			if (gameflame == flame15) {
-				attacker.atk -= mskill5.attackeratkbuff4;	//上げた分だけ引く
-				attacker.def -= mskill5.attackerdefbuff4;	//上げた分だけ引く
-				shield.atk -= mskill5.shieldatkbuff4;		//上げた分だけ引く
-				shield.def -= mskill5.shielddefbuff4;		//上げた分だけ引く
-				magic.atk -= mskill5.magicatkbuff4;			//上げた分だけ引く
-				magic.def -= mskill5.magicdefbuff4;			//上げた分だけ引く
-				healer.atk -= mskill5.healeratkbuff4;		//上げた分だけ引く
-				healer.def -= mskill5.healerdefbuff4;		//上げた分だけ引く
-				mskill5.attackeratkbuff4 = 0;			//バフの効果を初期値に戻す
-				mskill5.attackerdefbuff4 = 0;			//バフの効果を初期値に戻す
-				mskill5.shieldatkbuff4 = 0;				//バフの効果を初期値に戻す
-				mskill5.shielddefbuff4 = 0;				//バフの効果を初期値に戻す
-				mskill5.magicatkbuff4 = 0;				//バフの効果を初期値に戻す
-				mskill5.magicdefbuff4 = 0;				//バフの効果を初期値に戻す
-				mskill5.healeratkbuff4 = 0;				//バフの効果を初期値に戻す
-				mskill5.healerdefbuff4 = 0;				//バフの効果を初期値に戻す
+				attacker.atk -= mskill5.attackerbuff[0][3];	//上げた分だけ引く
+				attacker.matk -= mskill5.attackerbuff[1][3];
+				attacker.def -= mskill5.attackerbuff[2][3];
+				attacker.mdef -= mskill5.attackerbuff[3][3];
+				shield.atk -= mskill5.shieldbuff[0][3];
+				shield.matk -= mskill5.shieldbuff[1][3];
+				shield.def -= mskill5.shieldbuff[2][3];
+				shield.mdef -= mskill5.shieldbuff[3][3];
+				magic.atk -= mskill5.magicbuff[0][3];
+				magic.matk -= mskill5.magicbuff[1][3];
+				magic.def -= mskill5.magicbuff[2][3];
+				magic.mdef -= mskill5.magicbuff[3][3];
+				healer.atk -= mskill5.healerbuff[0][3];
+				healer.matk -= mskill5.healerbuff[1][3];
+				healer.def -= mskill5.healerbuff[2][3];
+				healer.mdef -= mskill5.healerbuff[3][3];
+				mskill5.attackerbuff[0][3] = 0;			//バフの効果を初期値に戻す
+				mskill5.attackerbuff[1][3] = 0;
+				mskill5.attackerbuff[2][3] = 0;
+				mskill5.attackerbuff[3][3] = 0;
+				mskill5.shieldbuff[0][3] = 0;
+				mskill5.shieldbuff[1][3] = 0;
+				mskill5.shieldbuff[2][3] = 0;
+				mskill5.shieldbuff[3][3] = 0;
+				mskill5.magicbuff[0][3] = 0;
+				mskill5.magicbuff[1][3] = 0;
+				mskill5.magicbuff[2][3] = 0;
+				mskill5.magicbuff[3][3] = 0;
+				mskill5.healerbuff[0][3] = 0;
+				mskill5.healerbuff[1][3] = 0;
+				mskill5.healerbuff[2][3] = 0;
+				mskill5.healerbuff[3][3] = 0;
 			}
 		}
 
@@ -8582,8 +9254,8 @@ void BossScene::Skillturn()
 
 		//表記して終了
 		if (battleturn > 1) {
-			if (mskill5.buffturn1 == 1) {
-				if (mskill5.buffendflag1 == false) {
+			if (mskill5.buffturn[0] == 1) {
+				if (mskill5.buffendflag[0] == false) {
 					if (gameflame == flame80) {
 						this->addChild(mskill5buffend, backdepth, buffendS);	//バフの効果が切れたことを表記する
 					}
@@ -8592,13 +9264,13 @@ void BossScene::Skillturn()
 						this->addChild(mskill5buffend2, backdepth, buffend2S);	//バフの効果が切れたことを表記する
 					}
 					if (gameflame == flame220) {
-						mskill5.buffturn1 = 0;				//初期化する
-						mskill5.buffendflag1 = true;		//終わった
+						mskill5.buffturn[0] = 0;				//初期化する
+						mskill5.buffendflag[0] = true;		//終わった
 					}
 				}
 			}
-			if (mskill5.buffturn2 == 1) {
-				if (mskill5.buffendflag2 == false) {
+			if (mskill5.buffturn[1] == 1) {
+				if (mskill5.buffendflag[1] == false) {
 					if (gameflame == flame80) {
 						this->addChild(mskill5buffend, backdepth, buffendS);	//バフの効果が切れたことを表記する
 					}
@@ -8607,13 +9279,13 @@ void BossScene::Skillturn()
 						this->addChild(mskill5buffend2, backdepth, buffend2S);	//バフの効果が切れたことを表記する
 					}
 					if (gameflame == flame220) {
-						mskill5.buffturn2 = 0;				//初期化する
-						mskill5.buffendflag2 = true;		//終わった
+						mskill5.buffturn[1] = 0;				//初期化する
+						mskill5.buffendflag[1] = true;		//終わった
 					}
 				}
 			}
-			if (mskill5.buffturn3 == 1) {
-				if (mskill5.buffendflag3 == false) {
+			if (mskill5.buffturn[2] == 1) {
+				if (mskill5.buffendflag[2] == false) {
 					if (gameflame == flame80) {
 						this->addChild(mskill5buffend, backdepth, buffendS);	//バフの効果が切れたことを表記する
 					}
@@ -8622,13 +9294,13 @@ void BossScene::Skillturn()
 						this->addChild(mskill5buffend2, backdepth, buffend2S);	//バフの効果が切れたことを表記する
 					}
 					if (gameflame == flame220) {
-						mskill5.buffturn3 = 0;				//初期化する
-						mskill5.buffendflag3 = true;		//終わった
+						mskill5.buffturn[2] = 0;				//初期化する
+						mskill5.buffendflag[2] = true;		//終わった
 					}
 				}
 			}
-			if (mskill5.buffturn4 == 1) {
-				if (mskill5.buffendflag4 == false) {
+			if (mskill5.buffturn[3] == 1) {
+				if (mskill5.buffendflag[3] == false) {
 					if (gameflame == flame80) {
 						this->addChild(mskill5buffend, backdepth, buffendS);	//バフの効果が切れたことを表記する
 					}
@@ -8637,22 +9309,22 @@ void BossScene::Skillturn()
 						this->addChild(mskill5buffend2, backdepth, buffend2S);	//バフの効果が切れたことを表記する
 					}
 					if (gameflame == flame220) {
-						mskill5.buffturn4 = 0;				//初期化する
-						mskill5.buffendflag4 = true;		//終わった
+						mskill5.buffturn[3] = 0;				//初期化する
+						mskill5.buffendflag[3] = true;		//終わった
 					}
 				}
 			}
 		}
 		//魔術師のスキル8の処理が全部終了したら終わり
-		if (mskill5.buffendflag1 == true && mskill5.buffendflag2 == true
-			&& mskill5.buffendflag3 == true && mskill5.buffendflag4 == true) {
+		if (mskill5.buffendflag[0] == true && mskill5.buffendflag[1] == true
+			&& mskill5.buffendflag[2] == true && mskill5.buffendflag[3] == true) {
 			bufft = MSKILL6T;
 			this->removeChildByTag(buffend2S);			//表記を消す
 			mskill5allworkendflag = true;				//スキル７の処理は全部終わった
-			mskill5.buffendflag1 = false;				//初期化
-			mskill5.buffendflag2 = false;				//初期化
-			mskill5.buffendflag3 = false;				//初期化
-			mskill5.buffendflag4 = false;				//初期化
+			mskill5.buffendflag[0] = false;				//初期化
+			mskill5.buffendflag[1] = false;				//初期化
+			mskill5.buffendflag[2] = false;				//初期化
+			mskill5.buffendflag[3] = false;				//初期化
 			gameflame = 0;								//時間を0に
 		}
 		break;
@@ -8661,128 +9333,192 @@ void BossScene::Skillturn()
 	case BossScene::MSKILL6T: {
 		//重ね掛けの場合があるから増やしておく
 		//魔術師　mskill6の効果ターン処理1
-		if (mskill6.buffendflag1 == false) {
-			if (mskill6.buffturn1 > 1) {
-				mskill6.buffturn1 -= 1;
-				mskill6.buffendflag1 = true;	//スキルターンがあるならターンを1引いて終了
+		if (mskill6.buffendflag[0] == false) {
+			if (mskill6.buffturn[0] > 1) {
+				mskill6.buffturn[0] -= 1;
+				mskill6.buffendflag[0] = true;	//スキルターンがあるならターンを1引いて終了
 			}
-			else if (mskill6.buffturn1 == 0) {
-				mskill6.buffendflag1 = true;	//スキルターンがないならそのまま終了
+			else if (mskill6.buffturn[0] == 0) {
+				mskill6.buffendflag[0] = true;	//スキルターンがないならそのまま終了
 			}
 		}
 		//魔術師　mskill6の効果ターン処理2
-		if (mskill6.buffendflag2 == false) {
-			if (mskill6.buffturn2 > 1) {
-				mskill6.buffturn2 -= 1;
-				mskill6.buffendflag2 = true;
+		if (mskill6.buffendflag[1] == false) {
+			if (mskill6.buffturn[1] > 1) {
+				mskill6.buffturn[1] -= 1;
+				mskill6.buffendflag[1] = true;
 			}
-			else if (mskill6.buffturn2 == 0) {
-				mskill6.buffendflag2 = true;
+			else if (mskill6.buffturn[1] == 0) {
+				mskill6.buffendflag[1] = true;
 			}
 		}
 		//魔術師　mskill6の効果ターン処理3
-		if (mskill6.buffendflag3 == false) {
-			if (mskill6.buffturn3 > 1) {
-				mskill6.buffturn3 -= 1;
-				mskill6.buffendflag3 = true;
+		if (mskill6.buffendflag[2] == false) {
+			if (mskill6.buffturn[2] > 1) {
+				mskill6.buffturn[2] -= 1;
+				mskill6.buffendflag[2] = true;
 			}
-			else if (mskill6.buffturn3 == 0) {
-				mskill6.buffendflag3 = true;
+			else if (mskill6.buffturn[2] == 0) {
+				mskill6.buffendflag[2] = true;
 			}
 		}
 		//魔術師　mskill6の効果ターン処理4
-		if (mskill6.buffendflag4 == false) {
-			if (mskill6.buffturn4 > 1) {
-				mskill6.buffturn4 -= 1;
-				mskill6.buffendflag4 = true;
+		if (mskill6.buffendflag[3] == false) {
+			if (mskill6.buffturn[3] > 1) {
+				mskill6.buffturn[3] -= 1;
+				mskill6.buffendflag[3] = true;
 			}
-			else if (mskill6.buffturn4 == 0) {
-				mskill6.buffendflag4 = true;
+			else if (mskill6.buffturn[3] == 0) {
+				mskill6.buffendflag[3] = true;
 			}
 		}
 		//効果ターンが0になったらステータスを戻す
 		//処理1
-		if (mskill6.buffturn1 == 1 && battleturn > 1) {
+		if (mskill6.buffturn[0] == 1 && battleturn > 1) {
 			if (gameflame == flame15) {
-				attacker.atk -= mskill6.attackeratkbuff1;//上げた分だけ引く
-				attacker.def -= mskill6.attackerdefbuff1;//上げた分だけ引く
-				shield.atk -= mskill6.shieldatkbuff1;	//上げた分だけ引く
-				shield.def -= mskill6.shielddefbuff1;	//上げた分だけ引く
-				magic.atk -= mskill6.magicatkbuff1;		//上げた分だけ引く
-				magic.def -= mskill6.magicdefbuff1;		//上げた分だけ引く
-				healer.atk -= mskill6.healeratkbuff1;	//上げた分だけ引く
-				healer.def -= mskill6.healerdefbuff1;	//上げた分だけ引く
-				mskill6.attackeratkbuff1 = 0;			//バフの効果を初期値に戻す
-				mskill6.attackerdefbuff1 = 0;			//バフの効果を初期値に戻す
-				mskill6.shieldatkbuff1 = 0;				//バフの効果を初期値に戻す
-				mskill6.shielddefbuff1 = 0;				//バフの効果を初期値に戻す
-				mskill6.magicatkbuff1 = 0;				//バフの効果を初期値に戻す
-				mskill6.magicdefbuff1 = 0;				//バフの効果を初期値に戻す
-				mskill6.healeratkbuff1 = 0;				//バフの効果を初期値に戻す
-				mskill6.healerdefbuff1 = 0;				//バフの効果を初期値に戻す
+				attacker.atk -= mskill6.attackerbuff[0][0];	//上げた分だけ引く
+				attacker.matk -= mskill6.attackerbuff[1][0];
+				attacker.def -= mskill6.attackerbuff[2][0];
+				attacker.mdef -= mskill6.attackerbuff[3][0];
+				shield.atk -= mskill6.shieldbuff[0][0];
+				shield.matk -= mskill6.shieldbuff[1][0];
+				shield.def -= mskill6.shieldbuff[2][0];
+				shield.mdef -= mskill6.shieldbuff[3][0];
+				magic.atk -= mskill6.magicbuff[0][0];
+				magic.matk -= mskill6.magicbuff[1][0];
+				magic.def -= mskill6.magicbuff[2][0];
+				magic.mdef -= mskill6.magicbuff[3][0];
+				healer.atk -= mskill6.healerbuff[0][0];
+				healer.matk -= mskill6.healerbuff[1][0];
+				healer.def -= mskill6.healerbuff[2][0];
+				healer.mdef -= mskill6.healerbuff[3][0];
+				mskill6.attackerbuff[0][0] = 0;			//バフの効果を初期値に戻す
+				mskill6.attackerbuff[1][0] = 0;
+				mskill6.attackerbuff[2][0] = 0;
+				mskill6.attackerbuff[3][0] = 0;
+				mskill6.shieldbuff[0][0] = 0;
+				mskill6.shieldbuff[1][0] = 0;
+				mskill6.shieldbuff[2][0] = 0;
+				mskill6.shieldbuff[3][0] = 0;
+				mskill6.magicbuff[0][0] = 0;
+				mskill6.magicbuff[1][0] = 0;
+				mskill6.magicbuff[2][0] = 0;
+				mskill6.magicbuff[3][0] = 0;
+				mskill6.healerbuff[0][0] = 0;
+				mskill6.healerbuff[1][0] = 0;
+				mskill6.healerbuff[2][0] = 0;
+				mskill6.healerbuff[3][0] = 0;
 			}
 		}
 		//処理2
-		if (mskill6.buffturn2 == 1 && battleturn > 1) {
+		if (mskill6.buffturn[1] == 1 && battleturn > 1) {
 			if (gameflame == flame15) {
-				attacker.atk -= mskill6.attackeratkbuff2;//上げた分だけ引く
-				attacker.def -= mskill6.attackerdefbuff2;//上げた分だけ引く
-				shield.atk -= mskill6.shieldatkbuff2;	//上げた分だけ引く
-				shield.def -= mskill6.shielddefbuff2;	//上げた分だけ引く
-				magic.atk -= mskill6.magicatkbuff2;		//上げた分だけ引く
-				magic.def -= mskill6.magicdefbuff2;		//上げた分だけ引く
-				healer.atk -= mskill6.healeratkbuff2;	//上げた分だけ引く
-				healer.def -= mskill6.healerdefbuff2;	//上げた分だけ引く
-				mskill6.attackeratkbuff2 = 0;			//バフの効果を初期値に戻す
-				mskill6.attackerdefbuff2 = 0;			//バフの効果を初期値に戻す
-				mskill6.shieldatkbuff2 = 0;				//バフの効果を初期値に戻す
-				mskill6.shielddefbuff2 = 0;				//バフの効果を初期値に戻す
-				mskill6.magicatkbuff2 = 0;				//バフの効果を初期値に戻す
-				mskill6.magicdefbuff2 = 0;				//バフの効果を初期値に戻す
-				mskill6.healeratkbuff2 = 0;				//バフの効果を初期値に戻す
-				mskill6.healerdefbuff2 = 0;				//バフの効果を初期値に戻す
+				attacker.atk -= mskill6.attackerbuff[0][1];	//上げた分だけ引く
+				attacker.matk -= mskill6.attackerbuff[1][1];
+				attacker.def -= mskill6.attackerbuff[2][1];
+				attacker.mdef -= mskill6.attackerbuff[3][1];
+				shield.atk -= mskill6.shieldbuff[0][1];
+				shield.matk -= mskill6.shieldbuff[1][1];
+				shield.def -= mskill6.shieldbuff[2][1];
+				shield.mdef -= mskill6.shieldbuff[3][1];
+				magic.atk -= mskill6.magicbuff[0][1];
+				magic.matk -= mskill6.magicbuff[1][1];
+				magic.def -= mskill6.magicbuff[2][1];
+				magic.mdef -= mskill6.magicbuff[3][1];
+				healer.atk -= mskill6.healerbuff[0][1];
+				healer.matk -= mskill6.healerbuff[1][1];
+				healer.def -= mskill6.healerbuff[2][1];
+				healer.mdef -= mskill6.healerbuff[3][1];
+				mskill6.attackerbuff[0][1] = 0;			//バフの効果を初期値に戻す
+				mskill6.attackerbuff[1][1] = 0;
+				mskill6.attackerbuff[2][1] = 0;
+				mskill6.attackerbuff[3][1] = 0;
+				mskill6.shieldbuff[0][1] = 0;
+				mskill6.shieldbuff[1][1] = 0;
+				mskill6.shieldbuff[2][1] = 0;
+				mskill6.shieldbuff[3][1] = 0;
+				mskill6.magicbuff[0][1] = 0;
+				mskill6.magicbuff[1][1] = 0;
+				mskill6.magicbuff[2][1] = 0;
+				mskill6.magicbuff[3][1] = 0;
+				mskill6.healerbuff[0][1] = 0;
+				mskill6.healerbuff[1][1] = 0;
+				mskill6.healerbuff[2][1] = 0;
+				mskill6.healerbuff[3][1] = 0;
 			}
 		}
 		//処理3
-		if (mskill6.buffturn3 == 1 && battleturn > 1) {
+		if (mskill6.buffturn[2] == 1 && battleturn > 1) {
 			if (gameflame == flame15) {
-				attacker.atk -= mskill6.attackeratkbuff3;//上げた分だけ引く
-				attacker.def -= mskill6.attackerdefbuff3;//上げた分だけ引く
-				shield.atk -= mskill6.shieldatkbuff3;	//上げた分だけ引く
-				shield.def -= mskill6.shielddefbuff3;	//上げた分だけ引く
-				magic.atk -= mskill6.magicatkbuff3;		//上げた分だけ引く
-				magic.def -= mskill6.magicdefbuff3;		//上げた分だけ引く
-				healer.atk -= mskill6.healeratkbuff3;	//上げた分だけ引く
-				healer.def -= mskill6.healerdefbuff3;	//上げた分だけ引く
-				mskill6.attackeratkbuff3 = 0;			//バフの効果を初期値に戻す
-				mskill6.attackerdefbuff3 = 0;			//バフの効果を初期値に戻す
-				mskill6.shieldatkbuff3 = 0;				//バフの効果を初期値に戻す
-				mskill6.shielddefbuff3 = 0;				//バフの効果を初期値に戻す
-				mskill6.magicatkbuff3 = 0;				//バフの効果を初期値に戻す
-				mskill6.magicdefbuff3 = 0;				//バフの効果を初期値に戻す
-				mskill6.healeratkbuff3 = 0;				//バフの効果を初期値に戻す
-				mskill6.healerdefbuff3 = 0;				//バフの効果を初期値に戻す
+				attacker.atk -= mskill6.attackerbuff[0][2];	//上げた分だけ引く
+				attacker.matk -= mskill6.attackerbuff[1][2];
+				attacker.def -= mskill6.attackerbuff[2][2];
+				attacker.mdef -= mskill6.attackerbuff[3][2];
+				shield.atk -= mskill6.shieldbuff[0][2];
+				shield.matk -= mskill6.shieldbuff[1][2];
+				shield.def -= mskill6.shieldbuff[2][2];
+				shield.mdef -= mskill6.shieldbuff[3][2];
+				magic.atk -= mskill6.magicbuff[0][2];
+				magic.matk -= mskill6.magicbuff[1][2];
+				magic.def -= mskill6.magicbuff[2][2];
+				magic.mdef -= mskill6.magicbuff[3][2];
+				healer.atk -= mskill6.healerbuff[0][2];
+				healer.matk -= mskill6.healerbuff[1][2];
+				healer.def -= mskill6.healerbuff[2][2];
+				healer.mdef -= mskill6.healerbuff[3][2];
+				mskill6.attackerbuff[0][2] = 0;			//バフの効果を初期値に戻す
+				mskill6.attackerbuff[1][2] = 0;
+				mskill6.attackerbuff[2][2] = 0;
+				mskill6.attackerbuff[3][2] = 0;
+				mskill6.shieldbuff[0][2] = 0;
+				mskill6.shieldbuff[1][2] = 0;
+				mskill6.shieldbuff[2][2] = 0;
+				mskill6.shieldbuff[3][2] = 0;
+				mskill6.magicbuff[0][2] = 0;
+				mskill6.magicbuff[1][2] = 0;
+				mskill6.magicbuff[2][2] = 0;
+				mskill6.magicbuff[3][2] = 0;
+				mskill6.healerbuff[0][2] = 0;
+				mskill6.healerbuff[1][2] = 0;
+				mskill6.healerbuff[2][2] = 0;
+				mskill6.healerbuff[3][2] = 0;
 			}
 		}
 		//処理4
-		if (mskill6.buffturn4 == 1 && battleturn > 1) {
+		if (mskill6.buffturn[3] == 1 && battleturn > 1) {
 			if (gameflame == flame15) {
-				attacker.atk -= mskill6.attackeratkbuff4;//上げた分だけ引く
-				attacker.def -= mskill6.attackerdefbuff4;//上げた分だけ引く
-				shield.atk -= mskill6.shieldatkbuff4;	//上げた分だけ引く
-				shield.def -= mskill6.shielddefbuff4;	//上げた分だけ引く
-				magic.atk -= mskill6.magicatkbuff4;		//上げた分だけ引く
-				magic.def -= mskill6.magicdefbuff4;		//上げた分だけ引く
-				healer.atk -= mskill6.healeratkbuff4;	//上げた分だけ引く
-				healer.def -= mskill6.healerdefbuff4;	//上げた分だけ引く
-				mskill6.attackeratkbuff4 = 0;			//バフの効果を初期値に戻す
-				mskill6.attackerdefbuff4 = 0;			//バフの効果を初期値に戻す
-				mskill6.shieldatkbuff4 = 0;				//バフの効果を初期値に戻す
-				mskill6.shielddefbuff4 = 0;				//バフの効果を初期値に戻す
-				mskill6.magicatkbuff4 = 0;				//バフの効果を初期値に戻す
-				mskill6.magicdefbuff4 = 0;				//バフの効果を初期値に戻す
-				mskill6.healeratkbuff4 = 0;				//バフの効果を初期値に戻す
-				mskill6.healerdefbuff4 = 0;				//バフの効果を初期値に戻す
+				attacker.atk -= mskill6.attackerbuff[0][3];	//上げた分だけ引く
+				attacker.matk -= mskill6.attackerbuff[1][3];
+				attacker.def -= mskill6.attackerbuff[2][3];
+				attacker.mdef -= mskill6.attackerbuff[3][3];
+				shield.atk -= mskill6.shieldbuff[0][3];
+				shield.matk -= mskill6.shieldbuff[1][3];
+				shield.def -= mskill6.shieldbuff[2][3];
+				shield.mdef -= mskill6.shieldbuff[3][3];
+				magic.atk -= mskill6.magicbuff[0][3];
+				magic.matk -= mskill6.magicbuff[1][3];
+				magic.def -= mskill6.magicbuff[2][3];
+				magic.mdef -= mskill6.magicbuff[3][3];
+				healer.atk -= mskill6.healerbuff[0][3];
+				healer.matk -= mskill6.healerbuff[1][3];
+				healer.def -= mskill6.healerbuff[2][3];
+				healer.mdef -= mskill6.healerbuff[3][3];
+				mskill6.attackerbuff[0][3] = 0;			//バフの効果を初期値に戻す
+				mskill6.attackerbuff[1][3] = 0;
+				mskill6.attackerbuff[2][3] = 0;
+				mskill6.attackerbuff[3][3] = 0;
+				mskill6.shieldbuff[0][3] = 0;
+				mskill6.shieldbuff[1][3] = 0;
+				mskill6.shieldbuff[2][3] = 0;
+				mskill6.shieldbuff[3][3] = 0;
+				mskill6.magicbuff[0][3] = 0;
+				mskill6.magicbuff[1][3] = 0;
+				mskill6.magicbuff[2][3] = 0;
+				mskill6.magicbuff[3][3] = 0;
+				mskill6.healerbuff[0][3] = 0;
+				mskill6.healerbuff[1][3] = 0;
+				mskill6.healerbuff[2][3] = 0;
+				mskill6.healerbuff[3][3] = 0;
 			}
 		}
 
@@ -8795,8 +9531,8 @@ void BossScene::Skillturn()
 
 		//表記して終了
 		if (battleturn > 1) {
-			if (mskill6.buffturn1 == 1) {
-				if (mskill6.buffendflag1 == false) {
+			if (mskill6.buffturn[0] == 1) {
+				if (mskill6.buffendflag[0] == false) {
 					if (gameflame == flame80) {
 						this->addChild(mskill6buffend, backdepth, buffendS);	//バフの効果が切れたことを表記する
 					}
@@ -8807,13 +9543,13 @@ void BossScene::Skillturn()
 					if (gameflame == flame220) {
 						this->removeChildByTag(buffend2S);	//表記を消す
 						gameflame = 0;						//初期化する
-						mskill6.buffturn1 = 0;				//初期化する
-						mskill6.buffendflag1 = true;		//終わった
+						mskill6.buffturn[0] = 0;				//初期化する
+						mskill6.buffendflag[0] = true;		//終わった
 					}
 				}
 			}
-			if (mskill6.buffturn2 == 1) {
-				if (mskill6.buffendflag2 == false) {
+			if (mskill6.buffturn[1] == 1) {
+				if (mskill6.buffendflag[1] == false) {
 					if (gameflame == flame80) {
 						this->addChild(mskill6buffend, backdepth, buffendS);	//バフの効果が切れたことを表記する
 					}
@@ -8824,13 +9560,13 @@ void BossScene::Skillturn()
 					if (gameflame == flame220) {
 						this->removeChildByTag(buffend2S);	//表記を消す
 						gameflame = 0;						//初期化する
-						mskill6.buffturn2 = 0;				//初期化する
-						mskill6.buffendflag2 = true;		//終わった
+						mskill6.buffturn[1] = 0;				//初期化する
+						mskill6.buffendflag[1] = true;		//終わった
 					}
 				}
 			}
-			if (mskill6.buffturn3 == 1) {
-				if (mskill6.buffendflag3 == false) {
+			if (mskill6.buffturn[2] == 1) {
+				if (mskill6.buffendflag[2] == false) {
 					if (gameflame == flame80) {
 						this->addChild(mskill6buffend, backdepth, buffendS);	//バフの効果が切れたことを表記する
 					}
@@ -8841,13 +9577,13 @@ void BossScene::Skillturn()
 					if (gameflame == flame220) {
 						this->removeChildByTag(buffend2S);	//表記を消す
 						gameflame = 0;						//初期化する
-						mskill6.buffturn3 = 0;				//初期化する
-						mskill6.buffendflag3 = true;		//終わった
+						mskill6.buffturn[2] = 0;				//初期化する
+						mskill6.buffendflag[2] = true;		//終わった
 					}
 				}
 			}
-			if (mskill6.buffturn4 == 1) {
-				if (mskill6.buffendflag4 == false) {
+			if (mskill6.buffturn[3] == 1) {
+				if (mskill6.buffendflag[3] == false) {
 					if (gameflame == flame80) {
 						this->addChild(mskill6buffend, backdepth, buffendS);	//バフの効果が切れたことを表記する
 					}
@@ -8857,21 +9593,21 @@ void BossScene::Skillturn()
 					}
 					if (gameflame == flame220) {
 						this->removeChildByTag(buffend2S);	//表記を消す
-						mskill6.buffturn4 = 0;				//初期化する
-						mskill6.buffendflag4 = true;		//終わった
+						mskill6.buffturn[3] = 0;				//初期化する
+						mskill6.buffendflag[3] = true;		//終わった
 					}
 				}
 			}
 		}
 		//魔術師のスキル6の処理が全部終了したら終わり
-		if (mskill6.buffendflag1 == true && mskill6.buffendflag2 == true
-			&& mskill6.buffendflag3 == true&& mskill6.buffendflag4 == true) {
+		if (mskill6.buffendflag[0] == true && mskill6.buffendflag[1] == true
+			&& mskill6.buffendflag[2] == true&& mskill6.buffendflag[3] == true) {
 			bufft = HSKILL2T;
 			mskill6allworkendflag = true;				//スキル７の処理は全部終わった
-			mskill6.buffendflag1 = false;				//初期化
-			mskill6.buffendflag2 = false;				//初期化
-			mskill6.buffendflag3 = false;				//初期化
-			mskill6.buffendflag4 = false;				//初期化
+			mskill6.buffendflag[0] = false;				//初期化
+			mskill6.buffendflag[1] = false;				//初期化
+			mskill6.buffendflag[2] = false;				//初期化
+			mskill6.buffendflag[3] = false;				//初期化
 			gameflame = 0;								//時間を0に
 		}
 		break;
@@ -8880,72 +9616,80 @@ void BossScene::Skillturn()
 	case BossScene::HSKILL2T: {
 		//重ね掛けの場合があるから増やしておく
 		//聖職者　HSKILL2の効果ターン処理1
-		if (hskill2.buffendflag1 == false) {
-			if (hskill2.buffturn1 > 1) {
-				hskill2.buffturn1 -= 1;
-				hskill2.buffendflag1 = true;	//スキルターンがあるならターンを1引いて終了
+		if (hskill2.buffendflag[0] == false) {
+			if (hskill2.buffturn[0] > 1) {
+				hskill2.buffturn[0] -= 1;
+				hskill2.buffendflag[0] = true;	//スキルターンがあるならターンを1引いて終了
 			}
-			else if (hskill2.buffturn1 == 0) {
-				hskill2.buffendflag1 = true;	//スキルターンがないならそのまま終了
+			else if (hskill2.buffturn[0] == 0) {
+				hskill2.buffendflag[0] = true;	//スキルターンがないならそのまま終了
 			}
 		}
 		//聖職者　hskill2の効果ターン処理2
-		if (hskill2.buffendflag2 == false) {
-			if (hskill2.buffturn2 > 1) {
-				hskill2.buffturn2 -= 1;
-				hskill2.buffendflag2 = true;
+		if (hskill2.buffendflag[1] == false) {
+			if (hskill2.buffturn[1] > 1) {
+				hskill2.buffturn[1] -= 1;
+				hskill2.buffendflag[1] = true;
 			}
-			else if (hskill2.buffturn2 == 0) {
-				hskill2.buffendflag2 = true;
+			else if (hskill2.buffturn[1] == 0) {
+				hskill2.buffendflag[1] = true;
 			}
 		}
 		//聖職者　hskill2の効果ターン処理3
-		if (hskill2.buffendflag3 == false) {
-			if (hskill2.buffturn3 > 1) {
-				hskill2.buffturn3 -= 1;
-				hskill2.buffendflag3 = true;
+		if (hskill2.buffendflag[2] == false) {
+			if (hskill2.buffturn[2] > 1) {
+				hskill2.buffturn[2] -= 1;
+				hskill2.buffendflag[2] = true;
 			}
-			else if (hskill2.buffturn3 == 0) {
-				hskill2.buffendflag3 = true;
+			else if (hskill2.buffturn[2] == 0) {
+				hskill2.buffendflag[2] = true;
 			}
 		}
 		//聖職者　hskill2の効果ターン処理4
-		if (hskill2.buffendflag4 == false) {
-			if (hskill2.buffturn4 > 1) {
-				hskill2.buffturn4 -= 1;
-				hskill2.buffendflag4 = true;
+		if (hskill2.buffendflag[3] == false) {
+			if (hskill2.buffturn[3] > 1) {
+				hskill2.buffturn[3] -= 1;
+				hskill2.buffendflag[3] = true;
 			}
-			else if (hskill2.buffturn4 == 0) {
-				hskill2.buffendflag4 = true;
+			else if (hskill2.buffturn[3] == 0) {
+				hskill2.buffendflag[3] = true;
 			}
 		}
 		//効果ターンが0になったらステータスを戻す
 		//処理1
-		if (hskill2.buffturn1 == 1 && battleturn > 1) {
+		if (hskill2.buffturn[0] == 1 && battleturn > 1) {
 			if (gameflame == flame15) {
-				valkyrie.atk -= hskill2.buffupefect1;		//下げた分だけ足す
-				hskill2.buffupefect1 = 0;					//バフの効果を初期値に戻す
+				valkyrie.atk -= hskill2.buffdownefect[0][0];		//下げた分だけ足す
+				valkyrie.matk -= hskill2.buffdownefect[1][0];
+				hskill2.buffdownefect[0][0] = 0;					//バフの効果を初期値に戻す
+				hskill2.buffdownefect[1][0] = 0;
 			}
 		}
 		//処理2
-		if (hskill2.buffturn2 == 1 && battleturn > 1) {
+		if (hskill2.buffturn[1] == 1 && battleturn > 1) {
 			if (gameflame == flame15) {
-				valkyrie.atk -= hskill2.buffupefect2;		//下げた分だけ足す
-				hskill2.buffupefect2 = 0;					//バフの効果を初期値に戻す
+				valkyrie.atk -= hskill2.buffdownefect[0][1];		//下げた分だけ足す
+				valkyrie.matk -= hskill2.buffdownefect[1][1];
+				hskill2.buffdownefect[0][1] = 0;					//バフの効果を初期値に戻す
+				hskill2.buffdownefect[1][1] = 0;
 			}
 		}
 		//処理3
-		if (hskill2.buffturn3 == 1 && battleturn > 1) {
+		if (hskill2.buffturn[2] == 1 && battleturn > 1) {
 			if (gameflame == flame15) {
-				valkyrie.atk -= hskill2.buffupefect3;		//下げた分だけ足す
-				hskill2.buffupefect3 = 0;					//バフの効果を初期値に戻す
+				valkyrie.atk -= hskill2.buffdownefect[0][2];		//下げた分だけ足す
+				valkyrie.matk -= hskill2.buffdownefect[1][2];
+				hskill2.buffdownefect[0][2] = 0;					//バフの効果を初期値に戻す
+				hskill2.buffdownefect[1][2] = 0;
 			}
 		}
 		//処理4
-		if (hskill2.buffturn4 == 1 && battleturn > 1) {
+		if (hskill2.buffturn[3] == 1 && battleturn > 1) {
 			if (gameflame == flame15) {
-				valkyrie.atk -= hskill2.buffupefect4;		//下げた分だけ足す
-				hskill2.buffupefect4 = 0;					//バフの効果を初期値に戻す
+				valkyrie.atk -= hskill2.buffdownefect[0][3];		//下げた分だけ足す
+				valkyrie.matk -= hskill2.buffdownefect[1][3];
+				hskill2.buffdownefect[0][3] = 0;					//バフの効果を初期値に戻す
+				hskill2.buffdownefect[1][3] = 0;
 			}
 		}
 
@@ -8955,62 +9699,62 @@ void BossScene::Skillturn()
 
 		//表記して終了
 		if (battleturn > 1) {
-			if (hskill2.buffturn1 == 1) {
-				if (hskill2.buffendflag1 == false) {
+			if (hskill2.buffturn[0] == 1) {
+				if (hskill2.buffendflag[0] == false) {
 					if (gameflame == flame80) {
 						this->addChild(hskill2buffend, backdepth, buffendS);	//バフの効果が切れたことを表記する
 					}
 					if (gameflame == flame150) {
-						hskill2.buffturn1 = 0;				//初期化する
-						hskill2.buffendflag1 = true;		//終わった
+						hskill2.buffturn[0] = 0;				//初期化する
+						hskill2.buffendflag[0] = true;		//終わった
 					}
 				}
 			}
-			if (hskill2.buffturn2 == 1) {
-				if (hskill2.buffendflag2 == false) {
+			if (hskill2.buffturn[1] == 1) {
+				if (hskill2.buffendflag[1] == false) {
 					if (gameflame == flame80) {
 						this->addChild(hskill2buffend, backdepth, buffendS);	//バフの効果が切れたことを表記する
 					}
 					if (gameflame == flame150) {
-						hskill2.buffturn2 = 0;				//初期化する
-						hskill2.buffendflag2 = true;		//終わった
+						hskill2.buffturn[1] = 0;				//初期化する
+						hskill2.buffendflag[1] = true;		//終わった
 					}
 				}
 			}
-			if (hskill2.buffturn3 == 1) {
-				if (hskill2.buffendflag3 == false) {
+			if (hskill2.buffturn[2] == 1) {
+				if (hskill2.buffendflag[2] == false) {
 					if (gameflame == flame80) {
 						this->addChild(hskill2buffend, backdepth, buffendS);	//バフの効果が切れたことを表記する
 					}
 					if (gameflame == flame150) {
-						hskill2.buffturn3 = 0;				//初期化する
-						hskill2.buffendflag3 = true;		//終わった
+						hskill2.buffturn[2] = 0;				//初期化する
+						hskill2.buffendflag[2] = true;		//終わった
 					}
 				}
 			}
-			if (hskill2.buffturn4 == 1) {
-				if (hskill2.buffendflag4 == false) {
+			if (hskill2.buffturn[3] == 1) {
+				if (hskill2.buffendflag[3] == false) {
 					if (gameflame == flame80) {
 						this->addChild(hskill2buffend, backdepth, buffendS);	//バフの効果が切れたことを表記する
 					}
 					if (gameflame == flame150) {
-						hskill2.buffturn4 = 0;				//初期化する
-						hskill2.buffendflag4 = true;		//終わった
+						hskill2.buffturn[3] = 0;				//初期化する
+						hskill2.buffendflag[3] = true;		//終わった
 					}
 				}
 			}
 		}
 
 		//聖職者のスキル2の処理が全部終了したら終わり
-		if (hskill2.buffendflag1 == true && hskill2.buffendflag2 == true
-			&& hskill2.buffendflag3 == true && hskill2.buffendflag4 == true) {
+		if (hskill2.buffendflag[0] == true && hskill2.buffendflag[1] == true
+			&& hskill2.buffendflag[2] == true && hskill2.buffendflag[3] == true) {
 			bufft = HSKILL3T;
 			this->removeChildByTag(buffendS);			//表記を消す
 			hskill2allworkendflag = true;				//スキル７の処理は全部終わった
-			hskill2.buffendflag1 = false;				//初期化
-			hskill2.buffendflag2 = false;				//初期化
-			hskill2.buffendflag3 = false;				//初期化
-			hskill2.buffendflag4 = false;				//初期化
+			hskill2.buffendflag[0] = false;				//初期化
+			hskill2.buffendflag[1] = false;				//初期化
+			hskill2.buffendflag[2] = false;				//初期化
+			hskill2.buffendflag[3] = false;				//初期化
 			gameflame = 0;								//時間を0に
 		}
 		break;
@@ -9019,74 +9763,82 @@ void BossScene::Skillturn()
 	case BossScene::HSKILL3T: {
 		//重ね掛けの場合があるから増やしておく
 		//聖職者　hskill3の効果ターン処理1
-		if (hskill3.buffendflag1 == false) {
-			if (hskill3.buffturn1 > 1) {
-				hskill3.buffturn1 -= 1;
-				hskill3.buffendflag1 = true;	//スキルターンがあるならターンを1引いて終了
+		if (hskill3.buffendflag[0] == false) {
+			if (hskill3.buffturn[0] > 1) {
+				hskill3.buffturn[0] -= 1;
+				hskill3.buffendflag[0] = true;	//スキルターンがあるならターンを1引いて終了
 			}
-			else if (hskill3.buffturn1 == 0) {
-				hskill3.buffendflag1 = true;	//スキルターンがないならそのまま終了
+			else if (hskill3.buffturn[0] == 0) {
+				hskill3.buffendflag[0] = true;	//スキルターンがないならそのまま終了
 			}
 		}
 		//聖職者　hskill3の効果ターン処理2
-		if (hskill3.buffendflag2 == false) {
-			if (hskill3.buffturn2 > 1) {
-				hskill3.buffturn2 -= 1;
-				hskill3.buffendflag2 = true;
+		if (hskill3.buffendflag[1] == false) {
+			if (hskill3.buffturn[1] > 1) {
+				hskill3.buffturn[1] -= 1;
+				hskill3.buffendflag[1] = true;
 			}
-			else if (hskill3.buffturn2 == 0) {
-				hskill3.buffendflag2 = true;
+			else if (hskill3.buffturn[1] == 0) {
+				hskill3.buffendflag[1] = true;
 			}
 		}
 		//聖職者　hskill3の効果ターン処理3
-		if (hskill3.buffendflag3 == false) {
-			if (hskill3.buffturn3 > 1) {
-				hskill3.buffturn3 -= 1;
-				hskill3.buffendflag3 = true;
+		if (hskill3.buffendflag[2] == false) {
+			if (hskill3.buffturn[2] > 1) {
+				hskill3.buffturn[2] -= 1;
+				hskill3.buffendflag[2] = true;
 			}
-			else if (hskill3.buffturn3 == 0) {
-				hskill3.buffendflag3 = true;
+			else if (hskill3.buffturn[2] == 0) {
+				hskill3.buffendflag[2] = true;
 			}
 
 		}
 		//聖職者　hskill3の効果ターン処理4
-		if (hskill3.buffendflag4 == false) {
-			if (hskill3.buffturn4 > 1) {
-				hskill3.buffturn4 -= 1;
-				hskill3.buffendflag4 = true;
+		if (hskill3.buffendflag[3] == false) {
+			if (hskill3.buffturn[3] > 1) {
+				hskill3.buffturn[3] -= 1;
+				hskill3.buffendflag[3] = true;
 			}
-			else if (hskill3.buffturn4 == 0) {
-				hskill3.buffendflag4 = true;
+			else if (hskill3.buffturn[3] == 0) {
+				hskill3.buffendflag[3] = true;
 			}
 		}
 
 		//効果ターンが0になったらステータスを戻す
 		//処理1
-		if (hskill3.buffturn1 == 1 && battleturn > 1) {
+		if (hskill3.buffturn[0] == 1 && battleturn > 1) {
 			if (gameflame == flame15) {
-				valkyrie.def -= hskill3.buffupefect1;		//下げた分だけ足す
-				hskill3.buffupefect1 = 0;					//バフの効果を初期値に戻す
+				valkyrie.def -= hskill3.buffdownefect[0][0];		//下げた分だけ足す
+				valkyrie.mdef -= hskill3.buffdownefect[1][0];		//下げた分だけ足す
+				hskill3.buffdownefect[0][0] = 0;					//バフの効果を初期値に戻す
+				hskill3.buffdownefect[1][0] = 0;					//バフの効果を初期値に戻す
 			}
 		}
 		//処理2
-		if (hskill3.buffturn2 == 1 && battleturn > 1) {
+		if (hskill3.buffturn[1] == 1 && battleturn > 1) {
 			if (gameflame == flame15) {
-				valkyrie.def -= hskill3.buffupefect2;		//下げた分だけ足す
-				hskill3.buffupefect2 = 0;					//バフの効果を初期値に戻す
+				valkyrie.def -= hskill3.buffdownefect[0][1];		//下げた分だけ足す
+				valkyrie.mdef -= hskill3.buffdownefect[1][1];		//下げた分だけ足す
+				hskill3.buffdownefect[0][1] = 0;					//バフの効果を初期値に戻す
+				hskill3.buffdownefect[1][1] = 0;					//バフの効果を初期値に戻す
 			}
 		}
 		//処理3
-		if (hskill3.buffturn3 == 1 && battleturn > 1) {
+		if (hskill3.buffturn[2] == 1 && battleturn > 1) {
 			if (gameflame == flame15) {
-				valkyrie.def -= hskill3.buffupefect3;		//下げた分だけ足す
-				hskill3.buffupefect3 = 0;					//バフの効果を初期値に戻す
+				valkyrie.def -= hskill3.buffdownefect[0][2];		//下げた分だけ足す
+				valkyrie.mdef -= hskill3.buffdownefect[1][2];		//下げた分だけ足す
+				hskill3.buffdownefect[0][2] = 0;					//バフの効果を初期値に戻す
+				hskill3.buffdownefect[1][2] = 0;					//バフの効果を初期値に戻す
 			}
 		}
 		//処理4
-		if (hskill3.buffturn4 == 1 && battleturn > 1) {
+		if (hskill3.buffturn[3] == 1 && battleturn > 1) {
 			if (gameflame == flame15) {
-				valkyrie.def -= hskill3.buffupefect4;		//下げた分だけ足す
-				hskill3.buffupefect4 = 0;					//バフの効果を初期値に戻す
+				valkyrie.def -= hskill3.buffdownefect[0][3];		//下げた分だけ足す
+				valkyrie.mdef -= hskill3.buffdownefect[1][3];		//下げた分だけ足す
+				hskill3.buffdownefect[0][3] = 0;					//バフの効果を初期値に戻す
+				hskill3.buffdownefect[1][3] = 0;					//バフの効果を初期値に戻す
 			}
 		}
 
@@ -9096,62 +9848,62 @@ void BossScene::Skillturn()
 
 		//表記して終了
 		if (battleturn > 1) {
-			if (hskill3.buffturn1 == 1) {
-				if (hskill3.buffendflag1 == false) {
+			if (hskill3.buffturn[0] == 1) {
+				if (hskill3.buffendflag[0] == false) {
 					if (gameflame == flame80) {
 						this->addChild(hskill3buffend, backdepth, buffendS);	//バフの効果が切れたことを表記する
 					}
 					if (gameflame == flame150) {
-						hskill3.buffturn1 = 0;				//初期化する
-						hskill3.buffendflag1 = true;		//終わった
+						hskill3.buffturn[0] = 0;				//初期化する
+						hskill3.buffendflag[0] = true;		//終わった
 					}
 				}
 			}
-			if (hskill3.buffturn2 == 1) {
-				if (hskill3.buffendflag2 == false) {
+			if (hskill3.buffturn[1] == 1) {
+				if (hskill3.buffendflag[1] == false) {
 					if (gameflame == flame80) {
 						this->addChild(hskill3buffend, backdepth, buffendS);	//バフの効果が切れたことを表記する
 					}
 					if (gameflame == flame150) {
-						hskill3.buffturn2 = 0;				//初期化する
-						hskill3.buffendflag2 = true;		//終わった
+						hskill3.buffturn[1] = 0;				//初期化する
+						hskill3.buffendflag[1] = true;		//終わった
 					}
 				}
 			}
-			if (hskill3.buffturn3 == 1) {
-				if (hskill3.buffendflag3 == false) {
+			if (hskill3.buffturn[2] == 1) {
+				if (hskill3.buffendflag[2] == false) {
 					if (gameflame == flame80) {
 						this->addChild(hskill3buffend, backdepth, buffendS);	//バフの効果が切れたことを表記する
 					}
 					if (gameflame == flame150) {
-						hskill3.buffturn3 = 0;				//初期化する
-						hskill3.buffendflag3 = true;		//終わった
+						hskill3.buffturn[2] = 0;				//初期化する
+						hskill3.buffendflag[2] = true;		//終わった
 					}
 				}
 			}
-			if (hskill3.buffturn4 == 1) {
-				if (hskill3.buffendflag4 == false) {
+			if (hskill3.buffturn[3] == 1) {
+				if (hskill3.buffendflag[3] == false) {
 					if (gameflame == flame80) {
 						this->addChild(hskill3buffend, backdepth, buffendS);	//バフの効果が切れたことを表記する
 					}
 					if (gameflame == flame150) {
-						hskill3.buffturn4 = 0;				//初期化する
-						hskill3.buffendflag4 = true;		//終わった
+						hskill3.buffturn[3] = 0;				//初期化する
+						hskill3.buffendflag[3] = true;		//終わった
 					}
 				}
 			}
 		}
 
 		//聖職者のスキル2の処理が全部終了したら終わり
-		if (hskill3.buffendflag1 == true && hskill3.buffendflag2 == true
-			&& hskill3.buffendflag3 == true && hskill3.buffendflag4 == true) {
+		if (hskill3.buffendflag[0] == true && hskill3.buffendflag[1] == true
+			&& hskill3.buffendflag[2] == true && hskill3.buffendflag[3] == true) {
 			bufft = BVSKILL3T;
 			this->removeChildByTag(buffendS);			//表記を消す
 			hskill3allworkendflag = true;				//スキル７の処理は全部終わった
-			hskill3.buffendflag1 = false;				//初期化
-			hskill3.buffendflag2 = false;				//初期化
-			hskill3.buffendflag3 = false;				//初期化
-			hskill3.buffendflag4 = false;				//初期化
+			hskill3.buffendflag[0] = false;				//初期化
+			hskill3.buffendflag[1] = false;				//初期化
+			hskill3.buffendflag[2] = false;				//初期化
+			hskill3.buffendflag[3] = false;				//初期化
 			gameflame = 0;								//時間を0に
 		}
 		break;
@@ -9160,38 +9912,42 @@ void BossScene::Skillturn()
 	case BossScene::BVSKILL3T: {
 		//重ね掛けの場合があるから増やしておく
 		//ヴァルキュリ－　vskill3の効果ターン処理1
-		if (vskill3.buffendflag1 == false) {
-			if (vskill3.buffturn1 > 1) {
-				vskill3.buffturn1 -= 1;
-				vskill3.buffendflag1 = true;	//スキルターンがあるならターンを1引いて終了
+		if (vskill3.buffendflag[0] == false) {
+			if (vskill3.buffturn[0] > 1) {
+				vskill3.buffturn[0] -= 1;
+				vskill3.buffendflag[0] = true;	//スキルターンがあるならターンを1引いて終了
 			}
-			else if (vskill3.buffturn1 == 0) {
-				vskill3.buffendflag1 = true;	//スキルターンがないならそのまま終了
+			else if (vskill3.buffturn[0] == 0) {
+				vskill3.buffendflag[0] = true;	//スキルターンがないならそのまま終了
 			}
 		}
 		//ヴァルキュリ－　vskill3の効果ターン処理2
-		if (vskill3.buffendflag2 == false) {
-			if (vskill3.buffturn2 > 1) {
-				vskill3.buffturn2 -= 1;
-				vskill3.buffendflag2 = true;
+		if (vskill3.buffendflag[1] == false) {
+			if (vskill3.buffturn[1] > 1) {
+				vskill3.buffturn[1] -= 1;
+				vskill3.buffendflag[1] = true;
 			}
-			else if (vskill3.buffturn2 == 0) {
-				vskill3.buffendflag2 = true;
+			else if (vskill3.buffturn[1] == 0) {
+				vskill3.buffendflag[1] = true;
 			}
 		}
 		//効果ターンが0になったらステータスを戻す
 		//処理1
-		if (vskill3.buffturn1 == 1 && battleturn > 1) {
+		if (vskill3.buffturn[0] == 1 && battleturn > 1) {
 			if (gameflame == flame15) {
-				valkyrie.def -= vskill3.buffupefect1;		//上げた分だけ引く
-				vskill3.buffupefect1 = 0;				//バフの効果を初期値に戻す
+				valkyrie.def -= vskill3.buffupefect[0][0];		//上げた分だけ引く
+				valkyrie.mdef -= vskill3.buffupefect[1][0];		//上げた分だけ引く
+				vskill3.buffupefect[0][0] = 0;					//バフの効果を初期値に戻す
+				vskill3.buffupefect[1][0] = 0;					//バフの効果を初期値に戻す
 			}
 		}
 		//処理2
-		if (vskill3.buffturn2 == 1 && battleturn > 1) {
+		if (vskill3.buffturn[1] == 1 && battleturn > 1) {
 			if (gameflame == flame15) {
-				valkyrie.def -= vskill3.buffupefect2;		//上げた分だけ引く
-				vskill3.buffupefect2 = 0;				//バフの効果を初期値に戻す
+				valkyrie.def -= vskill3.buffupefect[0][1];		//上げた分だけ引く
+				valkyrie.mdef -= vskill3.buffupefect[1][1];		//上げた分だけ引く
+				vskill3.buffupefect[0][1] = 0;					//バフの効果を初期値に戻す
+				vskill3.buffupefect[1][1] = 0;					//バフの効果を初期値に戻す
 			}
 		}
 
@@ -9201,42 +9957,42 @@ void BossScene::Skillturn()
 
 		//表記して終了
 		if (battleturn > 1) {
-			if (vskill3.buffturn1 == 1) {
-				if (vskill3.buffendflag1 == false) {
+			if (vskill3.buffturn[0] == 1) {
+				if (vskill3.buffendflag[0] == false) {
 					if (gameflame == flame80) {
 						this->addChild(vskill3buffend, backdepth, buffendS);	//バフの効果が切れたことを表記する
 					}
 					if (gameflame == flame150) {
-						vskill3.buffturn1 = 0;				//初期化する
-						vskill3.buffendflag1 = true;		//終わった
+						vskill3.buffturn[0] = 0;				//初期化する
+						vskill3.buffendflag[0] = true;		//終わった
 					}
 				}
 			}
-			if (vskill3.buffturn2 == 1) {
-				if (vskill3.buffendflag2 == false) {
+			if (vskill3.buffturn[1] == 1) {
+				if (vskill3.buffendflag[1] == false) {
 					if (gameflame == flame80) {
 						this->addChild(vskill3buffend, backdepth, buffendS);	//バフの効果が切れたことを表記する
 					}
 					if (gameflame == flame150) {
-						vskill3.buffturn2 = 0;				//初期化する
-						vskill3.buffendflag2 = true;		//終わった
+						vskill3.buffturn[1] = 0;				//初期化する
+						vskill3.buffendflag[1] = true;		//終わった
 					}
 				}
 			}
 		}
 		//ヴァルキュリ－のスキル2の処理が全部終了したら終わり
-		if (vskill3.buffendflag1 == true && vskill3.buffendflag2 == true) {
+		if (vskill3.buffendflag[0] == true && vskill3.buffendflag[1] == true) {
 			this->removeChildByTag(buffendS);			//表記を消す
 			vskill3allworkendflag = true;				//スキル７の処理は全部終わった
-			vskill3.buffendflag1 = false;				//初期化
-			vskill3.buffendflag2 = false;				//初期化
+			vskill3.buffendflag[0] = false;				//初期化
+			vskill3.buffendflag[1] = false;				//初期化
 			gameflame = 0;								//時間を0に
 		}
 		//全部終わったらコマンド選択へ
 		if (vskill3allworkendflag == true) {
 			allworkendflag = true;
-			askill2allworkendflag = false;				//初期化
-			askill4allworkendflag = false;				//初期化
+			askill2_allworkendflag = false;				//初期化
+			askill4_allworkendflag = false;				//初期化
 			askill7allworkendflag = false;				//初期化
 			askill8allworkendflag = false;				//初期化
 			sskill2allworkendflag = false;				//初期化
@@ -9262,47 +10018,62 @@ void BossScene::Skillturn()
 	}
 }
 
+//ボスがプレイヤーを選ぶときに使う関数
 void BossScene::Pick()
 {
-	//聖職者がいないとき
-	if (pl1frame.choicejob == ATTACKER || pl2frame.choicejob == ATTACKER || pl3frame.choicejob == ATTACKER) {
-		if (pl1frame.choicejob == SHIELD || pl2frame.choicejob == SHIELD || pl3frame.choicejob == SHIELD) {
-			if (pl1frame.choicejob == MAGIC || pl2frame.choicejob == MAGIC || pl3frame.choicejob == MAGIC) {
-				if (coverflag1 == false && coverflag2 == false && allinsteadflag == false) {
-					if (pick_rnd < fortypercent) {
-						job = ATTACKER;
-					}
-					if (pick_rnd >= fortypercent && pick_rnd < seventypercent) {
-						job = SHIELD;
-					}
-					if (pick_rnd >= seventypercent && pick_rnd < rndmax) {
-						job = MAGIC;
-					}
-				}
-				//タゲ集中が働いているのなら
-				else if (coverflag1 == true || coverflag2 == true || allinsteadflag == true) {
-					job = SHIELD;
-				}
-			}
-		}
-	}
 	//剣士がいないとき
 	if (pl1frame.choicejob == HEALER || pl2frame.choicejob == HEALER || pl3frame.choicejob == HEALER) {
 		if (pl1frame.choicejob == SHIELD || pl2frame.choicejob == SHIELD || pl3frame.choicejob == SHIELD) {
 			if (pl1frame.choicejob == MAGIC || pl2frame.choicejob == MAGIC || pl3frame.choicejob == MAGIC) {
-				if (coverflag1 == false && coverflag2 == false && allinsteadflag == false) {
+				//誰も死亡していないなら
+				if (healer.deathflag == false && shield.deathflag == false && magic.deathflag == false) {
 					if (pick_rnd < fortypercent) {
-						job = SHIELD;
-					}
-					if (pick_rnd >= fortypercent && pick_rnd < seventypercent) {
-						job = MAGIC;
-					}
-					if (pick_rnd >= seventypercent && pick_rnd < rndmax) {
 						job = HEALER;
 					}
+					if (pick_rnd >= fortypercent && pick_rnd < seventypercent) {
+						job = SHIELD;
+					}
+					if (pick_rnd >= seventypercent && pick_rnd < rndmax) {
+						job = MAGIC;
+					}
+				}
+				//一人誰か死亡した場合
+				if (healer.deathflag == true && shield.deathflag == false && magic.deathflag == false) {
+					if (pick_rnd < sixtypercent) {
+						job = SHIELD;
+					}
+					else if (pick_rnd >= sixtypercent && pick_rnd < rndmax) {
+						job = MAGIC;
+					}
+				}
+				else if (healer.deathflag == false && shield.deathflag == true && magic.deathflag == false) {
+					if (pick_rnd < sixtypercent) {
+						job = HEALER;
+					}
+					else if (pick_rnd >= sixtypercent && pick_rnd < rndmax) {
+						job = MAGIC;
+					}
+				}
+				else if (healer.deathflag == false && shield.deathflag == false && magic.deathflag == true) {
+					if (pick_rnd < fiftypercent) {
+						job = HEALER;
+					}
+					else if (pick_rnd >= fiftypercent && pick_rnd < rndmax) {
+						job = MAGIC;
+					}
+				}
+				//二人死亡した場合
+				if (healer.deathflag == true && shield.deathflag == true && magic.deathflag == false) {
+					job = MAGIC;
+				}
+				else if (healer.deathflag == true && shield.deathflag == false && magic.deathflag == true) {
+					job = SHIELD;
+				}
+				else if (healer.deathflag == false && shield.deathflag == true && magic.deathflag == true) {
+					job = HEALER;
 				}
 				//タゲ集中が働いているのなら
-				else if (coverflag1 == true || coverflag2 == true || allinsteadflag == true) {
+				if (coverflag[0] == true || coverflag[1] == true || allinsteadflag == true) {
 					job = SHIELD;
 				}
 			}
@@ -9312,20 +10083,52 @@ void BossScene::Pick()
 	if (pl1frame.choicejob == ATTACKER || pl2frame.choicejob == ATTACKER || pl3frame.choicejob == ATTACKER) {
 		if (pl1frame.choicejob == HEALER || pl2frame.choicejob == HEALER || pl3frame.choicejob == HEALER) {
 			if (pl1frame.choicejob == MAGIC || pl2frame.choicejob == MAGIC || pl3frame.choicejob == MAGIC) {
-				if (coverflag1 == false && coverflag2 == false && allinsteadflag == false) {
+				//誰も死亡していないなら
+				if (healer.deathflag == false && attacker.deathflag == false && magic.deathflag == false) {
 					if (pick_rnd < fortypercent) {
-						job = ATTACKER;
-					}
-					if (pick_rnd >= fortypercent && pick_rnd < seventypercent) {
-						job = MAGIC;
-					}
-					if (pick_rnd >= seventypercent && pick_rnd < rndmax) {
 						job = HEALER;
 					}
+					if (pick_rnd >= fortypercent && pick_rnd < seventypercent) {
+						job = ATTACKER;
+					}
+					if (pick_rnd >= seventypercent && pick_rnd < rndmax) {
+						job = MAGIC;
+					}
 				}
-				//タゲ集中が働いているのなら
-				else if (coverflag1 == true || coverflag2 == true || allinsteadflag == true) {
-					job = SHIELD;
+				//一人誰か死亡した場合
+				if (healer.deathflag == true && attacker.deathflag == false && magic.deathflag == false) {
+					if (pick_rnd < sixtypercent) {
+						job = ATTACKER;
+					}
+					else if (pick_rnd >= sixtypercent && pick_rnd < rndmax) {
+						job = MAGIC;
+					}
+				}
+				else if (healer.deathflag == false && attacker.deathflag == true && magic.deathflag == false) {
+					if (pick_rnd < sixtypercent) {
+						job = HEALER;
+					}
+					else if (pick_rnd >= sixtypercent && pick_rnd < rndmax) {
+						job = MAGIC;
+					}
+				}
+				else if (healer.deathflag == false && attacker.deathflag == false && magic.deathflag == true) {
+					if (pick_rnd < fiftypercent) {
+						job = HEALER;
+					}
+					else if (pick_rnd >= fiftypercent && pick_rnd < rndmax) {
+						job = MAGIC;
+					}
+				}
+				//二人死亡した場合
+				if (healer.deathflag == true && attacker.deathflag == true && magic.deathflag == false) {
+					job = MAGIC;
+				}
+				else if (healer.deathflag == true && attacker.deathflag == false && magic.deathflag == true) {
+					job = ATTACKER;
+				}
+				else if (healer.deathflag == false && attacker.deathflag == true && magic.deathflag == true) {
+					job = HEALER;
 				}
 			}
 		}
@@ -9334,7 +10137,66 @@ void BossScene::Pick()
 	if (pl1frame.choicejob == ATTACKER || pl2frame.choicejob == ATTACKER || pl3frame.choicejob == ATTACKER) {
 		if (pl1frame.choicejob == SHIELD || pl2frame.choicejob == SHIELD || pl3frame.choicejob == SHIELD) {
 			if (pl1frame.choicejob == HEALER || pl2frame.choicejob == HEALER || pl3frame.choicejob == HEALER) {
-				if (coverflag1 == false && coverflag2 == false && allinsteadflag == false) {
+				//誰も死亡していないなら
+				if (healer.deathflag == false && shield.deathflag == false && attacker.deathflag == false) {
+					if (pick_rnd < fortypercent) {
+						job = HEALER;
+					}
+					if (pick_rnd >= fortypercent && pick_rnd < seventypercent) {
+						job = SHIELD;
+					}
+					if (pick_rnd >= seventypercent && pick_rnd < rndmax) {
+						job = ATTACKER;
+					}
+				}
+				//一人誰か死亡した場合
+				if (healer.deathflag == true && shield.deathflag == false && attacker.deathflag == false) {
+					if (pick_rnd < sixtypercent) {
+						job = SHIELD;
+					}
+					else if (pick_rnd >= sixtypercent && pick_rnd < rndmax) {
+						job = ATTACKER;
+					}
+				}
+				else if (healer.deathflag == false && shield.deathflag == true && attacker.deathflag == false) {
+					if (pick_rnd < sixtypercent) {
+						job = ATTACKER;
+					}
+					else if (pick_rnd >= sixtypercent && pick_rnd < rndmax) {
+						job = HEALER;
+					}
+				}
+				else if (healer.deathflag == false && shield.deathflag == false && attacker.deathflag == true) {
+					if (pick_rnd < fiftypercent) {
+						job = HEALER;
+					}
+					else if (pick_rnd >= fiftypercent && pick_rnd < rndmax) {
+						job = ATTACKER;
+					}
+				}
+				//二人死亡した場合
+				if (healer.deathflag == true && shield.deathflag == true && attacker.deathflag == false) {
+					job = ATTACKER;
+				}
+				else if (healer.deathflag == true && shield.deathflag == false && attacker.deathflag == true) {
+					job = SHIELD;
+				}
+				else if (healer.deathflag == false && shield.deathflag == true && attacker.deathflag == true) {
+					job = HEALER;
+				}
+				//タゲ集中が働いているのなら
+				if (coverflag[0] == true || coverflag[1] == true || allinsteadflag == true) {
+					job = SHIELD;
+				}
+			}
+		}
+	}
+	//聖職者がいないとき
+	if (pl1frame.choicejob == ATTACKER || pl2frame.choicejob == ATTACKER || pl3frame.choicejob == ATTACKER) {
+		if (pl1frame.choicejob == SHIELD || pl2frame.choicejob == SHIELD || pl3frame.choicejob == SHIELD) {
+			if (pl1frame.choicejob == MAGIC || pl2frame.choicejob == MAGIC || pl3frame.choicejob == MAGIC) {
+				//誰も死亡していないなら
+				if (attacker.deathflag == false && shield.deathflag == false && magic.deathflag == false) {
 					if (pick_rnd < fortypercent) {
 						job = ATTACKER;
 					}
@@ -9342,11 +10204,46 @@ void BossScene::Pick()
 						job = SHIELD;
 					}
 					if (pick_rnd >= seventypercent && pick_rnd < rndmax) {
-						job = HEALER;
+						job = MAGIC;
 					}
 				}
+				//一人誰か死亡した場合
+				if (attacker.deathflag == true && shield.deathflag == false && magic.deathflag == false) {
+					if (pick_rnd < sixtypercent) {
+						job = SHIELD;
+					}
+					else if (pick_rnd >= sixtypercent && pick_rnd < rndmax) {
+						job = MAGIC;
+					}
+				}
+				else if (attacker.deathflag == false && shield.deathflag == true && magic.deathflag == false) {
+					if (pick_rnd < sixtypercent) {
+						job = ATTACKER;
+					}
+					else if (pick_rnd >= sixtypercent && pick_rnd < rndmax) {
+						job = MAGIC;
+					}
+				}
+				else if (attacker.deathflag == false && shield.deathflag == false && magic.deathflag == true) {
+					if (pick_rnd < fiftypercent) {
+						job = ATTACKER;
+					}
+					else if (pick_rnd >= fiftypercent && pick_rnd < rndmax) {
+						job = MAGIC;
+					}
+				}
+				//二人死亡した場合
+				if (attacker.deathflag == true && shield.deathflag == true && magic.deathflag == false) {
+					job = MAGIC;
+				}
+				else if (attacker.deathflag == true && shield.deathflag == false && magic.deathflag == true) {
+					job = SHIELD;
+				}
+				else if (attacker.deathflag == false && shield.deathflag == true && magic.deathflag == true) {
+					job = ATTACKER;
+				}
 				//タゲ集中が働いているのなら
-				else if (coverflag1 == true || coverflag2 == true || allinsteadflag == true) {
+				if (coverflag[0] == true || coverflag[1] == true || allinsteadflag == true) {
 					job = SHIELD;
 				}
 			}
@@ -9354,13 +10251,11 @@ void BossScene::Pick()
 	}
 }
 
-// 最初に出ている画像
+// 画像、BGM、SEの初期設定
 void BossScene::BossBackGroudn()
 {
-	// 画面サイズ取得
-	Size winSize = Director::getInstance()->getWinSize();
 	//rightSize = Director::getInstance()->getVisibleSize();
-	rightSize = CCDirector::sharedDirector()->getWinSize();
+	rightSize = winSize;
 	//画像のポイントを再設定
 	CCPoint ancharpoint = ccp(0.0f, 0.0f);		//左寄せ
 	CCPoint anancharpoint = ccp(1.0f, 0.0f);	//右寄せ
@@ -9384,14 +10279,14 @@ void BossScene::BossBackGroudn()
 		rightSize.height / 1.4f + UI_BOSS_HPBAR->getContentSize().height / 2));
 	UI_BOSS_HPBAR->setAnchorPoint(ancharpoint);
 	HPbar = UI_BOSS_HPBAR->getTextureRect().origin;
-	bosshpgaugewidth = UI_BOSS_HPBAR->getContentSize().width;
+	boss_hpgauge_width = UI_BOSS_HPBAR->getContentSize().width;
 	this->addChild(UI_BOSS_HPBAR, middledepth);
 	//うしろの黒いバー
 	UI_BOSS_BACK_HPBAR = CCSprite::create("UI/Status/UI_Status_EMLost.png");
 	UI_BOSS_BACK_HPBAR->setPosition(ccp(rightSize.width / 2 - UI_BOSS_HPBAR->getContentSize().width / 2,
 		rightSize.height / 1.4f + UI_BOSS_HPBAR->getContentSize().height / 2));
 	UI_BOSS_BACK_HPBAR->setAnchorPoint(ancharpoint);
-	bosshpgaugewidth = UI_BOSS_BACK_HPBAR->getContentSize().width;
+	boss_hpgauge_width = UI_BOSS_BACK_HPBAR->getContentSize().width;
 	this->addChild(UI_BOSS_BACK_HPBAR, backdepth);
 //剣士のステータスバー
 	//ステータスのプレート(一番後ろのやつ)
@@ -9423,7 +10318,7 @@ void BossScene::BossBackGroudn()
 	UI_PL_ATTACKER_HPBAR->setScaleX(0.6f);
 	UI_PL_ATTACKER_HPBAR->setScaleY(0.8f);
 	HPbar = UI_PL_ATTACKER_HPBAR->getTextureRect().origin;
-	attackerhpgaugewidth = UI_PL_ATTACKER_HPBAR->getContentSize().width;
+	attacker_hpgauge_width = UI_PL_ATTACKER_HPBAR->getContentSize().width;
 	this->addChild(UI_PL_ATTACKER_HPBAR, prevdepth);
 	//MANAバー
 	UI_PL_ATTACKER_MANABAR = CCSprite::create("UI/Status/UI_Status_Mana.png");
@@ -9440,7 +10335,7 @@ void BossScene::BossBackGroudn()
 	UI_PL_ATTACKER_MANABAR->setScaleX(0.6f);
 	UI_PL_ATTACKER_MANABAR->setScaleY(0.8f);
 	MNbar = UI_PL_ATTACKER_MANABAR->getTextureRect().origin;
-	attackermngaugewidth = UI_PL_ATTACKER_MANABAR->getContentSize().width;
+	attacker_mngauge_width = UI_PL_ATTACKER_MANABAR->getContentSize().width;
 	this->addChild(UI_PL_ATTACKER_MANABAR, prevdepth);
 	//剣士HP表記
 	//数値が変わる部分
@@ -9526,7 +10421,7 @@ void BossScene::BossBackGroudn()
 	UI_PL_SHIELD_HPBAR->setScaleX(0.6f);
 	UI_PL_SHIELD_HPBAR->setScaleY(0.8f);
 	HPbar = UI_PL_SHIELD_HPBAR->getTextureRect().origin;
-	shieldhpgaugewidth = UI_PL_SHIELD_HPBAR->getContentSize().width;
+	shield_hpgauge_width = UI_PL_SHIELD_HPBAR->getContentSize().width;
 	this->addChild(UI_PL_SHIELD_HPBAR, prevdepth);
 	//MANAバー
 	UI_PL_SHIELD_MANABAR = CCSprite::create("UI/Status/UI_Status_Mana.png");
@@ -9543,7 +10438,7 @@ void BossScene::BossBackGroudn()
 	UI_PL_SHIELD_MANABAR->setScaleX(0.6f);
 	UI_PL_SHIELD_MANABAR->setScaleY(0.8f);
 	MNbar = UI_PL_SHIELD_MANABAR->getTextureRect().origin;
-	shieldmngaugewidth = UI_PL_SHIELD_MANABAR->getContentSize().width;
+	shield_mngauge_width = UI_PL_SHIELD_MANABAR->getContentSize().width;
 	this->addChild(UI_PL_SHIELD_MANABAR, prevdepth);
 	//騎士HP表記
 	//数値が変わる部分
@@ -9629,7 +10524,7 @@ void BossScene::BossBackGroudn()
 	UI_PL_MAGIC_HPBAR->setScaleX(0.6f);
 	UI_PL_MAGIC_HPBAR->setScaleY(0.8f);
 	HPbar = UI_PL_MAGIC_HPBAR->getTextureRect().origin;
-	healerhpgaugewidth = UI_PL_MAGIC_HPBAR->getContentSize().width;
+	magic_hpgauge_width = UI_PL_MAGIC_HPBAR->getContentSize().width;
 	this->addChild(UI_PL_MAGIC_HPBAR, prevdepth);
 	//MANAバー
 	UI_PL_MAGIC_MANABAR = CCSprite::create("UI/Status/UI_Status_Mana.png");
@@ -9646,7 +10541,7 @@ void BossScene::BossBackGroudn()
 	UI_PL_MAGIC_MANABAR->setScaleX(0.6f);
 	UI_PL_MAGIC_MANABAR->setScaleY(0.8f);
 	MNbar = UI_PL_MAGIC_MANABAR->getTextureRect().origin;
-	healermngaugewidth = UI_PL_MAGIC_MANABAR->getContentSize().width;
+	magic_mngauge_width = UI_PL_MAGIC_MANABAR->getContentSize().width;
 	this->addChild(UI_PL_MAGIC_MANABAR, prevdepth);
 	//魔術師HP表記
 	//数値が変わる部分
@@ -9717,7 +10612,7 @@ void BossScene::BossBackGroudn()
 	UI_PL_HEALER_STATUSPLATE->setScaleX(0.6f);														//大きさ変更
 	UI_PL_HEALER_STATUSPLATE->setScaleY(0.8f);
 	this->addChild(UI_PL_HEALER_STATUSPLATE, backdepth);											//追加
-																					//HPバー
+	//HPバー
 	UI_PL_HEALER_HPBAR = CCSprite::create("UI/Status/UI_Status_Life.png");
 	if (pl1frame.choicejob == HEALER) {
 		UI_PL_HEALER_HPBAR->setPosition(ccp(rightSize.width / 6.325f, rightSize.height / 5.735f));
@@ -9732,7 +10627,7 @@ void BossScene::BossBackGroudn()
 	UI_PL_HEALER_HPBAR->setScaleX(0.6f);
 	UI_PL_HEALER_HPBAR->setScaleY(0.8f);
 	HPbar = UI_PL_HEALER_HPBAR->getTextureRect().origin;
-	healerhpgaugewidth = UI_PL_HEALER_HPBAR->getContentSize().width;
+	healer_hpgauge_width = UI_PL_HEALER_HPBAR->getContentSize().width;
 	this->addChild(UI_PL_HEALER_HPBAR, prevdepth);
 	//MANAバー
 	UI_PL_HEALER_MANABAR = CCSprite::create("UI/Status/UI_Status_Mana.png");
@@ -9749,7 +10644,7 @@ void BossScene::BossBackGroudn()
 	UI_PL_HEALER_MANABAR->setScaleX(0.6f);
 	UI_PL_HEALER_MANABAR->setScaleY(0.8f);
 	MNbar = UI_PL_HEALER_MANABAR->getTextureRect().origin;
-	healermngaugewidth = UI_PL_HEALER_MANABAR->getContentSize().width;
+	healer_mngauge_width = UI_PL_HEALER_MANABAR->getContentSize().width;
 	this->addChild(UI_PL_HEALER_MANABAR, prevdepth);
 	//聖職者HP表記
 	//数値が変わる部分
@@ -9805,6 +10700,48 @@ void BossScene::BossBackGroudn()
 		healermnmaxal->setPosition(rightSize.width / 1.18f, rightSize.height / 6.3f);
 	}
 	this->addChild(healermnmaxal, prevdepth);
+
+//コマンドボタンのUI
+	//攻撃コマンドボタン
+	UI_PUSH_BEFORE_ATTACKBUTTON = CCSprite::create("UI/Command/UI_Button_Attack01.png");	//画像指定
+	UI_PUSH_BEFORE_ATTACKBUTTON->setPosition(rightSize.width / 3, rightSize.height / 2.1f);	//配置場所
+	this->addChild(UI_PUSH_BEFORE_ATTACKBUTTON, middledepth, attackbuttonaI);				//追加		
+	//攻撃コマンドボタン(押されているとき)
+	UI_PUSH_AFTER_ATTACKBUTTON = CCSprite::create("UI/Command/UI_Button_Attack02.png");		//画像指定
+	UI_PUSH_AFTER_ATTACKBUTTON->setPosition(rightSize.width / 3, rightSize.height / 2.1f);	//配置場所
+	this->addChild(UI_PUSH_AFTER_ATTACKBUTTON, backdepth, attackbuttonbI);					//追加
+	//スキルコマンドボタン
+	UI_PUSH_BEFORE_SKILLBUTTON = CCSprite::create("UI/Command/UI_Button_Skill01.png");		//画像指定
+	UI_PUSH_BEFORE_SKILLBUTTON->setPosition(rightSize.width / 3, rightSize.height / 2.7f);	//配置場所
+	this->addChild(UI_PUSH_BEFORE_SKILLBUTTON, middledepth, skillbuttonaI);					//追加
+	//スキルコマンドボタン(押されているとき)
+	UI_PUSH_AFTER_SKILLBUTTON = CCSprite::create("UI/Command/UI_Button_Skill02.png");		//画像指定
+	UI_PUSH_AFTER_SKILLBUTTON->setPosition(rightSize.width / 3, rightSize.height / 2.7f);	//配置場所
+	this->addChild(UI_PUSH_AFTER_SKILLBUTTON, backdepth, skillbuttonbI);					//追加
+	//防御コマンドボタン
+	UI_PUSH_BEFORE_DEFENCEBUTTON = CCSprite::create("UI/Command/UI_Button_Defence01.png");			//画像指定
+	UI_PUSH_BEFORE_DEFENCEBUTTON->setPosition(rightSize.width / 1.45f, rightSize.height / 2.1f);	//配置場所
+	this->addChild(UI_PUSH_BEFORE_DEFENCEBUTTON, middledepth, skillbuttonaI);						//追加
+	//防御コマンドボタン(押されているとき)
+	UI_PUSH_AFTER_DEFENCEBUTTON = CCSprite::create("UI/Command/UI_Button_Defence02.png");		//画像指定
+	UI_PUSH_AFTER_DEFENCEBUTTON->setPosition(rightSize.width / 1.45f, rightSize.height / 2.1f);	//配置場所
+	this->addChild(UI_PUSH_AFTER_DEFENCEBUTTON, backdepth, skillbuttonbI);						//追加
+	//アイテムコマンドボタン
+	UI_PUSH_BEFORE_ITEMBUTTON = CCSprite::create("UI/Command/UI_Button_Item01.png");			//画像指定
+	UI_PUSH_BEFORE_ITEMBUTTON->setPosition(rightSize.width / 1.45f, rightSize.height / 2.7f);	//配置場所
+	this->addChild(UI_PUSH_BEFORE_ITEMBUTTON, middledepth, skillbuttonaI);						//追加
+	//アイテムコマンドボタン(押されているとき)
+	UI_PUSH_AFTER_ITEMBUTTON = CCSprite::create("UI/Command/UI_Button_Item02.png");				//画像指定
+	UI_PUSH_AFTER_ITEMBUTTON->setPosition(rightSize.width / 1.45f, rightSize.height / 2.7f);	//配置場所
+	this->addChild(UI_PUSH_AFTER_ITEMBUTTON, backdepth, skillbuttonbI);							//追加
+
+	//
+	TARGET = CCSprite::create("UI/UI_Target.png");				//画像指定
+	TARGET->setScale(0.6f);
+	TARGET->setPosition(rightSize.width / 1.32f, rightSize.height / 5);
+	this->addChild(TARGET, 5, skillbuttonbI);
+	//BGM設定ループ
+	SimpleAudioEngine::getInstance()->playBackgroundMusic("BGM/BGM_Valkyrie_Main.mp3", true);
 }
 
 // 画面遷移
@@ -9831,7 +10768,9 @@ void BossScene::onTouchEnded(cocos2d::Touch* touch, cocos2d::Event* event){
 		if (choices == CHAR1 || choices == CHAR2 || choices == CHAR3) {
 			//問題①
 			UI_PUSH_BEFORE_ATTACKBUTTON->setVisible(true);
-			SkillButton1->setVisible(true);
+			UI_PUSH_BEFORE_SKILLBUTTON->setVisible(true);
+			UI_PUSH_BEFORE_DEFENCEBUTTON->setVisible(true);
+
 		}
 	}
 }
