@@ -81,19 +81,65 @@ const float SPRITE_SWAY_DEFLECTION_WIDTH = 20.f;	//振れ幅
 
 
 //リソースパス-------------------------------------------------------------------------------------------------
-const std::string BACK_GRAND_SPRITE_PATH = "ST_Colosseum.png";	//道中背景
-const std::string DAMAGE_LABEL_FONT_PATH = "fonts/SHOWG.TTF";	//ダメージラベルフォント
-const std::string HIT_LABEL_FONT_PATH = "fonts/SHOWG.TTF";		//ヒットラベルフォント
-const std::string BAL_FONT_PATH = "fonts/COPRGTB.TTF";			//バトルアナウンスラベルフォント
-const std::string EXP_LABEL_FONT_PATH = "fonts/SHOWG.TTF";		//EXPラベルフォント
+// タイトル
+
+// キャラセレクト
+const std::string UI_BUTTON_NEXT				 = "UI/Command/UI_Button_Next.png";
+const std::string UI_BUTTON_NEXT_PUSH			 = "UI/Command/UI_Button_Next02.png";
+const std::string UI_BUTTON_BUCK				 = "UI/Command/UI_Button_Back.png";
+const std::string UI_BUTTON_BUCK_PUSH			 = "UI/Command/UI_Button_Back.png";
+const std::string UI_PL_CHRA_FLAME				 = "UI/PL_CharFlame01.png";
+const std::string UI_FONT_BOARD					 = "UI/Status/UI_Status_Inters.png"; 
+const std::string BACK_GRAND_SPRITE_CHRASELECT	 = "BackImage/ST_CharSerect2.png";
+const std::string FONT_PL_TEXT					 = "fonts/HGRSGU.TTC";
+
+const std::string PL_ATTACKER					 = "Player/PL_Attacker.png";		//キャラ立ち絵
+const std::string PL_SHIELD						 = "Player/PL_Shield.png";
+const std::string PL_MAGIC						 = "Player/PL_Magic.png";
+const std::string PL_HEALER						 = "Player/PL_Healer.png";
+const std::string PL_ATTACKER_FACE				 = "Player/PL_Attacker_face01.png";	//チーム編成用
+const std::string PL_SHIELD_FACE				 = "Player/PL_Shield_face01.png";
+const std::string PL_MAGIC_FACE					 = "Player/PL_Magic_face01.png";
+const std::string PL_HEALER_FACE				 = "Player/PL_Healer_face01.png";
+// ファイト
+const std::string BACK_GRAND_SPRITE_PATH		 = "BackImage/ST_Colosseum.png";	//道中背景
+const std::string DAMAGE_LABEL_FONT_PATH		 = "fonts/SHOWG.TTF";				//ダメージラベルフォント
+const std::string HIT_LABEL_FONT_PATH			 = "fonts/SHOWG.TTF";				//ヒットラベルフォント
+const std::string BAL_FONT_PATH					 = "fonts/COPRGTB.TTF";				//バトルアナウンスラベルフォント
+const std::string EXP_LABEL_FONT_PATH			 = "fonts/SHOWG.TTF";				//EXPラベルフォント
 const std::string ANNOUNCE_TELOP_LABEL_FONT_PATH = "fonts/HGRSGU.TTC";
 
+const std::string FIELD_ENEMY_FOLDER_PATH		 = "Enemy/FieldEnemy/"; 
 
-const std::string FIELD_ENEMY_FOLDER_PATH = "enemy/FieldEnemy/"; 
+const std::string BOSS_BUTTON_PATH				 = "UI/Fight/boss.png";
+const std::string PUSH_BOSS_BUTTON_PATH			 = "UI/Fight/boss_push.png";
+const std::string YES_BUTTON_PATH				 = "UI/Fight/yes.png";
+const std::string PUSH_YES_BUTTON_PATH			 = "UI/Fight/yes_push.png";
+const std::string NO_BUTTON_PATH				 = "UI/Fight/no.png";
+const std::string PUSH_NO_BUTTON_PATH			 = "UI/Fight/no_push.png";
+// ボス
+const std::string BACK_GRAND_SPRITE_BOSS		 = "BackImage/ST_Boss.png";			
+const std::string BOSS_SCENE_TELOP				 = "UI/UI_Terop.png";				
 
-const std::string BOSS_BUTTON_PATH = "UI/boss.png";
-const std::string PUSH_BOSS_BUTTON_PATH = "UI/boss_push.png";
-const std::string YES_BUTTON_PATH = "UI/yes.png";
-const std::string PUSH_YES_BUTTON_PATH = "UI/yes_push.png";
-const std::string NO_BUTTON_PATH = "UI/no.png";
-const std::string PUSH_NO_BUTTON_PATH = "UI/no_push.png";
+const std::string BOSS_VALKYRIE					 = "enemy/EM_Valkyrie.png";
+const std::string BOSS_HPBAR					 = "UI/Status/UI_Status_EMLife.png";
+const std::string BOSS_BACK_HPBAR				 = "UI/Status/UI_Status_EMLost.png";
+const std::string PL_ATTACKER_STATUSPLATE		 = "UI/Status/UI_Status_Attacker.png";
+const std::string PL_ATTACKER_HPBAR				 = "UI/Status/UI_Status_Life.png";
+const std::string PL_ATTACKER_MANAHAR			 = "UI/Status/UI_Status_Mana.png";
+const std::string PL_SHIELD_STATUSPLATE			 = "UI/Status/UI_Status_Shield.png";
+const std::string PL_SHIELD_HPBAR				 = "UI/Status/UI_Status_Life.png";
+const std::string PL_SHIELD_MANAHAR				 = "UI/Status/UI_Status_Mana.png";
+const std::string PL_MAGIC_STATUSPLATE			 = "UI/Status/UI_Status_Magic.png";
+const std::string PL_MAGIC_HPBAR				 = "UI/Status/UI_Status_Life.png";
+const std::string PL_MAGIC_MANAHAR				 = "UI/Status/UI_Status_Mana.png";
+const std::string PL_HEALER_STATUSPLATE			 = "UI/Status/UI_Status_Healer.png";
+const std::string PL_HEALER_HPBAR				 = "UI/Status/UI_Status_Life.png";
+const std::string PL_HEALER_MANAHAR				 = "UI/Status/UI_Status_Mana.png";
+// BGM
+const std::string BGM_BOSS_ODEN					 = "BGM/BGM_Oden_Main.mp3";			//オーディンの戦闘で使用するBGM
+const std::string BGM_BOSS_SLEIPNIR				 = "BGM/BGM_Sleipnir_Main.mp3";		//スレイプニルの戦闘で使用するBGM
+const std::string BGM_BOSS_TORS					 = "BGM/BGM_Tors_Main.mp3";			//Thorの戦闘で使用するBGM
+const std::string BGM_BOSS_VALKYRIE				 = "BGM/BGM_Valkyrie_Main.mp3";		//ヴァルキリーの戦闘で使用するBGM
+const std::string BGM_CHRASELECT				 = "BGM/BGM_PartyCreate_Main";		//パーティ編成の時に使うBGM
+// SE
